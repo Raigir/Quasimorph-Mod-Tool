@@ -1,0 +1,14 @@
+#damageTypes																								
+Name																									
+blunt																									
+pierce																									
+lacer																									
+explosion																									
+cold																									
+fire																									
+poison																									
+shock																									
+beam																									
+plasma																									
+chaos																									
+#end																									

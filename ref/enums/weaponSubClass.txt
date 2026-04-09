@@ -1,0 +1,16 @@
+#weaponSubClass																									
+Name	Id																								
+None	0																								
+Default	1																								
+Tool	2																								
+Electric	3																								
+Rail	4																								
+Firearm	5																								
+Laser	6																								
+Quasi	7																								
+Coldgun	8																								
+Plasma	9																								
+Toxic	10																								
+Launcher	11																								
+Entropic	12																								
+#end																									

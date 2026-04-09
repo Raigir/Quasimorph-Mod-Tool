@@ -1,0 +1,20 @@
+#factionIdcodes																									
+daydream	ddr																								
+coreward	cor																								
+ancom	anc																								
+sunlight coven	sun																								
+shedu	she																								
+dilthey	dil																								
+SBN	sbn																								
+unchained	unc																								
+realWare	rwa																								
+grasshopper	grh																								
+franche comte	fra																								
+civil resistance	civ																								
+planetbridge	plb																								
+church	chu																								
+tianming	tia																								
+duggur	moon																								
+gannix	venus																								
+shartamakhum	mercury																								
+#end																									

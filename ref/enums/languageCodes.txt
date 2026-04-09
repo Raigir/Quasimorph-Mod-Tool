@@ -1,0 +1,14 @@
+#languageCodes																									
+Name																									
+en																									
+ru																									
+de																									
+fr																									
+es																									
+pl																									
+tr																									
+pt																									
+ko																									
+ja																									
+zh																									
+#end																									

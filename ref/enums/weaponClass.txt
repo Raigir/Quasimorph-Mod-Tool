@@ -1,0 +1,25 @@
+#weaponClass																									
+Name	Id																								
+None	0																								
+Knife	1																								
+Blade	2																								
+Club	3																								
+Fist	4																								
+Axe	5																								
+Chainsaw	6																								
+Unarmed	7																								
+Pistol	20																								
+Shotgun	21																								
+Smg	22																								
+AssaultRifle	23																								
+MarksmanRifle	24																								
+Machinegun	25																								
+Minigun	26																								
+HFG	27																								
+Flamethrower	28																								
+Discthrower	29																								
+Harpoonthrower	30																								
+GrenadeLauncher	31																								
+RocketLauncher	32																								
+Turret	33																								
+#end																									

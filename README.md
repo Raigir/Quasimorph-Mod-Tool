@@ -1,1 +1,113 @@
-# Quasimorph-Mod-Tool
+# Quasimorph Mod Tool
+
+A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, sprites, localization, descriptors, crafting recipes, datadisks, and faction rewards.
+
+## Requirements
+
+- **Node.js** (any recent version) — zero npm dependencies
+
+### Installing Node.js
+
+**Windows:** Download the LTS installer from https://nodejs.org — run it, click Next a few times, done.
+
+**macOS:**
+```bash
+brew install node
+```
+
+**Linux:**
+```bash
+sudo apt install nodejs    # Ubuntu/Debian
+sudo dnf install nodejs    # Fedora
+```
+
+## Quick Start
+
+**Double-click the launcher:**
+- Windows: `start.bat`
+- Mac/Linux: `start.sh`
+
+**Or start manually:**
+```bash
+node server.js
+# Open http://localhost:8080
+```
+
+If you open `index.html` directly as a file, a startup screen will guide you through setup.
+
+## Folder Structure
+
+```
+mod-workflow/
+├── start.bat / start.sh       # Launchers
+├── server.js                  # Node.js backend (single file)
+├── index.html                 # Complete UI (single file)
+├── data/
+│   └── {ProjectName}/
+│       ├── settings.json              # Project settings (bundle path)
+│       └── Assets/
+│           ├── Weapons/               # Weapon records (.json)
+│           ├── Ammo/                  # Ammo records
+│           ├── Firemodes/             # Firemode records
+│           ├── Localization/          # {id}_localization.json
+│           ├── Descriptors/           # {id}_descriptor.json
+│           ├── Crafting Recipes/      # {id}_receipt.json
+│           ├── Datadisks/             # {diskId}_diskData.json (shared)
+│           ├── FactionRewards/        # {factionId}_factionData.json (shared)
+│           ├── Images/                # Sprite PNGs (root or subfolders)
+│           │   ├── {id}_sprite_icon.png
+│           │   ├── {id}_sprite_floor.png
+│           │   ├── {id}_sprite_shadow.png
+│           │   └── {subfolder}/       # User-named (e.g., chu, cor)
+│           ├── Bundles/               # Asset bundles
+│           ├── Armors/
+│           ├── Consumables/
+│           ├── Explosions/
+└── ref/
+    ├── base/                          # Reference TSVs (game data)
+    │   ├── ammo.txt
+    │   ├── firemodes.txt
+    │   ├── grenades.txt
+    │   ├── itemTraits.txt
+    │   ├── repairs.txt
+    │   ├── trash.txt
+    │   ├── projectiles.txt
+    │   ├── datadisks.txt
+    │   ├── explosions.txt
+    │   ├── factions.txt
+    │   └── pactcomponents.txt
+    └── enums/                         # Enum value lists
+        ├── weaponClass.txt
+        ├── weaponSubClass.txt
+        ├── categories.txt
+        ├── ammoTypes.txt
+        ├── projectileIds.txt
+        ├── ballisticType.txt
+        ├── damageTypes.txt
+        ├── factionIdCodes.txt
+        ├── handGrips.txt
+        ├── itemClass.txt
+        └── languageCodes.txt
+```
+
+## Reference Data
+
+The `ref/` folder contains TSV files extracted from the base game. These are **read-only reference data** — the tool uses them to populate dropdown selections and combo boxes. They are never modified by the application.
+
+- **base/** — Full game records (ammo, firemodes, grenades, repairs, traits, etc.)
+- **enums/** — Simple value lists (weapon classes, categories, damage types, etc.)
+
+## Data Format
+
+All asset files follow the standard format:
+```json
+{
+  "RecordType": "MGSC.WeaponRecord",
+  "Data": {
+    "Id": "my_weapon_1",
+    ...
+  }
+}
+```
+
+See `GUIDE.md` for detailed feature documentation.

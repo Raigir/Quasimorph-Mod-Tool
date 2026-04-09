@@ -1,0 +1,45 @@
+#repairs																																
+Id		Categories	TechLevel	Price	Weight	InventoryWidthSize	ItemClass	CanPutInVest	RepairSpecialRule	MaxStack	MaxUsage	UsageCost	RestoreAmount	MaxCapacity	Disassembly																	
+*rags		Common Civilian Worker Miner	1	2	0.1	1	Parts	TRUE	None	20	10	10	25	-10																		
+*plastic		Common Worker	1	2	0.05	1	Parts	TRUE	None	20	10	10	25	-10																		
+*rubber		Worker Science	3	10	0.1	1	Parts	TRUE	None	20	10	10	40	-5																		
+*rusty_plates		Common Miner	1	5	0.3	1	Parts	TRUE	None	10	10	10	30	-10																		
+*armor_plates		Common Miner	1	6	0.25	1	Parts	TRUE	None	10	10	10	30	-10																		
+*ceramite_plates		Miner Science	3	20	0.2	1	Parts	TRUE	None	10	10	10	60	-5																		
+armor_repair_kit		Military SBN Realware SheduThousand CoreWard UnchainedBelt Tianming	3	200	0.6	1	RepairKit	TRUE	AllArmors	3	25	5	40	10	rags 1 rubber 1 armor_plates 1 ceramite_plates 1																	
+*rod_parts		Common Worker	1	2	0.25	1	Parts	TRUE	None	20	10	10	30	-10																		
+coarse_parts		Common Worker	1	2	0.5	1	Parts	TRUE	None	10	10	10	30	-10																		
+*engineering_repair_kit		Worker Science Dilthey PlanetBridge CResistance UnchainedBelt	2	125	1.1	1	RepairKit	TRUE	AllTools	3	25	5	40	10	rod_parts 2 coarse_parts 2																	
+pierce_parts		Common Worker	1	3	0.15	1	Parts	TRUE	None	20	10	10	30	-10																		
+*blunt_parts		Common Worker	1	3	0.15	1	Parts	TRUE	None	20	10	10	30	-10																		
+melee_repair_kit		Common AnCom ChurchRevelation ChurchGannix UnchainedBelt	1	100	0.55	1	RepairKit	TRUE	AllMeleeWeapons	3	25	5	40	10	pierce_parts 2 blunt_parts 1 rod_parts 1																	
+*spring		Common Worker	1	3	0.05	1	Parts	TRUE	None	10	10	10	15	-5																		
+weapon_parts		Common Worker Security	1	3	0.2	1	Parts	TRUE	None	20	10	10	30	-10																		
+firearm_repair_kit		Security AnCom Realware SheduThousand Grasshopper FrancheComte UnchainedBelt Tianming	2	200	0.6	1	RepairKit	TRUE	AllFirearmsWeapons	3	25	5	40	10	plastic 2 weapon_parts 1 spring 1																	
+microelectronics_parts		Worker Science	1	6	0.03	1	Parts	TRUE	None	20	10	10	30	-10																		
+*circuit_board		Worker Science	1	6	0.15	1	Parts	TRUE	None	10	10	10	15	-5																		
+tech_repair_kit		Science SBN Dilthey DaydreamChems Sunlight Emeraldlight CResistance	3	250	0.7	1	RepairKit	TRUE	AllTechWeapons	3	25	5	40	10	microelectronics_parts 2 circuit_board 2																	
+*transformer		Worker Science	1	6	0.15	1	Parts	TRUE	None	10	10	10	15	-5																		
+capacitor_parts		Worker Science	1	6	0.25	1	Parts	TRUE	None	20	10	10	30	-10																		
+*bulb		Worker Science	1	6	0.05	1	Parts	TRUE	None	10	10	10	15	-5																		
+*lens		Worker Science	1	6	0.05	1	Parts	TRUE	None	10	10	10	15	-5																		
+*tape		Common Worker	1	50	0.05	1	RepairKit	TRUE	All	10	10	10	20	0																		
+*human_skin		Prison Possessed Medical Quasi	1	2	0.2	1	Parts	TRUE	None	10	10	10	15	-5																		
+*human_rib		Prison Possessed Medical Quasi	1	2	0.1	1	Parts	TRUE	None	20	10	10	15	-5																		
+*spider_chitin		Gannix	1	5	0.25	1	Parts	TRUE	None	20	10	10	15	-5																		
+*quasi_venus_feather		Gannix	1	15	0.03	1	Parts	TRUE	None	10	10	10	30	5																		
+*quasi_venus_rags		Gannix	1	15	0.15	1	Parts	TRUE	None	5	10	10	15	5																		
+*venus_armor_plates		Gannix	1	20	0.25	1	Parts	TRUE	None	20	10	10	40	5																		
+*venus_melee_parts		Gannix	1	20	0.2	1	Parts	TRUE	None	10	10	10	15	5																		
+*venus_weapon_parts		Gannix	1	20	0.25	1	Parts	TRUE	None	20	10	10	40	5																		
+*mercury_rags		Shartamakhum	1	20	0.1	1	Parts	TRUE	None	10	10	10	15	5																		
+*mercury_glass		Shartamakhum	1	25	0.2	1	Parts	TRUE	None	10	10	10	40	5																		
+*moon_armor_plates		Duggur	1	30	0.3	1	Parts	TRUE	None	20	10	10	40	5																		
+*moon_weapon_parts		Duggur	1	30	0.3	1	Parts	TRUE	None	20	10	10	40	5																		
+*mars_gear		Mars	1	40	0.4	1	Parts	TRUE	None	20	10	10	40	5																		
+*mars_skin		Mars	1	40	0.4	1	Parts	TRUE	None	20	10	10	40	5																		
+*cattaram_stone		Cattaram	1	60	1.5	1	RepairKit	TRUE	AllQuasiItems	20	10	10	50	0																		
+*jupiter_grass		Flauros	1	40	0.2	1	Parts	TRUE	None	20	10	10	30	5																		
+*quasi_repair_kit		Gannix Mars	1	100	0.25	1	RepairKit	TRUE	All	3	30	10	50	10																		
+broken_weapon		Common UnchainedBelt	1	1	0.1	1	Parts	TRUE	None	50	10	10	15	5																		
+#end																																

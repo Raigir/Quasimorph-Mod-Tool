@@ -1,0 +1,3633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow Tool</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg-deep: #0c0e14;
+    --bg-panel: #12151e;
+    --bg-surface: #1a1e2b;
+    --bg-hover: #232839;
+    --bg-active: #2a3045;
+    --border: #2a2f42;
+    --border-active: #4a5580;
+    --text-primary: #d4d8e8;
+    --text-secondary: #8891b0;
+    --text-dim: #555e7a;
+    --accent: #c49b5f;
+    --accent-dim: #8a6d3b;
+    --accent-glow: rgba(196,155,95,0.15);
+    --error: #c45f5f;
+    --danger: #8b3a3a;
+    --success: #5fa85f;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --field-w: 180px;
+    --ed-gap: 12px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ─────────────────────────────────────────────── */
+  .sidebar {
+    width: 280px;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .sb-section {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .sb-section.projects { flex: 0 1 auto; max-height: 50%; }
+  .sb-section.weapons { flex: 1 1 auto; }
+  .sb-divider { height: 1px; background: var(--border); flex-shrink: 0; }
+  .sb-head {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .sb-head h3 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+  }
+  .sb-filter {
+    padding:4px 12px 6px;
+    flex-shrink:0;
+    position:relative;
+  }
+  .sb-filter input {
+    width:100%; box-sizing:border-box;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-primary);
+    font-family:'DM Sans',sans-serif; font-size:13px;
+    padding:6px 9px; outline:none;
+    transition:border-color 0.12s;
+  }
+  .sb-filter input:focus { border-color:var(--accent-dim); }
+  .sb-filter input::placeholder { color:var(--text-dim); }
+  .sb-filter-clear {
+    position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--text-dim);
+    font-size:16px; cursor:pointer; padding:0 4px; line-height:1;
+  }
+  .sb-filter-clear:hover { color:var(--text-primary); }
+  .sb-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .sb-empty {
+    padding: 14px 8px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── BUTTONS ─────────────────────────────────────────────── */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0 10px;
+    height: 32px;
+    min-width: 82px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color:var(--border-active); color:var(--text-primary); background:var(--bg-hover); }
+  .btn.active { border-color:var(--accent-dim); color:var(--accent); background:var(--accent-glow); }
+  .btn.primary { background:var(--accent-dim); color:var(--bg-deep); border-color:var(--accent-dim); }
+  .btn.primary:hover { background:var(--accent); }
+  .btn.danger { border-color:var(--danger); color:var(--error); }
+  .btn.danger:hover { background:var(--danger); color:#fff; }
+
+  /* ── CARDS ───────────────────────────────────────────────── */
+  .card {
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.12s;
+    border: 1px solid transparent;
+    position: relative;
+  }
+  .card:hover { background: var(--bg-hover); }
+  .card.active { background: var(--bg-active); border-color: var(--accent-dim); }
+  #projectList .card { min-height:76px; }
+  #assetList .card { min-height:76px; }
+  .card-top { display:flex; align-items:center; gap:10px; }
+  .card-thumb {
+    width:50px; height:25px; flex-shrink:0;
+    border-radius:3px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-thumb img {
+    max-width:100%; max-height:100%;
+    image-rendering:pixelated;
+  }
+  .card-info { min-width:0; flex:1; }
+  .card .c-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card .c-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card .card-trash {
+    position:absolute; bottom:4px; right:6px;
+    background:none; border:none;
+    cursor:pointer; padding:3px 5px; line-height:1;
+  }
+  .card .card-trash svg path,
+  .card .card-trash svg line { stroke:var(--error); }
+  .card .card-trash:hover svg path,
+  .card .card-trash:hover svg line { stroke:#e06060; }
+  .card .card-edit {
+    position:absolute; top:6px; right:6px;
+    background:none; border:none;
+    font-size:18px; color:var(--accent);
+    cursor:pointer; padding:3px 5px; line-height:1;
+  }
+  .card .card-copy {
+    position:absolute; top:6px; right:6px;
+    background:none; border:none;
+    cursor:pointer; padding:3px 5px; line-height:1;
+  }
+  .card .card-copy svg rect,
+  .card .card-copy svg line { stroke:#5ba3a3; }
+  .card .card-copy:hover svg rect,
+  .card .card-copy:hover svg line { stroke:#7cc4c4; }
+
+  /* ── CONFIRM POPUP ──────────────────────────────────────── */
+  .confirm-overlay {
+    position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,0.55);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .confirm-box {
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius-lg); padding:20px 24px;
+    max-width:360px; width:90%;
+  }
+  .confirm-box p {
+    font-size:13px; color:var(--text-primary);
+    margin-bottom:14px; line-height:1.5;
+  }
+  .confirm-box .confirm-btns {
+    display:flex; gap:8px; justify-content:flex-end;
+  }
+  .val-error-title {
+    font-family:'Crimson Pro',serif; font-size:18px; font-weight:600;
+    color:var(--accent); margin-bottom:12px;
+  }
+  .val-error-tab {
+    font-size:12px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--text-primary);
+    margin-top:10px; margin-bottom:4px;
+    padding-bottom:3px; border-bottom:1px solid var(--border);
+  }
+  .val-error-section {
+    font-size:11px; font-weight:600; color:var(--text-dim);
+    margin-top:6px; margin-left:6px;
+  }
+  .val-error-msg {
+    font-size:12px; color:var(--text-secondary);
+    margin-left:14px; padding:2px 0;
+  }
+
+  /* ── OVERLAY / MODAL ──────────────────────────────────────── */
+  .overlay {
+    position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    z-index:100; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity 0.2s;
+  }
+  .overlay.open { opacity:1; pointer-events:all; }
+  .modal {
+    width:500px; max-width:90vw; max-height:80vh;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius-lg); display:flex; flex-direction:column;
+    overflow:hidden; transform:translateY(8px); transition:transform 0.2s;
+  }
+  .overlay.open .modal { transform:translateY(0); }
+  .modal-head {
+    padding:12px 18px; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .modal-head h3 {
+    font-family:'Crimson Pro',serif; font-weight:400; font-size:17px; color:var(--accent);
+  }
+  .modal-close {
+    background:none; border:none; color:var(--text-dim);
+    font-size:20px; cursor:pointer; padding:2px 6px; line-height:1;
+  }
+  .modal-close:hover { color:var(--text-primary); }
+  .modal-body {
+    flex:1; overflow-y:auto; padding:18px;
+    display:flex; flex-direction:column; gap:14px;
+  }
+  .modal-foot {
+    padding:10px 18px; border-top:1px solid var(--border);
+    display:flex; justify-content:flex-end; gap:8px;
+  }
+
+  /* ── CENTER ──────────────────────────────────────────────── */
+  .center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+  }
+  .c-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+    flex-shrink: 0;
+    gap: 10px;
+    min-height: 44px;
+  }
+  .c-header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .c-header-title { font-size: 14px; color: var(--text-dim); }
+  .c-header-modes { display:flex; gap:4px; margin-left:10px; }
+  .c-header-actions { display:flex; gap:5px; flex-shrink:0; }
+  .empty-state {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    color:var(--text-dim); font-family:'Crimson Pro',serif;
+    font-size:15px; gap:6px;
+  }
+  .empty-state .icon { font-size:28px; opacity:0.25; }
+
+  /* ── TAB BAR ─────────────────────────────────────────────── */
+  .tab-bar {
+    display:none; flex-shrink:0;
+    border-bottom:1px solid var(--border);
+    background:var(--bg-panel);
+    padding:0 18px; gap:0;
+  }
+  .tab-bar.visible { display:flex; }
+  .tab-btn {
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+    padding:10px 16px; border:none; background:none;
+    color:var(--text-dim); cursor:pointer;
+    border-bottom:2px solid transparent;
+    transition:all 0.12s; white-space:nowrap;
+  }
+  .tab-btn:hover { color:var(--text-secondary); }
+  .tab-btn.active {
+    color:var(--accent); border-bottom-color:var(--accent);
+  }
+
+  /* ── TOAST ───────────────────────────────────────────────── */
+  .toast {
+    position:absolute; top:60px; left:50%; transform:translateX(-50%) translateY(-8px);
+    background:var(--bg-surface); border:1px solid var(--border);
+    color:var(--text-primary); padding:6px 16px; border-radius:var(--radius);
+    font-size:12px; opacity:0; transition:all 0.2s; pointer-events:none; z-index:200;
+  }
+  .toast.err { border-color:var(--error); color:var(--error); }
+  .toast.visible { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ── INLINE NAME INPUT ─────────────────────────────────────── */
+  .rename-input {
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+    width:100%; padding:2px 6px;
+    background:var(--bg-deep); border:1px solid var(--accent-dim);
+    border-radius:3px; color:var(--text-primary); outline:none;
+  }
+
+  /* ── WEAPON EDITOR ─────────────────────────────────────────── */
+  .editor-wrap {
+    flex:1; overflow-y:auto; padding:18px 24px 40px;
+    display:none; flex-direction:column; gap:16px;
+  }
+  .editor-wrap.visible { display:flex; }
+  .ed-section {
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    background:var(--bg-panel);
+    padding:14px 16px;
+  }
+  .ed-section-title {
+    font-size:10px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.07em; color:var(--text-secondary);
+    margin-bottom:10px; padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .ed-row {
+    display:flex; gap:var(--ed-gap); margin-bottom:8px;
+  }
+  .ed-row:last-child { margin-bottom:0; }
+  .ed-field {
+    display:flex; flex-direction:column; gap:3px; flex:1; min-width:0;
+  }
+  .ed-field.narrow { flex:0 0 var(--field-w); }
+  .ed-field.med { flex:0 0 180px; }
+  .ed-field.id-field { flex:0 0 calc(3 * var(--field-w) + 2 * var(--ed-gap)); }
+  .ed-field:has(input[type="text"]) { max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); min-width:180px; }
+  .ed-field:has(select) { max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); min-width:180px; }
+  .ed-field label {
+    font-size:10px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--text-dim);
+  }
+  .ed-field input[type="text"],
+  .ed-field input[type="number"],
+  .ed-field select {
+    font-family:'DM Sans',sans-serif; font-size:13px;
+    padding:6px 9px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-primary);
+    outline:none; transition:border-color 0.12s;
+  }
+  .ed-field input:focus,
+  .ed-field select:focus { border-color:var(--accent-dim); }
+  .ed-field select:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* ── INFO TOOLTIP ──────────────────────────────────────── */
+  .info-icon {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:18px; height:18px; flex-shrink:0;
+    cursor:help; position:relative;
+  }
+  .info-icon svg { display:block; }
+  .info-icon:hover svg circle,
+  .info-icon:hover svg path,
+  .info-icon:hover svg rect { stroke:var(--accent); }
+  .info-icon:hover svg circle[fill],
+  .info-icon:hover svg rect[fill] { fill:var(--accent); }
+  .info-icon .info-tip {
+    display:none; position:absolute; bottom:calc(100% + 6px); left:50%;
+    transform:translateX(-50%); white-space:nowrap;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius); padding:5px 10px;
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:400;
+    color:var(--text-primary);
+    box-shadow:0 2px 8px rgba(0,0,0,0.4); z-index:100;
+    pointer-events:none;
+  }
+  .info-icon:hover .info-tip { display:block; }
+  .ed-field select option.opt-empty { font-style:italic; color:var(--text-dim); }
+  .ed-field input.invalid { border-color:var(--error); }
+  .ed-field input.invalid:focus { border-color:var(--error); }
+  .ed-field input[type="number"]::-webkit-inner-spin-button,
+  .ed-field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .ed-field input[type="number"] { -moz-appearance:textfield; }
+
+  /* Toggles */
+  .ed-field input[type="checkbox"] { display:none; }
+  .ed-field:has(> input[type="checkbox"]) {
+    align-items:center; flex:0 0 auto !important;
+    flex-direction:row; gap:8px;
+    padding-top:17px;
+  }
+  .ed-field:has(> input[type="checkbox"]) label {
+    order:2; margin:0; font-size:10px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);
+  }
+  .tog {
+    order:1; width:32px; height:16px; border-radius:8px; flex-shrink:0;
+    background:var(--bg-deep); border:1px solid var(--border);
+    position:relative; cursor:pointer; transition:all 0.15s;
+  }
+  .tog::after {
+    content:''; position:absolute; width:10px; height:10px;
+    border-radius:50%; background:var(--text-dim); top:2px; left:2px;
+    transition:all 0.15s;
+  }
+  .tog.on { background:var(--accent-glow); border-color:var(--accent-dim); }
+  .tog.on::after { left:18px; background:var(--accent); }
+
+  .ed-field textarea {
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    padding:6px 9px; line-height:1.5;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-primary);
+    outline:none; resize:vertical; min-height:60px;
+    transition:border-color 0.12s;
+  }
+  .ed-field textarea:focus { border-color:var(--accent-dim); }
+
+  /* Multi-select tags */
+  .multi-select {
+    position:relative;
+  }
+  .multi-select-display {
+    font-family:'DM Sans',sans-serif; font-size:13px;
+    padding:6px 9px; min-height:33px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-primary);
+    cursor:pointer; transition:border-color 0.12s;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .multi-select-display:hover { border-color:var(--border-active); }
+  .multi-select-display.open { border-color:var(--accent-dim); }
+  .multi-select-display .placeholder { color:var(--text-dim); }
+  .multi-select-dropdown {
+    display:none; position:absolute; top:100%; left:0; right:0;
+    z-index:50; margin-top:2px;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius);
+    width:400px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    flex-direction:column;
+  }
+  .multi-select-dropdown.open { display:flex; }
+  .multi-select-search {
+    padding:6px 8px; border-bottom:1px solid var(--border); flex-shrink:0;
+    display:flex; gap:6px; align-items:center;
+  }
+  .multi-select-search input {
+    flex:1; font-family:'DM Sans',sans-serif; font-size:12px;
+    padding:5px 8px; background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:3px; color:var(--text-primary); outline:none;
+  }
+  .multi-select-search input:focus { border-color:var(--accent-dim); }
+  .multi-select-search input::placeholder { color:var(--text-dim); }
+  .multi-select-clear {
+    font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
+    padding:5px 8px; white-space:nowrap;
+    background:none; border:1px solid var(--border); border-radius:3px;
+    color:var(--text-dim); cursor:pointer; transition:all 0.12s;
+  }
+  .multi-select-clear:hover { border-color:var(--error); color:var(--error); }
+  .multi-select-list {
+    max-height:360px; overflow-y:auto;
+  }
+  .multi-select-dropdown input[type="checkbox"] {
+    display:none !important;
+  }
+  .multi-select-dropdown label {
+    display:flex; align-items:center; gap:8px;
+    padding:5px 10px; font-size:12px; color:var(--text-secondary);
+    cursor:pointer; user-select:none;
+    text-transform:none; letter-spacing:0; font-weight:400;
+    transition:background 0.08s;
+  }
+  .multi-select-dropdown label::before {
+    content:''; width:14px; height:14px; flex-shrink:0;
+    border-radius:3px; border:1.5px solid var(--border);
+    background:var(--bg-deep); transition:all 0.12s;
+  }
+  .multi-select-dropdown label:has(input:checked)::before {
+    background:var(--accent-glow); border-color:var(--accent-dim);
+    background-image:url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='2.5,6 5,8.5 9.5,3.5' stroke='%23c49b5f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:center;
+  }
+  .multi-select-dropdown label:hover { background:var(--bg-hover); }
+  .ed-actions {
+    display:flex; gap:8px; justify-content:flex-end;
+    padding-top:8px;
+  }
+
+  /* ── LOCALIZATION ──────────────────────────────────────── */
+  .loc-header {
+    display:flex; gap:8px; margin-bottom:6px;
+  }
+  .loc-header span {
+    font-size:9px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--text-dim);
+  }
+  .loc-lang-col { flex:0 0 110px; }
+  .loc-name-col { flex:3; }
+  .loc-desc-col { flex:7; }
+  .loc-row {
+    display:flex; gap:8px; align-items:center; margin-bottom:4px;
+  }
+  .loc-row .loc-lang {
+    flex:0 0 110px; font-size:12px; color:var(--text-secondary);
+  }
+  .loc-row input {
+    font-family:'DM Sans',sans-serif; font-size:12px;
+    padding:5px 8px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:3px; color:var(--text-primary); outline:none;
+    transition:border-color 0.12s;
+  }
+  .loc-row input:focus { border-color:var(--accent-dim); }
+  .loc-row .loc-name { flex:3; }
+  .loc-row .loc-sdesc { flex:7; }
+
+  /* ── ENTRY LIST (Disassembly, etc.) ────────────────────── */
+  .entry-list {
+    display:flex; flex-direction:column; gap:6px;
+    max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap));
+  }
+  .entry-item {
+    display:flex; gap:10px; align-items:center;
+    padding:8px 10px;
+    background:var(--bg-deep); border:1px solid var(--border);
+    border-radius:var(--radius); position:relative;
+  }
+  .entry-item .entry-field {
+    display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;
+  }
+  .entry-item .entry-field.narrow { flex:0 0 80px; }
+  .entry-item .entry-field label {
+    font-size:9px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--text-dim);
+  }
+  .entry-item .entry-field input {
+    font-family:'DM Sans',sans-serif; font-size:12px;
+    padding:5px 8px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:3px; color:var(--text-primary); outline:none;
+    transition:border-color 0.12s;
+  }
+  .entry-item .entry-field input:focus { border-color:var(--accent-dim); }
+  .entry-item .entry-field select {
+    font-family:'DM Sans',sans-serif; font-size:12px;
+    padding:5px 8px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:3px; color:var(--text-primary); outline:none;
+    transition:border-color 0.12s;
+  }
+  .entry-item .entry-field select:focus { border-color:var(--accent-dim); }
+  .entry-item .entry-field input[type="number"]::-webkit-inner-spin-button,
+  .entry-item .entry-field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .entry-item .entry-field input[type="number"] { -moz-appearance:textfield; }
+  .entry-item .entry-field input.invalid { border-color:var(--error); }
+
+  /* ── COMBOBOX (text input + dropdown suggestions) ─────── */
+  .combobox {
+    position:relative;
+  }
+  .combobox input {
+    width:100%; font-family:'DM Sans',sans-serif; font-size:12px;
+    padding:5px 8px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:3px; color:var(--text-primary); outline:none;
+    transition:border-color 0.12s;
+  }
+  .combobox input:focus { border-color:var(--accent-dim); }
+  .combobox-list {
+    display:none; position:absolute; top:100%; left:0; right:0;
+    z-index:50; margin-top:2px;
+    background:var(--bg-panel); border:1px solid var(--border);
+    border-radius:var(--radius);
+    max-height:360px; overflow-y:auto;
+    box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  }
+  .combobox-list.open { display:block; }
+  .combobox-list .cb-option {
+    padding:5px 10px; font-size:12px; color:var(--text-secondary);
+    cursor:pointer; transition:background 0.08s;
+  }
+  .combobox-list .cb-option:hover { background:var(--bg-hover); }
+  .entry-item .entry-rm {
+    background:none; border:none;
+    font-size:20px; color:var(--text-dim); cursor:pointer;
+    padding:2px 4px; line-height:1; flex-shrink:0;
+    align-self:center; margin-top:12px;
+    transition:color 0.12s;
+  }
+  .entry-item .entry-rm:hover { color:var(--error); }
+  .btn-add-entry {
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
+    width:100%; max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); height:34px; margin-top:8px;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:var(--radius); color:var(--text-secondary);
+    cursor:pointer; transition:all 0.12s;
+  }
+  .btn-add-entry:hover { border-color:var(--border-active); color:var(--text-primary); }
+
+  /* ── IMAGE SECTION ─────────────────────────────────────── */
+  .img-upload-area {
+    display:flex; align-items:flex-start; gap:16px;
+  }
+  .img-preview {
+    min-width:200px; min-height:100px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden; flex-shrink:0;
+  }
+  .img-preview img {
+    image-rendering:pixelated;
+    transform:scale(2);
+  }
+  .img-preview .placeholder-text {
+    font-size:11px; color:var(--text-dim);
+  }
+  .img-upload-controls {
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .img-upload-controls input[type="file"] { display:none; }
+  .img-hint {
+    font-size:10px; color:var(--text-dim); line-height:1.4;
+  }
+
+  .img-upload-slot {
+    display:flex; flex-direction:column; gap:4px; align-items:flex-start;
+  }
+  .img-upload-slot .slot-label {
+    font-size:10px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--text-dim);
+  }
+  .img-slot-preview {
+    width:60px; height:60px;
+    border:1px solid var(--border);
+    border-radius:3px;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .img-slot-preview img {
+    image-rendering:pixelated;
+    transform:scale(2);
+  }
+  /* ── STARTUP SCREEN ──────────────────────────────────────── */
+  .startup-screen {
+    position:fixed; inset:0; z-index:999;
+    background:var(--bg-deep);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .startup-screen.hidden { display:none; }
+  .startup-box {
+    max-width:520px; width:90%;
+    background:var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:36px 32px;
+    text-align:center;
+  }
+  .startup-box h1 {
+    font-family:'Crimson Pro',serif; font-weight:300;
+    font-size:26px; color:var(--accent); margin-bottom:6px;
+  }
+  .startup-box .sub {
+    font-size:13px; color:var(--text-dim); margin-bottom:28px;
+  }
+  .startup-box .step {
+    text-align:left; background:var(--bg-surface);
+    border:1px solid var(--border); border-radius:var(--radius);
+    padding:14px 16px; margin-bottom:12px;
+  }
+  .startup-box .step-num {
+    font-family:'JetBrains Mono',monospace; font-size:10px;
+    font-weight:600; color:var(--accent); text-transform:uppercase;
+    letter-spacing:0.08em; margin-bottom:4px;
+  }
+  .startup-box .step-text {
+    font-size:13px; color:var(--text-primary); line-height:1.5;
+  }
+  .startup-box .step-text code {
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    background:var(--bg-deep); border:1px solid var(--border);
+    border-radius:3px; padding:2px 6px; color:var(--accent);
+    display:inline-block; margin:3px 0;
+  }
+  .startup-box .or-text {
+    font-size:12px; color:var(--text-dim); margin:16px 0 10px;
+  }
+  .startup-box .step-text.dim { color:var(--text-secondary); font-size:12px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  STARTUP SCREEN (shown when opened via file://)                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="startup-screen hidden" id="startupScreen">
+  <div class="startup-box">
+    <h1>Mod Workflow Tool</h1>
+    <div class="sub">This app needs a local Node.js server to save files and manage your mod projects.</div>
+
+    <div class="step">
+      <div class="step-num">Easiest — Double-click the launcher</div>
+      <div class="step-text">
+        Windows: <code>start.bat</code><br>
+        Mac / Linux: <code>start.sh</code>
+      </div>
+    </div>
+
+    <div class="or-text">— or start manually —</div>
+
+    <div class="step">
+      <div class="step-num">Step 1 — Open a terminal in this folder</div>
+      <div class="step-text"><code>cd path/to/mod-workflow</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 2 — Start the server</div>
+      <div class="step-text"><code>node server.js</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 3 — Open in browser</div>
+      <div class="step-text"><code>http://localhost:8080</code></div>
+    </div>
+
+    <div class="step" style="margin-top:20px; border-color:var(--accent-dim); background:var(--accent-glow);">
+      <div class="step-text dim">
+        You're seeing this because the page was opened as a local file.<br>
+        The app works fine once it's served through Node.js.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">Don't have Node.js installed?</div>
+      <div class="step-text dim">
+        Download the LTS installer from <code>nodejs.org</code> — it's a normal installer, just click Next.<br>
+        <b>Mac:</b> <code>brew install node</code><br>
+        <b>Linux:</b> <code>sudo apt install nodejs</code>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  LEFT SIDEBAR                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="sidebar">
+  <div class="sb-section projects">
+    <div class="sb-head">
+      <h3>Projects</h3>
+      <button class="btn" id="btnNewProject">+ New</button>
+    </div>
+    <div class="sb-list" id="projectList">
+      <div class="sb-empty">No projects yet</div>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-section weapons">
+    <div class="sb-head">
+      <h3 id="assetListTitle">Weapons</h3>
+      <button class="btn" id="btnNewAsset" style="display:none">+ New</button>
+    </div>
+    <div class="sb-filter" id="assetFilter" style="display:none;">
+      <input type="text" id="assetFilterInput" placeholder="Filter..." oninput="filterAssetList()">
+      <button class="sb-filter-clear" onclick="document.getElementById('assetFilterInput').value=''; filterAssetList();">&times;</button>
+    </div>
+    <div class="sb-list" id="assetList">
+      <div class="sb-empty">Select a project</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  CENTER PANEL                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="center">
+  <div class="c-header">
+    <div class="c-header-left">
+      <span class="c-header-title">&mdash;</span>
+      <div class="c-header-modes">
+        <button class="btn active" id="modeWeapons" onclick="guardSwitchMode('weapons')">Weapons</button>
+        <button class="btn" id="modeAmmo" onclick="guardSwitchMode('ammo')">Ammo</button>
+        <button class="btn" id="modeFiremodes" onclick="guardSwitchMode('firemodes')">Firemodes</button>
+      </div>
+    </div>
+    <div class="c-header-actions">
+      <button class="btn" id="btnDev">Dev</button>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" onclick="switchTab('weaponConfig')">Weapon Config</button>
+    <button class="tab-btn" onclick="switchTab('descriptor')">Descriptor</button>
+    <button class="tab-btn" onclick="switchTab('localization')">Localization</button>
+    <button class="tab-btn" onclick="switchTab('craftingRecipe')">Crafting Recipe</button>
+    <button class="tab-btn" onclick="switchTab('datadisk')">Datadisk</button>
+    <button class="tab-btn" onclick="switchTab('factionRewards')">Faction Rewards</button>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">⚔️</div>
+    <div>Select or create a project</div>
+  </div>
+
+  <!-- Weapon Config Tab -->
+  <div class="editor-wrap" id="editorWrap">
+
+    <!-- Sprite Image -->
+    <div class="ed-section">
+      <div class="ed-section-title">Sprite</div>
+      <div class="ed-row" style="margin-bottom:12px;">
+        <div class="ed-field"><label>Image Folder</label><select id="ed-ImageFolder" onchange="onImageFolderChange(this.value)"></select></div>
+      </div>
+      <div class="img-upload-area">
+        <div class="img-upload-slot">
+          <span class="slot-label">Inventory</span>
+          <div class="img-preview" id="imgPreview">
+            <span class="placeholder-text">No image</span>
+          </div>
+          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('imgFile').click()">Upload</button>
+          <input type="file" id="imgFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_icon', 'icon')">
+          <span class="img-hint">PNG only — 50x50 or 100x50</span>
+        </div>
+        <div class="img-upload-slot">
+          <span class="slot-label">Floor</span>
+          <div class="img-slot-preview" id="floorSlotPreview">
+            <span class="placeholder-text" style="font-size:9px;">—</span>
+          </div>
+          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
+          <input type="file" id="floorFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_floor', 'floor')">
+          <span class="img-hint">PNG, max 30x30</span>
+        </div>
+        <div class="img-upload-slot">
+          <span class="slot-label">Shadow</span>
+          <div class="img-slot-preview" id="shadowSlotPreview">
+            <span class="placeholder-text" style="font-size:9px;">—</span>
+          </div>
+          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
+          <input type="file" id="shadowFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_shadow', 'shadow')">
+          <span class="img-hint">PNG, max 30x30</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Identity -->
+    <div class="ed-section">
+      <div class="ed-section-title">Identity</div>
+      <div class="ed-row">
+        <div class="ed-field id-field"><label>Id</label><input type="text" id="ed-Id"></div>
+        <div class="ed-field"><label>Is Implicit</label><input type="checkbox" id="ed-IsImplicit"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Tech Level</label><input type="number" id="ed-TechLevel" step="1" min="1" max="10"></div>
+        <div class="ed-field narrow"><label>Price</label><input type="number" id="ed-Price" step="1"></div>
+        <div class="ed-field narrow"><label>Weight</label><input type="number" id="ed-Weight" step="0.01"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Inv Sort Order</label><input type="number" id="ed-InventorySortOrder" step="1"></div>
+        <div class="ed-field narrow"><label>Inv Width</label><input type="number" id="ed-InventoryWidthSize" step="1"></div>
+      </div>
+    </div>
+
+    <!-- Classification -->
+    <div class="ed-section">
+      <div class="ed-section-title">Classification</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Weapon Class</label><select id="ed-WeaponClass"></select></div>
+        <div class="ed-field"><label>Weapon SubClass</label><select id="ed-WeaponSubClass"></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field">
+          <label>Categories</label>
+          <div class="multi-select" id="ed-Categories">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select categories…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+        <div class="ed-field"><label>Is Melee</label><input type="checkbox" id="ed-IsMelee"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <!-- Damage -->
+    <div class="ed-section">
+      <div class="ed-section-title">Damage</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Min Dmg</label><input type="number" id="ed-minDmg" step="1"></div>
+        <div class="ed-field narrow"><label>Max Dmg</label><input type="number" id="ed-maxDmg" step="1"></div>
+        <div class="ed-field narrow"><label>Crit Dmg</label><input type="number" id="ed-critDmg" step="0.01"></div>
+      </div>
+    </div>
+
+    <!-- Range & Accuracy -->
+    <div class="ed-section">
+      <div class="ed-section-title">Range & Accuracy</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Range</label><input type="number" id="ed-Range" step="1"></div>
+        <div class="ed-field narrow"><label>Falloff</label><input type="number" id="ed-Falloff" step="0.01"></div>
+        <div class="ed-field narrow"><label>Bonus Accuracy</label><input type="number" id="ed-BonusAccuracy" step="0.01"></div>
+        <div class="ed-field narrow"><label>Bonus Scatter</label><input type="number" id="ed-BonusScatterAngle" step="0.01"></div>
+      </div>
+    </div>
+
+    <!-- Magazine & Reload -->
+    <div class="ed-section">
+      <div class="ed-section-title">Magazine & Reload</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Reload</label><input type="number" id="ed-ReloadDuration" step="1"></div>
+        <div class="ed-field narrow"><label>Magazine Cap</label><input type="number" id="ed-MagazineCapacity" step="1"></div>
+        <div class="ed-field narrow"><label>Min Rand Ammo</label><input type="number" id="ed-MinRandomAmmoCount" step="1"></div>
+      </div>
+    </div>
+
+    <!-- Durability -->
+    <div class="ed-section">
+      <div class="ed-section-title">Durability</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Max Durability</label><input type="number" id="ed-MaxDurability" step="1"></div>
+        <div class="ed-field narrow"><label>Min After Repair</label><input type="number" id="ed-MinDurabilityAfterRepair" step="1"></div>
+        <div class="ed-field"><label>Unbreakable</label><input type="checkbox" id="ed-Unbreakable"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field">
+          <label>Repair Item Ids (max 3)</label>
+          <div class="multi-select" id="ed-RepairItemIds" data-max="3">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select repair items…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firemodes & Ammo -->
+    <div class="ed-section">
+      <div class="ed-section-title">Firemodes & Ammo</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Firemode 1</label><select id="ed-Firemode1" onchange="syncFiremodes()"></select></div>
+        <div class="ed-field"><label>Override Ammo 1</label><select id="ed-OverrideAmmo1" disabled></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Firemode 2</label><select id="ed-Firemode2" disabled onchange="syncFiremodes()"></select></div>
+        <div class="ed-field"><label>Override Ammo 2</label><select id="ed-OverrideAmmo2" disabled></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo"></select></div>
+        <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId"></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Override Projectile Id</label><select id="ed-OverrideProjectileId"></select></div>
+      </div>
+    </div>
+
+    <!-- Traits -->
+    <div class="ed-section">
+      <div class="ed-section-title">Traits</div>
+      <div class="ed-row">
+        <div class="ed-field">
+          <label>Traits</label>
+          <div class="multi-select" id="ed-Traits">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select traits…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grenades -->
+    <div class="ed-section">
+      <div class="ed-section-title">Grenades</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Default Grenade Id</label><select id="ed-DefaultGrenadeId"></select></div>
+        <div class="ed-field">
+          <label>Allowed Grenade Ids</label>
+          <div class="multi-select" id="ed-AllowedGrenadeIds">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select grenades…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disassembly -->
+    <div class="ed-section">
+      <div class="ed-section-title">Disassembly</div>
+      <div class="ed-row">
+        <button class="btn" style="margin-top:17px;" onclick="addDisassemblyEntry()">+ Add Entry</button>
+        <div class="ed-field"><label>Can Disassemble</label><input type="checkbox" id="ed-CanDisassembly"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="entry-list" id="disassemblyList"></div>
+    </div>
+
+    <!-- Throwing & Melee -->
+    <div class="ed-section">
+      <div class="ed-section-title">Throwing & Melee</div>
+      <div class="ed-row">
+        <div class="ed-field med"><label>Throw Range</label><input type="number" id="ed-ThrowRange" step="1"></div>
+        <div class="ed-field med"><label>Thrown Durability Loss</label><input type="number" id="ed-DurabilityLossOnThrow" step="1"></div>
+        <div class="ed-field"><label>Melee Amputate</label><input type="checkbox" id="ed-MeleeCanAmputate"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field"><label>Get Dmg From Creature</label><input type="checkbox" id="ed-GetMeleeDamageFromCreature"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <!-- Wound Bonuses & Misc -->
+    <div class="ed-section">
+      <div class="ed-section-title">Wound Bonuses & Misc</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Dot Wound Dmg Bonus</label><input type="number" id="ed-DotWoundsDmgBonus" step="1"></div>
+        <div class="ed-field narrow"><label>Fracture Wound Dmg Bonus</label><input type="number" id="ed-FractureWoundDmgBonus" step="1"></div>
+        <div class="ed-field"><label>Vest Storable</label><input type="checkbox" id="ed-CanPutInVest"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+
+  </div>
+
+  <!-- Localization Tab -->
+  <div class="editor-wrap" id="localizationWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Localization</div>
+      <div class="loc-header">
+        <span class="loc-lang-col">Language</span>
+        <span class="loc-name-col">Name</span>
+        <span class="loc-desc-col">Short Desc</span>
+      </div>
+      <div id="locRows"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+  </div>
+
+  <!-- Descriptor Tab -->
+  <div class="editor-wrap" id="descriptorWrap">
+
+    <!-- Grip & HFG -->
+    <div class="ed-section">
+      <div class="ed-section-title">Grip & HFG</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Grip</label><select id="desc-Grip"></select></div>
+        <div class="ed-field"><label>Has HFG Overlay</label><input type="checkbox" id="desc-HasHFGOverlay"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <!-- Image Properties -->
+    <div class="ed-section">
+      <div class="ed-section-title">Image Properties</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Icon Sprite Path</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Small Icon Sprite Path</label><input type="text" id="desc-SmallIconSpriteIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Shadow Sprite Path</label><input type="text" id="desc-ShadowOnFloorSpriteIdOrPath"></div>
+      </div>
+    </div>
+
+    <!-- Audio Properties -->
+    <div class="ed-section">
+      <div class="ed-section-title">Audio Properties</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Shoot Sound</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
+        <div class="ed-field"><label>Reload Sound</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Dry Shot Sound</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
+        <div class="ed-field"><label>Failed Attack Sound</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
+      </div>
+    </div>
+
+    <!-- Model Properties -->
+    <div class="ed-section">
+      <div class="ed-section-title">Model Properties</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Asset Bundle Path</label><input type="text" id="desc-AssetBundlePath"></div>
+        <div class="ed-field"><label>Texture Id/Path</label><input type="text" id="desc-TextureIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Muzzle Id</label><input type="text" id="desc-MuzzleId"></div>
+        <div class="ed-field"><label>Prefab Id</label><input type="text" id="desc-PrefabId"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+  </div>
+
+  <!-- Crafting Recipe Tab -->
+  <div class="editor-wrap" id="craftingRecipeWrap">
+
+    <!-- Production Settings -->
+    <div class="ed-section">
+      <div class="ed-section-title">Production Settings</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Produce Time (hrs)</label><input type="number" id="recipe-ProduceTimeInHours" step="1" oninput="validateRecipeField(this, true)"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
+        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 5)</span>
+        <button class="btn" style="min-width:auto; height:24px; font-size:11px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
+      </div>
+      <div class="entry-list" id="recipeItemList"></div>
+    </div>
+
+    <!-- Workshop Settings -->
+    <div class="ed-section">
+      <div class="ed-section-title">Workshop Settings</div>
+      <div class="ed-row">
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
+        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 4)</span>
+        <button class="btn" style="min-width:auto; height:24px; font-size:11px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
+      </div>
+      <div class="entry-list" id="gradeList"></div>
+    </div>
+
+    <!-- Save -->
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+  </div>
+
+  <!-- Datadisk Tab -->
+  <div class="editor-wrap" id="datadiskWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Datadisk Assignment</div>
+      <div class="ed-field">
+        <label>Assign item to datadisks</label>
+        <div class="multi-select" id="ed-Datadisks">
+          <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select datadisks…</span></div>
+          <div class="multi-select-dropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+  </div>
+
+  <!-- Faction Rewards Tab -->
+  <div class="editor-wrap" id="factionRewardsWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Faction Reward Entries</div>
+      <div class="ed-row" style="margin-bottom:8px;">
+        <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
+      </div>
+      <div class="entry-list" id="factionRewardList" style="max-width:100%;"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveWeapon()">Save</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- Project Settings Modal -->
+<div class="overlay" id="projectOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Project Settings</h3>
+    </div>
+    <div class="modal-body">
+      <div class="ed-section">
+        <div class="ed-section-title">General</div>
+        <div class="ed-row">
+          <div class="ed-field"><label>Project Name</label><input type="text" id="projName" maxlength="60" oninput="validateProjectSettings()"></div>
+        </div>
+      </div>
+      <div class="ed-section">
+        <div class="ed-section-title">Bundle Path</div>
+        <div class="ed-row">
+          <div class="ed-field"><label>Asset Bundle Path</label><input type="text" id="projBundlePath" maxlength="120"></div>
+        </div>
+      </div>
+      <div class="ed-section">
+        <div class="ed-section-title">Image Folders</div>
+        <div class="ed-row" style="margin-bottom:8px;">
+          <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
+        </div>
+        <div class="entry-list" id="imgFolderList" style="max-width:100%;"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeProjectSettings()">Cancel</button>
+      <button class="btn primary" id="btnSaveProjectSettings" onclick="saveProjectSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════
+let selProject = null;
+let selWeapon = null;
+let REF = null;
+let curImageFolder = '';
+let currentMode = 'weapons';
+let isSaving = false;
+let cachedProjects = [];
+let _formSnapshot = null;
+
+// ═══════════════════════════════════════════════════════════════════
+//  API HELPER
+// ═══════════════════════════════════════════════════════════════════
+async function api(action, opts = {}) {
+  let url = `/api?action=${action}`;
+  if (opts.params) {
+    for (const [k, v] of Object.entries(opts.params)) {
+      url += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
+    }
+  }
+  const fetchOpts = { method: opts.method || 'GET' };
+  if (opts.body) {
+    fetchOpts.method = 'POST';
+    fetchOpts.headers = { 'Content-Type': 'application/json' };
+    fetchOpts.body = JSON.stringify(opts.body);
+  }
+  const res = await fetch(url, fetchOpts);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PROJECTS
+// ═══════════════════════════════════════════════════════════════════
+async function loadProjects() {
+  try {
+    const data = await api('projects');
+    cachedProjects = data.projects || [];
+    renderProjectList(cachedProjects);
+  } catch (e) { toast(e.message, 1); }
+}
+
+function renderProjectList(projects) {
+  const el = document.getElementById('projectList');
+  if (!projects.length) { el.innerHTML = '<div class="sb-empty">No projects yet</div>'; return; }
+  el.innerHTML = projects.map(p => `
+    <div class="card${selProject?.id === p.id ? ' active' : ''}" onclick="guardSelectProject('${esc(p.id)}')">
+      <div class="card-top"><div class="card-info">
+        <div class="c-name">${esc(p.name)}</div>
+        <div class="c-sub">${p.assetCount} asset${p.assetCount !== 1 ? 's' : ''}</div>
+      </div></div>
+      <button class="card-edit" onclick="event.stopPropagation(); openProjectSettings('${esc(p.id)}')">&#9998;</button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteProject(this, '${esc(p.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>
+  `).join('');
+}
+
+async function deleteProjectById(id) {
+  try {
+    await api('project_delete', { params: { id } });
+    toast(`Deleted "${id}"`);
+    if (selProject?.id === id) {
+      selProject = null;
+      selWeapon = null;
+      localStorage.removeItem('lastProject');
+      document.querySelector('.c-header-title').textContent = '—';
+      document.getElementById('editorWrap').classList.remove('visible');
+      document.getElementById('tabBar').classList.remove('visible');
+      for (const paneId of Object.values(TAB_PANES)) {
+        document.getElementById(paneId)?.classList.remove('visible');
+      }
+      document.getElementById('emptyState').style.display = '';
+      document.getElementById('emptyState').querySelector('div:last-child').textContent = 'Select or create a project';
+      document.getElementById('btnNewAsset').style.display = 'none';
+      document.getElementById('assetFilter').style.display = 'none';
+      document.getElementById('assetList').innerHTML = '<div class="sb-empty">Select a project</div>';
+    }
+    await loadProjects();
+  } catch (e) { toast(e.message, 1); }
+}
+
+let editingProjectId = null;
+
+async function openProjectSettings(id) {
+  editingProjectId = id;
+  document.getElementById('projName').value = id;
+  // Load project settings
+  try {
+    const settings = await api('project_settings', { params: { id } });
+    document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
+  } catch { document.getElementById('projBundlePath').value = 'Bundles/'; }
+  // Load image folders
+  try {
+    const data = await api('image_folders', { params: { project: id } });
+    populateImageFolderEntries(data.folders);
+  } catch { populateImageFolderEntries([]); }
+  validateProjectSettings();
+  document.getElementById('projectOverlay').classList.add('open');
+}
+
+function populateImageFolderEntries(folders) {
+  const list = document.getElementById('imgFolderList');
+  list.innerHTML = '';
+  (folders || []).forEach(f => addImageFolderEntry(f));
+}
+
+function addImageFolderEntry(name) {
+  const list = document.getElementById('imgFolderList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field"><label>Folder Name</label><input type="text" class="imgfolder-name" value="${esc(name || '')}" oninput="validateProjectSettings()"></div>
+    <button class="entry-rm" onclick="removeImageFolderEntry(this)">&times;</button>
+  `;
+  list.appendChild(entry);
+  validateProjectSettings();
+}
+
+async function removeImageFolderEntry(btn) {
+  const entry = btn.parentElement;
+  const folderName = entry.querySelector('.imgfolder-name').value.trim();
+
+  // New entries with no name can always be removed
+  if (!folderName || !editingProjectId) { entry.remove(); validateProjectSettings(); return; }
+
+  try {
+    const data = await api('image_folder_check', { params: { project: editingProjectId, folder: folderName } });
+    if (!data.empty) {
+      toast(`Cannot remove "${folderName}" — contains ${data.count} file${data.count !== 1 ? 's' : ''}`, 1);
+      return;
+    }
+    entry.remove();
+    validateProjectSettings();
+  } catch { entry.remove(); validateProjectSettings(); }
+}
+
+function validateImageFolders() {
+  const inputs = Array.from(document.querySelectorAll('#imgFolderList .imgfolder-name'));
+  const names = inputs.map(el => el.value.trim().toLowerCase());
+  let hasError = false;
+
+  inputs.forEach((el, i) => {
+    const name = names[i];
+    const isDupe = name && names.indexOf(name) !== i;
+    el.classList.toggle('invalid', isDupe);
+    el.title = isDupe ? 'Duplicate folder name' : '';
+    if (isDupe) hasError = true;
+  });
+
+  return hasError;
+}
+
+function validateProjectName() {
+  const el = document.getElementById('projName');
+  const name = el.value.trim();
+
+  if (!name) {
+    el.classList.add('invalid');
+    el.title = 'Project name cannot be empty';
+    return true;
+  }
+
+  const isDupe = cachedProjects.some(p => p.id !== editingProjectId && p.name.toLowerCase() === name.toLowerCase());
+  if (isDupe) {
+    el.classList.add('invalid');
+    el.title = 'Duplicate project name';
+    return true;
+  }
+
+  el.classList.remove('invalid');
+  el.title = '';
+  return false;
+}
+
+function validateProjectSettings() {
+  const nameError = validateProjectName();
+  const folderError = validateImageFolders();
+  const hasError = nameError || folderError;
+
+  const saveBtn = document.getElementById('btnSaveProjectSettings');
+  if (saveBtn) {
+    saveBtn.disabled = hasError;
+    saveBtn.style.opacity = hasError ? '0.4' : '';
+  }
+}
+
+function closeProjectSettings() {
+  document.getElementById('projectOverlay').classList.remove('open');
+  editingProjectId = null;
+}
+
+async function saveProjectSettings() {
+  const newName = document.getElementById('projName').value.trim();
+  if (!newName || !editingProjectId) { validateProjectSettings(); return; }
+  if (document.querySelector('#imgFolderList .imgfolder-name.invalid') || document.getElementById('projName').classList.contains('invalid')) { toast('Fix errors before saving', 1); return; }
+
+  try {
+    // Save project settings
+    const bundlePath = document.getElementById('projBundlePath').value.trim() || 'Bundles/';
+    await api('project_settings', { body: { project: editingProjectId, bundlePath } });
+
+    // Save image folders
+    const folders = Array.from(document.querySelectorAll('#imgFolderList .imgfolder-name'))
+      .map(el => el.value.trim()).filter(Boolean);
+    await api('image_folders_save', { body: { project: editingProjectId, folders } });
+
+    // Rename project if needed
+    const data = await api('project_rename', { body: { id: editingProjectId, name: newName } });
+    toast('Project settings saved');
+    const wasSelected = selProject?.id === editingProjectId;
+    closeProjectSettings();
+    if (wasSelected) {
+      selProject.id = data.id;
+      localStorage.setItem('lastProject', data.id);
+      document.querySelector('.c-header-title').textContent = data.id;
+    }
+    await loadProjects();
+    // Refresh folder dropdown in editor
+    if (selProject) await loadImageFolders();
+  } catch (e) { toast(e.message, 1); }
+}
+
+function createNewProject() {
+  const list = document.getElementById('projectList');
+  const empty = list.querySelector('.sb-empty');
+  if (empty) empty.remove();
+  if (list.querySelector('.rename-input')) return;
+  const card = document.createElement('div');
+  card.className = 'card active';
+  card.innerHTML = `<div class="card-top"><div class="card-info">
+    <input class="rename-input" type="text" placeholder="Project name…" maxlength="60">
+    <div class="c-sub">Press Enter to create</div>
+  </div></div>`;
+  list.prepend(card);
+  const input = card.querySelector('.rename-input');
+  input.focus();
+  let done = false;
+  async function commit() {
+    if (done) return; done = true;
+    const name = input.value.trim();
+    if (!name) { cancel(); return; }
+    try {
+      const data = await api('project', { body: { name } });
+      toast(`Created "${data.id}"`);
+      await loadProjects();
+      selectProject(data.id);
+    } catch (e) { toast(e.message, 1); cancel(); }
+  }
+  function cancel() {
+    if (!done) done = true;
+    card.remove();
+    if (!list.children.length) list.innerHTML = '<div class="sb-empty">No projects yet</div>';
+  }
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { cancel(); }
+  });
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (document.activeElement !== input) { if (input.value.trim()) commit(); else cancel(); }
+    }, 150);
+  });
+}
+
+async function selectProject(id, skipAutoSelect) {
+  try {
+    const data = await api('project_tree', { params: { id } });
+    selProject = { id: data.id, _tree: data.tree };
+    localStorage.setItem('lastProject', data.id);
+    document.querySelector('.c-header-title').textContent = data.id;
+    document.getElementById('btnNewAsset').style.display = '';
+    document.getElementById('assetFilter').style.display = '';
+    document.getElementById('assetFilterInput').value = '';
+    selWeapon = null;
+    _formSnapshot = null;
+    document.getElementById('editorWrap').classList.remove('visible');
+    document.getElementById('tabBar').classList.remove('visible');
+    for (const paneId of Object.values(TAB_PANES)) {
+      document.getElementById(paneId)?.classList.remove('visible');
+    }
+    await loadProjects();
+    renderModeList(data.tree, skipAutoSelect);
+  } catch (e) { toast(e.message, 1); }
+}
+
+function renderModeList(tree, skipAutoSelect) {
+  const catMap = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes' };
+  const cat = catMap[currentMode] || 'Weapons';
+  const items = tree[cat] || [];
+  const emptyState = document.getElementById('emptyState');
+
+  if (currentMode === 'weapons') {
+    renderWeaponList(items);
+    if (items.length) {
+      emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectWeapon(items[0].id);
+    } else {
+      emptyState.style.display = '';
+      emptyState.querySelector('div:last-child').textContent = 'No weapons yet';
+    }
+  } else if (currentMode === 'ammo') {
+    renderAmmoList(items);
+    if (items.length) {
+      emptyState.style.display = 'none';
+    } else {
+      emptyState.style.display = '';
+      emptyState.querySelector('div:last-child').textContent = 'No ammo yet';
+    }
+  } else if (currentMode === 'firemodes') {
+    renderFiremodeList(items);
+    if (items.length) {
+      emptyState.style.display = 'none';
+    } else {
+      emptyState.style.display = '';
+      emptyState.querySelector('div:last-child').textContent = 'No firemodes yet';
+    }
+  }
+}
+
+function renderAmmoList(items) {
+  const el = document.getElementById('assetList');
+  if (!items.length) { el.innerHTML = '<div class="sb-empty">No ammo yet</div>'; return; }
+  el.innerHTML = items.map(a => `
+    <div class="card" onclick="selectAmmo('${esc(a.id)}')">
+      <div class="card-top"><div class="card-info">
+        <div class="c-name">${esc(a.dataId || a.id)}</div>
+        <div class="c-sub">${esc(a.recordType)}</div>
+      </div></div>
+      <button class="card-copy" onclick="event.stopPropagation(); confirmCopyAmmo('${esc(a.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteAmmo(this, '${esc(a.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>
+  `).join('');
+}
+
+function renderFiremodeList(items) {
+  const el = document.getElementById('assetList');
+  if (!items.length) { el.innerHTML = '<div class="sb-empty">No firemodes yet</div>'; return; }
+  el.innerHTML = items.map(f => `
+    <div class="card" onclick="selectFiremode('${esc(f.id)}')">
+      <div class="card-top"><div class="card-info">
+        <div class="c-name">${esc(f.dataId || f.id)}</div>
+        <div class="c-sub">${esc(f.recordType)}</div>
+      </div></div>
+      <button class="card-copy" onclick="event.stopPropagation(); confirmCopyFiremode('${esc(f.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteFiremode(this, '${esc(f.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>
+  `).join('');
+}
+
+// Stubs — will be implemented later
+function createNewAmmo() { toast('Ammo editor coming soon'); }
+function createNewFiremode() { toast('Firemode editor coming soon'); }
+function selectAmmo(id) { toast('Ammo editor coming soon'); }
+function selectFiremode(id) { toast('Firemode editor coming soon'); }
+function confirmDeleteAmmo(btn, id) { toast('Ammo editor coming soon'); }
+function confirmDeleteFiremode(btn, id) { toast('Firemode editor coming soon'); }
+function confirmCopyAmmo(id) { toast('Ammo editor coming soon'); }
+function confirmCopyFiremode(id) { toast('Firemode editor coming soon'); }
+
+function confirmCopyWeapon(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyWeapon(id), 'Copy', 'primary');
+}
+
+async function copyWeapon(sourceId) {
+  if (!selProject || isSaving) return;
+  isSaving = true;
+  try {
+    // Generate new ID
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Weapons' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+
+    // Copy weapon record
+    const src = await api('asset', { params: { project: selProject.id, category: 'Weapons', id: sourceId } });
+    const weaponData = { ...src.Data };
+    weaponData.Id = newId;
+    await api('asset', {
+      body: { project: selProject.id, category: 'Weapons', id: newId, recordType: src.RecordType, data: weaponData }
+    });
+
+    // Copy localization
+    try {
+      const loc = await api('asset', { params: { project: selProject.id, category: 'Localization', id: sourceId + '_localization' } });
+      const locData = JSON.parse(JSON.stringify(loc.Data));
+      // Remap keys from old ID to new ID
+      const newKeys = {};
+      for (const [key, val] of Object.entries(locData.Keys || {})) {
+        newKeys[key.replace(`item.${sourceId}.`, `item.${newId}.`)] = val;
+      }
+      locData.Keys = newKeys;
+      await api('asset', {
+        body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: locData }
+      });
+    } catch {
+      const loc = newLocalizationRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+      });
+    }
+
+    // Copy descriptor
+    try {
+      const desc = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: sourceId + '_descriptor' } });
+      const descData = JSON.parse(JSON.stringify(desc.Data));
+      descData.ItemId = newId;
+      // Update ID-derived fields
+      if (descData.ModelProperties) {
+        descData.ModelProperties.TextureIdOrPath = newId + '_texture';
+        descData.ModelProperties.PrefabId = newId + '_prefab';
+      }
+      // Clear image paths — sprites aren't copied
+      if (descData.ImageProperties) {
+        descData.ImageProperties.IconSpriteIdOrPath = '';
+        descData.ImageProperties.SmallIconSpriteIdOrPath = '';
+        descData.ImageProperties.ShadowOnFloorSpriteIdOrPath = '';
+      }
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: descData }
+      });
+    } catch {
+      let bundlePath = 'Bundles/';
+      try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
+      const desc = newDescriptorRecord(newId, bundlePath);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+      });
+    }
+
+    // Copy recipe
+    try {
+      const recipe = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes', id: sourceId + '_receipt' } });
+      const recipeData = JSON.parse(JSON.stringify(recipe.Data));
+      recipeData.OutputItem = newId;
+      await api('asset', {
+        body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipeData }
+      });
+    } catch {
+      const recipe = newRecipeRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+      });
+    }
+
+    // Copy datadisk assignments
+    try {
+      const diskAssets = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+      for (const asset of diskAssets.assets) {
+        const assetData = asset.data || {};
+        const unlockIds = assetData.UnlockIds || [];
+        if (unlockIds.includes(sourceId) && !unlockIds.includes(newId)) {
+          unlockIds.push(newId);
+          assetData.UnlockIds = unlockIds;
+          const diskId = assetData.Id || asset.id.replace('_diskData', '');
+          const canonical = canonicalizeDiskData(assetData, diskId);
+          await api('asset', {
+            body: { project: selProject.id, category: 'Datadisks', id: asset.id, recordType: 'MGSC.DatadiskRecord', data: canonical }
+          });
+        }
+      }
+    } catch {}
+
+    // Copy faction reward assignments
+    try {
+      const frAssets = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+      for (const asset of frAssets.assets) {
+        const assetData = asset.data || {};
+        const rewardList = assetData.FactionRewardList || [];
+        const newEntries = [];
+        for (const reward of rewardList) {
+          const cids = reward.contentRecords?.[0]?.ContentIds || [];
+          if (cids.includes(sourceId)) {
+            newEntries.push({
+              FactionName: reward.FactionName,
+              RewardType: 'rewardEquipment',
+              contentRecords: [{
+                TechLevel: reward.contentRecords[0].TechLevel,
+                ContentIds: [newId],
+                Weight: reward.contentRecords[0].Weight,
+                Points: reward.contentRecords[0].Points,
+              }]
+            });
+          }
+        }
+        if (newEntries.length) {
+          assetData.FactionRewardList = [...rewardList, ...newEntries];
+          await api('asset', {
+            body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
+          });
+        }
+      }
+    } catch {}
+
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectWeapon(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  WEAPONS
+// ═══════════════════════════════════════════════════════════════════
+function filterAssetList() {
+  const query = (document.getElementById('assetFilterInput').value || '').toLowerCase();
+  document.querySelectorAll('#assetList .card').forEach(card => {
+    const name = (card.querySelector('.c-name')?.textContent || '').toLowerCase();
+    const sub = (card.querySelector('.c-sub')?.textContent || '').toLowerCase();
+    card.style.display = (!query || name.includes(query) || sub.includes(query)) ? '' : 'none';
+  });
+}
+
+function renderWeaponList(weapons) {
+  const el = document.getElementById('assetList');
+  if (!weapons.length) { el.innerHTML = '<div class="sb-empty">No weapons yet</div>'; return; }
+  el.innerHTML = weapons.map(w => `
+    <div class="card" onclick="guardSelectWeapon('${esc(w.id)}')">
+      <div class="card-top">
+        <div class="card-thumb">
+          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(w.id)}&suffix=sprite_icon&t=${Date.now()}" onerror="this.style.display='none'">
+        </div>
+        <div class="card-info">
+          <div class="c-name">${esc(w.id)}</div>
+          ${w.englishName ? `<div class="c-sub">${esc(w.englishName)}</div>` : ''}
+          <div class="c-sub">${esc(w.recordType)}</div>
+        </div>
+      </div>
+      <button class="card-copy" onclick="event.stopPropagation(); confirmCopyWeapon('${esc(w.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteWeapon(this, '${esc(w.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>
+  `).join('');
+}
+
+async function deleteWeapon(id) {
+  if (!selProject) return;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id } });
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: id + '_localization' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: id + '_descriptor' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
+    await removeWeaponFromAllDisks(id);
+    await removeWeaponFromAllFactions(id);
+    toast(`Deleted "${id}"`);
+    selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+}
+
+async function selectWeapon(id) {
+  if (!selProject) return;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Weapons', id } });
+    selWeapon = { id, record };
+    // Clear stale validation
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateEditor(record.Data);
+    // Detect image folder and load folders list
+    await loadImageFolders();
+    const found = await api('image_find', { params: { project: selProject.id, id } });
+    curImageFolder = found.folder || '';
+    document.getElementById('ed-ImageFolder').value = curImageFolder;
+    loadAllWeaponImages(id);
+    await loadLocalization(id);
+    await loadDescriptor(id);
+    await loadRecipe(id);
+    await loadDatadisks(id);
+    await loadFactionRewards(id);
+    document.getElementById('tabBar').classList.add('visible');
+    switchTab(activeTab);
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    // Capture clean state
+    try { _formSnapshot = captureFormSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  TEMPLATES
+// ═══════════════════════════════════════════════════════════════════
+function newWeaponRecord(id) {
+  return {
+    RecordType: "MGSC.WeaponRecord",
+    Data: {
+      Id: id || "tempId",
+      ItemClass: "Weapon",
+      TechLevel: 1,
+      Price: 100,
+      Weight: 1.0,
+      InventorySortOrder: 2,
+      InventoryWidthSize: 2,
+      WeaponClass: "None",
+      WeaponSubClass: "None",
+      IsMelee: false,
+      Categories: [],
+      Damage: { damage: null, minDmg: 5, maxDmg: 10, critChance: 0, critDmg: 1.5 },
+      Firemodes: [],
+      RequiredAmmo: "",
+      DefaultAmmoId: "",
+      OverrideAmmo: [],
+      OverrideProjectileId: "",
+      Range: 5,
+      BonusAccuracy: 0.2,
+      BonusScatterAngle: 0.0,
+      Falloff: 0.15,
+      ReloadDuration: 3,
+      MagazineCapacity: 10,
+      MinRandomAmmoCount: 5,
+      MaxDurability: 90,
+      MinDurabilityAfterRepair: 0,
+      Unbreakable: false,
+      RepairItemIds: [],
+      Traits: [],
+      DefaultGrenadeId: "",
+      AllowedGrenadeIds: [],
+      CanDisassembly: true,
+      Disassembly: [],
+      DurabilityLossOnThrow: 0,
+      ThrowRange: 0,
+      MeleeCanAmputate: false,
+      GetMeleeDamageFromCreature: false,
+      DotWoundsDmgBonus: 0,
+      FractureWoundDmgBonus: 0,
+      CanPutInVest: false,
+      IsImplicit: false
+    }
+  };
+}
+
+function newLocalizationRecord(id) {
+  const emptyLangs = {};
+  LOC_LANGS.forEach(l => { emptyLangs[l.key] = ''; });
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.LocalizationTemplate',
+    Data: {
+      Keys: {
+        [`item.${id}.name`]: { ...emptyLangs },
+        [`item.${id}.desc`]: { ...emptyLangs },
+        [`item.${id}.shortdesc`]: { ...emptyLangs },
+      }
+    }
+  };
+}
+
+async function createNewWeapon() {
+  if (!selProject || isSaving) return;
+  isSaving = true;
+
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Weapons' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`tempId${n}`)) n++;
+    const newId = `tempId${n}`;
+    const record = newWeaponRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Weapons', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    // Create blank localization
+    const loc = newLocalizationRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+    });
+    // Create blank descriptor
+    let bundlePath = 'Bundles/';
+    try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
+    const desc = newDescriptorRecord(newId, bundlePath);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+    });
+    // Create blank recipe
+    const recipe = newRecipeRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+    });
+    toast(`Created weapon "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectWeapon(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  EDITOR POPULATE / COLLECT
+// ═══════════════════════════════════════════════════════════════════
+function populateEditor(d) {
+  val('ed-Id', d.Id);
+  chk('ed-IsImplicit', d.IsImplicit);
+  val('ed-TechLevel', d.TechLevel);
+  val('ed-Price', d.Price);
+  val('ed-Weight', d.Weight);
+  val('ed-InventorySortOrder', d.InventorySortOrder);
+  val('ed-InventoryWidthSize', d.InventoryWidthSize);
+  val('ed-WeaponClass', d.WeaponClass);
+  val('ed-WeaponSubClass', d.WeaponSubClass);
+  chk('ed-IsMelee', d.IsMelee);
+  // Categories multi-select
+  const cats = d.Categories || [];
+  const catContainer = document.getElementById('ed-Categories');
+  catContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = cats.includes(cb.value); });
+  const catDisplay = catContainer.querySelector('.multi-select-display');
+  if (cats.length) { catDisplay.textContent = cats.join(', '); }
+  else { catDisplay.innerHTML = '<span class="placeholder">Select categories…</span>'; }
+  val('ed-minDmg', d.Damage?.minDmg);
+  val('ed-maxDmg', d.Damage?.maxDmg);
+  val('ed-critDmg', d.Damage?.critDmg);
+  // Firemodes
+  const fms = d.Firemodes || [];
+  val('ed-Firemode1', fms[0] || '');
+  val('ed-Firemode2', fms[1] || '');
+  val('ed-RequiredAmmo', d.RequiredAmmo);
+  val('ed-DefaultAmmoId', d.DefaultAmmoId);
+  // Override Ammo
+  const oa = d.OverrideAmmo || [];
+  val('ed-OverrideAmmo1', oa[0] || '');
+  val('ed-OverrideAmmo2', oa[1] || '');
+  syncFiremodes();
+  val('ed-OverrideProjectileId', d.OverrideProjectileId);
+  val('ed-Range', d.Range);
+  val('ed-BonusAccuracy', d.BonusAccuracy);
+  val('ed-BonusScatterAngle', d.BonusScatterAngle);
+  val('ed-Falloff', d.Falloff);
+  val('ed-ReloadDuration', d.ReloadDuration);
+  val('ed-MagazineCapacity', d.MagazineCapacity);
+  val('ed-MinRandomAmmoCount', d.MinRandomAmmoCount);
+  val('ed-MaxDurability', d.MaxDurability);
+  val('ed-MinDurabilityAfterRepair', d.MinDurabilityAfterRepair);
+  chk('ed-Unbreakable', d.Unbreakable);
+  // RepairItemIds multi-select
+  const repIds = d.RepairItemIds || [];
+  const repContainer = document.getElementById('ed-RepairItemIds');
+  repContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = repIds.includes(cb.value); });
+  const repDisplay = repContainer.querySelector('.multi-select-display');
+  if (repIds.length) { repDisplay.textContent = repIds.join(', '); }
+  else { repDisplay.innerHTML = '<span class="placeholder">Select repair items…</span>'; }
+  // Traits multi-select
+  const traits = d.Traits || [];
+  const trContainer = document.getElementById('ed-Traits');
+  trContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = traits.includes(cb.value); });
+  const trDisplay = trContainer.querySelector('.multi-select-display');
+  if (traits.length) { trDisplay.textContent = traits.join(', '); }
+  else { trDisplay.innerHTML = '<span class="placeholder">Select traits…</span>'; }
+  val('ed-DefaultGrenadeId', d.DefaultGrenadeId || '');
+  // AllowedGrenadeIds multi-select
+  const agIds = d.AllowedGrenadeIds || [];
+  const agContainer = document.getElementById('ed-AllowedGrenadeIds');
+  agContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = agIds.includes(cb.value); });
+  const agDisplay = agContainer.querySelector('.multi-select-display');
+  if (agIds.length) { agDisplay.textContent = agIds.join(', '); }
+  else { agDisplay.innerHTML = '<span class="placeholder">Select grenades…</span>'; }
+  chk('ed-CanDisassembly', d.CanDisassembly);
+  populateDisassembly(d.Disassembly);
+  val('ed-DurabilityLossOnThrow', d.DurabilityLossOnThrow);
+  val('ed-ThrowRange', d.ThrowRange);
+  chk('ed-MeleeCanAmputate', d.MeleeCanAmputate);
+  chk('ed-GetMeleeDamageFromCreature', d.GetMeleeDamageFromCreature);
+  val('ed-DotWoundsDmgBonus', d.DotWoundsDmgBonus);
+  val('ed-FractureWoundDmgBonus', d.FractureWoundDmgBonus);
+  chk('ed-CanPutInVest', d.CanPutInVest);
+}
+
+function collectEditor() {
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  const str = (id) => document.getElementById(id).value;
+  const bool = (id) => document.getElementById(id).checked;
+  return {
+    Id: str('ed-Id').trim(),
+    ItemClass: "Weapon",
+    TechLevel: int('ed-TechLevel'),
+    Price: int('ed-Price'),
+    Weight: num('ed-Weight'),
+    InventorySortOrder: int('ed-InventorySortOrder'),
+    InventoryWidthSize: int('ed-InventoryWidthSize'),
+    WeaponClass: str('ed-WeaponClass').trim(),
+    WeaponSubClass: str('ed-WeaponSubClass').trim(),
+    IsMelee: bool('ed-IsMelee'),
+    Categories: Array.from(document.querySelectorAll('#ed-Categories input[type="checkbox"]:checked')).map(cb => cb.value),
+    Damage: { damage: null, minDmg: int('ed-minDmg'), maxDmg: int('ed-maxDmg'), critChance: 0, critDmg: num('ed-critDmg') },
+    Firemodes: [str('ed-Firemode1'), str('ed-Firemode2')].filter(v => v.trim()),
+    RequiredAmmo: str('ed-RequiredAmmo').trim(),
+    DefaultAmmoId: str('ed-DefaultAmmoId').trim(),
+    OverrideAmmo: [str('ed-OverrideAmmo1'), str('ed-OverrideAmmo2')].filter(v => v.trim()),
+    OverrideProjectileId: str('ed-OverrideProjectileId').trim(),
+    Range: int('ed-Range'),
+    BonusAccuracy: num('ed-BonusAccuracy'),
+    BonusScatterAngle: num('ed-BonusScatterAngle'),
+    Falloff: num('ed-Falloff'),
+    ReloadDuration: int('ed-ReloadDuration'),
+    MagazineCapacity: int('ed-MagazineCapacity'),
+    MinRandomAmmoCount: int('ed-MinRandomAmmoCount'),
+    MaxDurability: int('ed-MaxDurability'),
+    MinDurabilityAfterRepair: int('ed-MinDurabilityAfterRepair'),
+    Unbreakable: bool('ed-Unbreakable'),
+    RepairItemIds: Array.from(document.querySelectorAll('#ed-RepairItemIds input[type="checkbox"]:checked')).map(cb => cb.value),
+    Traits: Array.from(document.querySelectorAll('#ed-Traits input[type="checkbox"]:checked')).map(cb => cb.value),
+    DefaultGrenadeId: str('ed-DefaultGrenadeId').trim(),
+    AllowedGrenadeIds: Array.from(document.querySelectorAll('#ed-AllowedGrenadeIds input[type="checkbox"]:checked')).map(cb => cb.value),
+    CanDisassembly: bool('ed-CanDisassembly'),
+    Disassembly: collectDisassembly(),
+    DurabilityLossOnThrow: int('ed-DurabilityLossOnThrow'),
+    ThrowRange: int('ed-ThrowRange'),
+    MeleeCanAmputate: bool('ed-MeleeCanAmputate'),
+    GetMeleeDamageFromCreature: bool('ed-GetMeleeDamageFromCreature'),
+    DotWoundsDmgBonus: int('ed-DotWoundsDmgBonus'),
+    FractureWoundDmgBonus: int('ed-FractureWoundDmgBonus'),
+    CanPutInVest: bool('ed-CanPutInVest'),
+    IsImplicit: bool('ed-IsImplicit'),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  VALIDATION
+// ═══════════════════════════════════════════════════════════════════
+const validationRules = {
+  'ed-TechLevel': v => Number.isInteger(v) && v >= 1 && v <= 10,
+  'ed-Price': v => Number.isInteger(v) && v >= 0,
+  'ed-InventorySortOrder': v => Number.isInteger(v),
+  'ed-InventoryWidthSize': v => Number.isInteger(v),
+  'ed-minDmg': v => Number.isInteger(v) && v >= 0,
+  'ed-maxDmg': v => Number.isInteger(v) && v >= 0,
+  'ed-Range': v => Number.isInteger(v) && v >= 0,
+  'ed-ReloadDuration': v => Number.isInteger(v) && v >= 0,
+  'ed-MagazineCapacity': v => Number.isInteger(v) && v >= 0,
+  'ed-MinRandomAmmoCount': v => Number.isInteger(v) && v >= 0,
+  'ed-ThrowRange': v => Number.isInteger(v) && v >= 0,
+  'ed-DurabilityLossOnThrow': v => Number.isInteger(v) && v >= 0,
+  'ed-DotWoundsDmgBonus': v => Number.isInteger(v) && v >= 0,
+  'ed-FractureWoundDmgBonus': v => Number.isInteger(v) && v >= 0,
+  'ed-MaxDurability': v => Number.isInteger(v) && v >= 0,
+  'ed-MinDurabilityAfterRepair': v => Number.isInteger(v) && v >= 0,
+};
+
+const FIELD_META = {
+  'ed-TechLevel': { tab: 'Weapon Config', section: 'Identity', label: 'Tech Level', hint: 'integer 1–10' },
+  'ed-Price': { tab: 'Weapon Config', section: 'Identity', label: 'Price', hint: 'integer ≥ 0' },
+  'ed-InventorySortOrder': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Sort Order', hint: 'integer' },
+  'ed-InventoryWidthSize': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Width Size', hint: 'integer' },
+  'ed-minDmg': { tab: 'Weapon Config', section: 'Damage', label: 'Min Damage', hint: 'integer ≥ 0' },
+  'ed-maxDmg': { tab: 'Weapon Config', section: 'Damage', label: 'Max Damage', hint: 'integer ≥ 0, must be ≥ min' },
+  'ed-Range': { tab: 'Weapon Config', section: 'Range & Accuracy', label: 'Range', hint: 'integer ≥ 0' },
+  'ed-ReloadDuration': { tab: 'Weapon Config', section: 'Magazine & Reload', label: 'Reload Duration', hint: 'integer ≥ 0' },
+  'ed-MagazineCapacity': { tab: 'Weapon Config', section: 'Magazine & Reload', label: 'Magazine Capacity', hint: 'integer ≥ 0' },
+  'ed-MinRandomAmmoCount': { tab: 'Weapon Config', section: 'Magazine & Reload', label: 'Min Random Ammo', hint: 'integer ≥ 0' },
+  'ed-ThrowRange': { tab: 'Weapon Config', section: 'Throwing & Melee', label: 'Throw Range', hint: 'integer ≥ 0' },
+  'ed-DurabilityLossOnThrow': { tab: 'Weapon Config', section: 'Throwing & Melee', label: 'Durability Loss On Throw', hint: 'integer ≥ 0' },
+  'ed-DotWoundsDmgBonus': { tab: 'Weapon Config', section: 'Wound Bonuses', label: 'DoT Wounds Bonus', hint: 'integer ≥ 0' },
+  'ed-FractureWoundDmgBonus': { tab: 'Weapon Config', section: 'Wound Bonuses', label: 'Fracture Wound Bonus', hint: 'integer ≥ 0' },
+  'ed-MaxDurability': { tab: 'Weapon Config', section: 'Durability', label: 'Max Durability', hint: 'integer ≥ 0' },
+  'ed-MinDurabilityAfterRepair': { tab: 'Weapon Config', section: 'Durability', label: 'Min Durability After Repair', hint: 'integer ≥ 0' },
+};
+
+function validateField(id) {
+  const el = document.getElementById(id);
+  const rule = validationRules[id];
+  if (!rule) return true;
+  const v = parseFloat(el.value);
+  let valid = !isNaN(v) && rule(v);
+
+  // Cross-field: maxDmg >= minDmg
+  if (valid && (id === 'ed-minDmg' || id === 'ed-maxDmg')) {
+    const min = parseInt(document.getElementById('ed-minDmg').value) || 0;
+    const max = parseInt(document.getElementById('ed-maxDmg').value) || 0;
+    if (max < min) {
+      document.getElementById('ed-maxDmg').classList.add('invalid');
+      if (id === 'ed-maxDmg') valid = false;
+    } else {
+      document.getElementById('ed-maxDmg').classList.remove('invalid');
+    }
+  }
+
+  el.classList.toggle('invalid', !valid);
+  return valid;
+}
+
+function validateAll() {
+  let allValid = true;
+  for (const id of Object.keys(validationRules)) {
+    if (!validateField(id)) allValid = false;
+  }
+  const min = parseInt(document.getElementById('ed-minDmg').value) || 0;
+  const max = parseInt(document.getElementById('ed-maxDmg').value) || 0;
+  if (max < min) {
+    document.getElementById('ed-maxDmg').classList.add('invalid');
+    allValid = false;
+  }
+  document.querySelectorAll('#disassemblyList .dis-count').forEach(input => {
+    const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+  });
+  document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
+    const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+  });
+  document.querySelectorAll('#gradeList .grade-value').forEach(input => {
+    const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+  });
+  const psInput = document.getElementById('desc-PrefabScale');
+  const psVal = parseFloat(psInput.value); const psValid = !isNaN(psVal) && psVal > 0;
+  psInput.classList.toggle('invalid', !psValid); if (!psValid) allValid = false;
+  const recipeIntFields = ['recipe-ProduceTimeInHours', 'recipe-ModifyStartCost', 'recipe-ModifyLevelLimit'];
+  recipeIntFields.forEach(id => {
+    const el = document.getElementById(id); const v = parseFloat(el.value);
+    const valid = !isNaN(v) && v > 0 && Number.isInteger(v);
+    el.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+  });
+  const msEl = document.getElementById('recipe-ModifyStep');
+  const msVal = parseFloat(msEl.value); const msValid = !isNaN(msVal) && msVal > 0;
+  msEl.classList.toggle('invalid', !msValid); if (!msValid) allValid = false;
+  document.querySelectorAll('#factionRewardList .entry-item').forEach(el => {
+    const tech = el.querySelector('.fr-tech'); const tv = parseFloat(tech.value);
+    const techOk = !isNaN(tv) && Number.isInteger(tv) && tv >= 1 && tv <= 10;
+    tech.classList.toggle('invalid', !techOk); if (!techOk) allValid = false;
+    const wInp = el.querySelector('.fr-weight'); const wv = parseFloat(wInp.value);
+    const wOk = !isNaN(wv) && wv > 0;
+    wInp.classList.toggle('invalid', !wOk); if (!wOk) allValid = false;
+    const pts = el.querySelector('.fr-points'); const pv = parseFloat(pts.value);
+    const ptsOk = !isNaN(pv) && Number.isInteger(pv) && pv > 0;
+    pts.classList.toggle('invalid', !ptsOk); if (!ptsOk) allValid = false;
+  });
+  return allValid;
+}
+
+function collectValidationErrors() {
+  const errors = [];
+  const add = (tab, section, msg) => errors.push({ tab, section, msg });
+  const pf = (id) => parseFloat(document.getElementById(id).value);
+
+  // Weapon Config — mapped fields
+  for (const [id, rule] of Object.entries(validationRules)) {
+    const v = pf(id);
+    if (isNaN(v) || !rule(v)) {
+      const m = FIELD_META[id];
+      add(m.tab, m.section, `${m.label} — ${m.hint}`);
+    }
+  }
+  // Cross-field: maxDmg >= minDmg
+  const minD = parseInt(document.getElementById('ed-minDmg').value) || 0;
+  const maxD = parseInt(document.getElementById('ed-maxDmg').value) || 0;
+  if (maxD < minD) add('Weapon Config', 'Damage', 'Max Damage must be ≥ Min Damage');
+
+  // Disassembly counts
+  let disErr = 0;
+  document.querySelectorAll('#disassemblyList .dis-count').forEach(input => {
+    const v = parseFloat(input.value);
+    if (isNaN(v) || !Number.isInteger(v) || v <= 0) disErr++;
+  });
+  if (disErr) add('Weapon Config', 'Disassembly', `${disErr} entr${disErr > 1 ? 'ies have' : 'y has'} invalid count (integer > 0)`);
+
+  // Descriptor — PrefabScale
+  const ps = pf('desc-PrefabScale');
+  if (isNaN(ps) || ps <= 0) add('Descriptor', 'Model Properties', 'Prefab Scale — must be positive');
+
+  // Crafting Recipe — production fields
+  const rMap = {
+    'recipe-ProduceTimeInHours': { section: 'Production Settings', label: 'Produce Time', hint: 'integer > 0' },
+    'recipe-ModifyStartCost': { section: 'Workshop Settings', label: 'Modify Start Cost', hint: 'integer > 0' },
+    'recipe-ModifyLevelLimit': { section: 'Workshop Settings', label: 'Modify Level Limit', hint: 'integer > 0' },
+  };
+  for (const [id, m] of Object.entries(rMap)) {
+    const v = pf(id);
+    if (isNaN(v) || v <= 0 || !Number.isInteger(v)) add('Crafting Recipe', m.section, `${m.label} — ${m.hint}`);
+  }
+  const ms = pf('recipe-ModifyStep');
+  if (isNaN(ms) || ms <= 0) add('Crafting Recipe', 'Workshop Settings', 'Modify Step — must be positive');
+
+  // Recipe required item counts
+  let recErr = 0;
+  document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
+    const v = parseFloat(input.value);
+    if (isNaN(v) || !Number.isInteger(v) || v <= 0) recErr++;
+  });
+  if (recErr) add('Crafting Recipe', 'Production Settings', `${recErr} required item${recErr > 1 ? 's have' : ' has'} invalid count (integer > 0)`);
+
+  // Grade values
+  let grErr = 0;
+  document.querySelectorAll('#gradeList .grade-value').forEach(input => {
+    const v = parseFloat(input.value);
+    if (isNaN(v) || !Number.isInteger(v) || v <= 0) grErr++;
+  });
+  if (grErr) add('Crafting Recipe', 'Workshop Settings', `${grErr} modify item${grErr > 1 ? 's have' : ' has'} invalid value (integer > 0)`);
+
+  // Faction Rewards
+  let frIdx = 0;
+  document.querySelectorAll('#factionRewardList .entry-item').forEach(el => {
+    frIdx++;
+    const faction = el.querySelector('.fr-faction').value || `Entry ${frIdx}`;
+    const tv = parseFloat(el.querySelector('.fr-tech').value);
+    if (isNaN(tv) || !Number.isInteger(tv) || tv < 1 || tv > 10) add('Faction Rewards', faction, 'Tech Level — integer 1–10');
+    const wv = parseFloat(el.querySelector('.fr-weight').value);
+    if (isNaN(wv) || wv <= 0) add('Faction Rewards', faction, 'Weight — must be positive');
+    const pv = parseFloat(el.querySelector('.fr-points').value);
+    if (isNaN(pv) || !Number.isInteger(pv) || pv <= 0) add('Faction Rewards', faction, 'Points — positive integer');
+  });
+
+  return errors;
+}
+
+function showValidationErrorModal(errors) {
+  // Group by tab → section
+  const grouped = {};
+  for (const e of errors) {
+    if (!grouped[e.tab]) grouped[e.tab] = {};
+    if (!grouped[e.tab][e.section]) grouped[e.tab][e.section] = [];
+    grouped[e.tab][e.section].push(e.msg);
+  }
+
+  let html = '<div class="val-error-title">Validation Errors</div>';
+  for (const [tab, sections] of Object.entries(grouped)) {
+    html += `<div class="val-error-tab">${esc(tab)}</div>`;
+    for (const [section, msgs] of Object.entries(sections)) {
+      html += `<div class="val-error-section">${esc(section)}</div>`;
+      for (const msg of msgs) {
+        html += `<div class="val-error-msg">${esc(msg)}</div>`;
+      }
+    }
+  }
+  html += '<div style="text-align:right; margin-top:14px;"><button class="btn primary" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button></div>';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  const box = document.createElement('div');
+  box.className = 'confirm-box';
+  box.style.maxWidth = '500px';
+  box.style.maxHeight = '70vh';
+  box.style.overflowY = 'auto';
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
+Object.keys(validationRules).forEach(id => {
+  document.getElementById(id).addEventListener('input', () => validateField(id));
+});
+
+// ═══════════════════════════════════════════════════════════════════
+//  DIRTY STATE TRACKING
+// ═══════════════════════════════════════════════════════════════════
+function captureFormSnapshot() {
+  const parts = [];
+  // All inputs/selects/textareas in editor panels
+  document.querySelectorAll('#editorWrap input, #editorWrap select, #localizationWrap input, #descriptorWrap input, #descriptorWrap select, #craftingRecipeWrap input, #craftingRecipeWrap select').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.closest('.multi-select-search')) return;
+    if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
+    else parts.push((el.id || el.className) + ':' + el.value);
+  });
+  // Datadisk checkboxes
+  document.querySelectorAll('#ed-Datadisks input[type="checkbox"]').forEach(cb => {
+    parts.push('dd:' + cb.value + ':' + cb.checked);
+  });
+  // Faction reward entries
+  document.querySelectorAll('#factionRewardList .entry-item').forEach((el, i) => {
+    parts.push('fr:' + i + ':' + el.querySelector('.fr-faction')?.value + ':' + el.querySelector('.fr-tech')?.value + ':' + el.querySelector('.fr-weight')?.value + ':' + el.querySelector('.fr-points')?.value);
+  });
+  // Disassembly entries
+  document.querySelectorAll('#disassemblyList .entry-item').forEach((el, i) => {
+    parts.push('dis:' + i + ':' + (el.querySelector('.dis-itemid')?.value || '') + ':' + (el.querySelector('.dis-count')?.value || ''));
+  });
+  // Recipe entries
+  document.querySelectorAll('#recipeItemList .entry-item').forEach((el, i) => {
+    parts.push('rec:' + i + ':' + (el.querySelector('.recipe-itemid')?.value || '') + ':' + (el.querySelector('.recipe-count')?.value || ''));
+  });
+  // Grade entries
+  document.querySelectorAll('#gradeList .entry-item').forEach((el, i) => {
+    parts.push('gr:' + i + ':' + (el.querySelector('.grade-key')?.value || '') + ':' + (el.querySelector('.grade-value')?.value || ''));
+  });
+  return parts.join('|');
+}
+
+function isFormDirty() {
+  if (!_formSnapshot || !selWeapon) return false;
+  return captureFormSnapshot() !== _formSnapshot;
+}
+
+function guardNavigation(callback) {
+  if (isFormDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', callback, 'Yes', '');
+  } else {
+    callback();
+  }
+}
+
+function guardSelectWeapon(id) {
+  if (selWeapon?.id === id) return;
+  guardNavigation(() => selectWeapon(id));
+}
+
+function guardSwitchMode(mode) {
+  if (currentMode === mode) return;
+  guardNavigation(() => switchMode(mode));
+}
+
+function guardSelectProject(id) {
+  if (selProject?.id === id) return;
+  guardNavigation(() => selectProject(id));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SAVE
+// ═══════════════════════════════════════════════════════════════════
+async function saveWeapon() {
+  if (!selProject || !selWeapon || isSaving) return;
+  if (!validateAll()) {
+    showValidationErrorModal(collectValidationErrors());
+    return;
+  }
+  const data = collectEditor();
+  const newId = data.Id;
+  const oldId = selWeapon.id;
+
+  // Validate Id
+  if (!newId) { toast('Weapon Id cannot be empty', 1); document.getElementById('ed-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Weapon Id contains invalid characters', 1); document.getElementById('ed-Id').classList.add('invalid'); return; }
+  document.getElementById('ed-Id').classList.remove('invalid');
+
+  // Check for duplicate Id
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Weapons', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('ed-Id').classList.add('invalid');
+      return;
+    } catch { /* 404 = not found = good */ }
+  }
+
+  isSaving = true;
+
+  try {
+    if (newId !== oldId) {
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: curImageFolder } });
+      await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
+      // Delete old localization file
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: oldId + '_localization' } }); } catch {}
+      // Delete old descriptor file
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: oldId + '_descriptor' } }); } catch {}
+      // Delete old recipe file
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
+      // Rename weapon in datadisks
+      await renameWeaponInAllDisks(oldId, newId);
+      // Rename weapon in faction rewards
+      await renameWeaponInAllFactions(oldId, newId);
+    }
+    await api('asset', {
+      body: { project: selProject.id, category: 'Weapons', id: newId, recordType: 'MGSC.WeaponRecord', data }
+    });
+    await saveLocalization(newId);
+    updateDescriptorImagePaths(newId, curImageFolder);
+    if (newId !== oldId) {
+      val('desc-PrefabId', newId + '_prefab');
+      val('desc-TextureIdOrPath', newId + '_texture');
+    }
+    await saveDescriptor(newId);
+    await saveRecipe(newId);
+    await saveDatadisks(newId);
+    await saveFactionRewards(newId);
+    selWeapon.id = newId;
+    toast('Saved');
+    _formSnapshot = captureFormSnapshot();
+    await selectProject(selProject.id, true);
+    selectWeapon(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  IMAGES
+// ═══════════════════════════════════════════════════════════════════
+async function loadImageFolders() {
+  if (!selProject) return;
+  try {
+    const data = await api('image_folders', { params: { project: selProject.id } });
+    const sel = document.getElementById('ed-ImageFolder');
+    let html = '<option value="">(root)</option>';
+    html += (data.folders || []).map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
+    sel.innerHTML = html;
+  } catch {}
+}
+
+function imgUrl(id, suffix) {
+  const folder = curImageFolder || '';
+  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(folder)}&t=${Date.now()}`;
+}
+
+function loadWeaponImage(id, suffix, type) {
+  const url = imgUrl(id, suffix);
+  const img = new Image();
+
+  if (type === 'icon') {
+    const preview = document.getElementById('imgPreview');
+    img.onload = () => { preview.innerHTML = ''; preview.appendChild(img); };
+    img.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
+  } else if (type === 'floor') {
+    const slot = document.getElementById('floorSlotPreview');
+    img.onload = () => { slot.innerHTML = ''; slot.appendChild(img); };
+    img.onerror = () => { slot.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
+  } else if (type === 'shadow') {
+    const slot = document.getElementById('shadowSlotPreview');
+    img.onload = () => { slot.innerHTML = ''; slot.appendChild(img); };
+    img.onerror = () => { slot.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
+  }
+  img.src = url;
+}
+
+function loadAllWeaponImages(id) {
+  loadWeaponImage(id, 'sprite_icon', 'icon');
+  loadWeaponImage(id, 'sprite_floor', 'floor');
+  loadWeaponImage(id, 'sprite_shadow', 'shadow');
+}
+
+function updateDescriptorImagePaths(id, folder) {
+  const prefix = folder ? `Images/${folder}/` : 'Images/';
+  val('desc-IconSpriteIdOrPath', `${prefix}${id}_sprite_icon.png`);
+  val('desc-SmallIconSpriteIdOrPath', `${prefix}${id}_sprite_floor.png`);
+  val('desc-ShadowOnFloorSpriteIdOrPath', `${prefix}${id}_sprite_shadow.png`);
+}
+
+async function onImageFolderChange(newFolder) {
+  if (!selProject || !selWeapon) return;
+  const oldFolder = curImageFolder;
+  if (newFolder === oldFolder) return;
+
+  try {
+    await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: oldFolder, to: newFolder } });
+    curImageFolder = newFolder;
+    updateDescriptorImagePaths(selWeapon.id, newFolder);
+    loadAllWeaponImages(selWeapon.id);
+    // Refresh sidebar thumbnail
+    const tree = await api('project_tree', { params: { id: selProject.id } });
+    renderWeaponList(tree.tree['Weapons'] || []);
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === selWeapon.id) c.classList.add('active');
+    });
+    toast(`Sprites moved to ${newFolder || '(root)'}`);
+  } catch (e) { toast(e.message, 1); document.getElementById('ed-ImageFolder').value = oldFolder; }
+}
+
+async function handleImageUpload(input, suffix, type) {
+  if (!selProject || !selWeapon) return;
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.type !== 'image/png') {
+    toast('Only PNG files are allowed', 1);
+    input.value = ''; return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const img = new Image();
+    img.onload = async () => {
+      if (type === 'icon') {
+        const valid = (img.width === 50 && img.height === 50) || (img.width === 100 && img.height === 50);
+        if (!valid) { toast(`Icon must be 50x50 or 100x50 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      } else {
+        if (img.width > 30 || img.height > 30) { toast(`Floor/shadow must be max 30x30 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      }
+
+      try {
+        await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: curImageFolder, data: base64 } });
+        toast('Image uploaded');
+        updateDescriptorImagePaths(selWeapon.id, curImageFolder);
+        loadWeaponImage(selWeapon.id, suffix, type);
+        if (type === 'icon') {
+          const tree = await api('project_tree', { params: { id: selProject.id } });
+          renderWeaponList(tree.tree['Weapons'] || []);
+          document.querySelectorAll('#assetList .card').forEach(c => {
+            if (c.querySelector('.c-name')?.textContent === selWeapon.id) c.classList.add('active');
+          });
+        }
+      } catch (err) { toast(err.message, 1); }
+      input.value = '';
+    };
+    img.src = base64;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  FACTION REWARDS
+// ═══════════════════════════════════════════════════════════════════
+let _prevFactionRewards = []; // [{factionId, techLevel, weight, points}]
+
+function addFactionRewardEntry(factionId, techLevel, weight, points) {
+  const list = document.getElementById('factionRewardList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.style.flexWrap = 'wrap';
+  entry.innerHTML = `
+    <div class="entry-field" style="flex:1 1 160px;">
+      <label>Faction</label>
+      <select class="fr-faction" onchange="refreshFactionOptions()"></select>
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Tech Level</label>
+      <input type="number" class="fr-tech" value="${techLevel ?? 1}" min="1" max="10" step="1" oninput="validateFRField(this, true, true)">
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Weight</label>
+      <input type="number" class="fr-weight" value="${weight ?? 15}" step="0.1" oninput="validateFRField(this, false, false)">
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Points</label>
+      <input type="number" class="fr-points" value="${points ?? 150}" step="1" oninput="validateFRField(this, true, false)">
+    </div>
+    <button class="entry-rm" onclick="this.parentElement.remove(); refreshFactionOptions()">&times;</button>
+  `;
+  list.appendChild(entry);
+
+  // Populate faction select
+  const sel = entry.querySelector('.fr-faction');
+  const rows = REF?.base?.factions?.rows || [];
+  sel.innerHTML = rows.map(r => {
+    const v = (r.Id || '').trim();
+    if (!v) return '';
+    return `<option value="${esc(v)}">${esc(v)}</option>`;
+  }).filter(Boolean).join('');
+  if (factionId) sel.value = factionId;
+  refreshFactionOptions();
+}
+
+function refreshFactionOptions() {
+  const selects = Array.from(document.querySelectorAll('#factionRewardList .fr-faction'));
+  const taken = selects.map(s => s.value).filter(Boolean);
+  const allFactions = (REF?.base?.factions?.rows || []).map(r => (r.Id || '').trim()).filter(Boolean);
+
+  for (const sel of selects) {
+    const current = sel.value;
+    sel.innerHTML = allFactions
+      .filter(f => f === current || !taken.includes(f))
+      .map(f => `<option value="${esc(f)}"${f === current ? ' selected' : ''}>${esc(f)}</option>`)
+      .join('');
+  }
+}
+
+function validateFRField(input, mustBeInt, capAt10) {
+  const v = parseFloat(input.value);
+  const valid = !isNaN(v) && v > 0 && (!mustBeInt || Number.isInteger(v)) && (capAt10 === false || !capAt10 || v <= 10);
+  input.classList.toggle('invalid', !valid);
+}
+
+async function loadFactionRewards(weaponId) {
+  _prevFactionRewards = [];
+  const list = document.getElementById('factionRewardList');
+  list.innerHTML = '';
+
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+    for (const asset of data.assets) {
+      const rewardList = asset.data?.FactionRewardList || [];
+      for (const reward of rewardList) {
+        const contentIds = reward.contentRecords?.[0]?.ContentIds || [];
+        if (contentIds.includes(weaponId)) {
+          const cr = reward.contentRecords[0];
+          const factionId = reward.FactionName || '';
+          addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
+          _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+        }
+      }
+    }
+  } catch {}
+}
+
+function collectFactionRewards() {
+  const entries = [];
+  document.querySelectorAll('#factionRewardList .entry-item').forEach(el => {
+    const factionId = el.querySelector('.fr-faction').value;
+    const techLevel = parseInt(el.querySelector('.fr-tech').value) || 1;
+    const weight = parseFloat(el.querySelector('.fr-weight').value) || 15;
+    const points = parseFloat(el.querySelector('.fr-points').value) || 150;
+    if (factionId) entries.push({ factionId, techLevel, weight, points });
+  });
+  return entries;
+}
+
+function buildFactionRewardEntry(factionName, weaponId, techLevel, weight, points) {
+  return {
+    FactionName: factionName,
+    RewardType: 'rewardEquipment',
+    contentRecords: [{
+      TechLevel: techLevel,
+      ContentIds: [weaponId],
+      Weight: weight,
+      Points: points
+    }]
+  };
+}
+
+async function saveFactionRewards(weaponId) {
+  const current = collectFactionRewards();
+
+  // Group current entries by faction
+  const byFaction = {};
+  for (const e of current) {
+    if (!byFaction[e.factionId]) byFaction[e.factionId] = [];
+    byFaction[e.factionId].push(e);
+  }
+
+  // Group previous entries by faction
+  const prevByFaction = {};
+  for (const e of _prevFactionRewards) {
+    if (!prevByFaction[e.factionId]) prevByFaction[e.factionId] = [];
+    prevByFaction[e.factionId].push(e);
+  }
+
+  // All factions involved
+  const allFactions = new Set([...Object.keys(byFaction), ...Object.keys(prevByFaction)]);
+
+  for (const factionId of allFactions) {
+    const fileId = factionId + '_factionData';
+    const newEntries = byFaction[factionId] || [];
+
+    // Load existing file or create new
+    let record;
+    try {
+      record = await api('asset', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } });
+    } catch {
+      record = { Data: { FactionRewardList: [] } };
+    }
+
+    const data = record.Data || record.data || {};
+    let rewardList = data.FactionRewardList || [];
+
+    // Remove all entries for this weapon from this faction
+    rewardList = rewardList.filter(r => {
+      const cids = r.contentRecords?.[0]?.ContentIds || [];
+      return !cids.includes(weaponId);
+    });
+
+    // Add new entries for this weapon
+    for (const e of newEntries) {
+      rewardList.push(buildFactionRewardEntry(factionId, weaponId, e.techLevel, e.weight, e.points));
+    }
+
+    if (rewardList.length === 0) {
+      // No entries left — delete the file
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } }); } catch {}
+    } else {
+      data.FactionRewardList = rewardList;
+      await api('asset', {
+        body: { project: selProject.id, category: 'FactionRewards', id: fileId, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data }
+      });
+    }
+  }
+
+  _prevFactionRewards = [...current];
+}
+
+async function removeWeaponFromAllFactions(weaponId) {
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+    for (const asset of data.assets) {
+      const assetData = asset.data || {};
+      let rewardList = assetData.FactionRewardList || [];
+      const filtered = rewardList.filter(r => {
+        const cids = r.contentRecords?.[0]?.ContentIds || [];
+        return !cids.includes(weaponId);
+      });
+      if (filtered.length !== rewardList.length) {
+        if (filtered.length === 0) {
+          await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: asset.id } });
+        } else {
+          assetData.FactionRewardList = filtered;
+          await api('asset', {
+            body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
+          });
+        }
+      }
+    }
+  } catch {}
+}
+
+async function renameWeaponInAllFactions(oldId, newId) {
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+    for (const asset of data.assets) {
+      const assetData = asset.data || {};
+      let changed = false;
+      for (const reward of (assetData.FactionRewardList || [])) {
+        const cids = reward.contentRecords?.[0]?.ContentIds || [];
+        const idx = cids.indexOf(oldId);
+        if (idx !== -1) { cids[idx] = newId; changed = true; }
+      }
+      if (changed) {
+        await api('asset', {
+          body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
+        });
+      }
+    }
+  } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DATADISKS
+// ═══════════════════════════════════════════════════════════════════
+let _prevDatdiskAssignments = [];
+
+async function loadDatadisks(weaponId) {
+  _prevDatdiskAssignments = [];
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+    for (const asset of data.assets) {
+      const ids = asset.data?.UnlockIds || [];
+      if (ids.includes(weaponId)) {
+        _prevDatdiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
+      }
+    }
+  } catch {}
+
+  const container = document.getElementById('ed-Datadisks');
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = _prevDatdiskAssignments.includes(cb.value);
+  });
+  const display = container.querySelector('.multi-select-display');
+  if (_prevDatdiskAssignments.length) {
+    display.textContent = _prevDatdiskAssignments.join(', ');
+  } else {
+    display.innerHTML = '<span class="placeholder">Select datadisks…</span>';
+  }
+}
+
+function newDiskDataRecord(diskId) {
+  return {
+    RecordType: 'MGSC.DatadiskRecord',
+    Data: {
+      Id: diskId,
+      ItemClass: 'Blueprint',
+      UnlockType: 'ProductionItem',
+      TechLevel: 0,
+      Price: 0.0,
+      Weight: 0.0,
+      InventorySortOrder: 7,
+      InventoryWidthSize: 1,
+      Categories: [],
+      UnlockIds: []
+    }
+  };
+}
+
+function canonicalizeDiskData(data, diskId) {
+  return {
+    Id: diskId,
+    ItemClass: data.ItemClass || 'Blueprint',
+    UnlockType: data.UnlockType || 'ProductionItem',
+    TechLevel: data.TechLevel ?? 0,
+    Price: data.Price ?? 0.0,
+    Weight: data.Weight ?? 0.0,
+    InventorySortOrder: data.InventorySortOrder ?? 7,
+    InventoryWidthSize: data.InventoryWidthSize ?? 1,
+    Categories: data.Categories || [],
+    UnlockIds: data.UnlockIds || []
+  };
+}
+
+async function saveDatadisks(weaponId) {
+  const checked = Array.from(document.querySelectorAll('#ed-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
+  const added = checked.filter(d => !_prevDatdiskAssignments.includes(d));
+  const removed = _prevDatdiskAssignments.filter(d => !checked.includes(d));
+
+  // Add weapon to newly checked disks
+  for (const diskId of added) {
+    let raw;
+    try {
+      raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+    } catch {
+      raw = newDiskDataRecord(diskId);
+    }
+    const src = raw.Data || raw.data || {};
+    const unlockIds = src.UnlockIds || [];
+    if (!unlockIds.includes(weaponId)) unlockIds.push(weaponId);
+    src.UnlockIds = unlockIds;
+    const data = canonicalizeDiskData(src, diskId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData', recordType: 'MGSC.DatadiskRecord', data }
+    });
+  }
+
+  // Remove weapon from unchecked disks
+  for (const diskId of removed) {
+    try {
+      const raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+      const src = raw.Data || raw.data || {};
+      const unlockIds = (src.UnlockIds || []).filter(id => id !== weaponId);
+      if (unlockIds.length === 0) {
+        await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+      } else {
+        src.UnlockIds = unlockIds;
+        const data = canonicalizeDiskData(src, diskId);
+        await api('asset', {
+          body: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData', recordType: 'MGSC.DatadiskRecord', data }
+        });
+      }
+    } catch {}
+  }
+
+  _prevDatdiskAssignments = [...checked];
+}
+
+async function removeWeaponFromAllDisks(weaponId) {
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+    for (const asset of data.assets) {
+      const assetData = asset.data || {};
+      const unlockIds = (assetData.UnlockIds || []).filter(id => id !== weaponId);
+      if (unlockIds.length === 0) {
+        await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: asset.id } });
+      } else if (unlockIds.length !== (assetData.UnlockIds || []).length) {
+        assetData.UnlockIds = unlockIds;
+        const diskId = assetData.Id || asset.id.replace('_diskData', '');
+        const canonical = canonicalizeDiskData(assetData, diskId);
+        await api('asset', {
+          body: { project: selProject.id, category: 'Datadisks', id: asset.id, recordType: 'MGSC.DatadiskRecord', data: canonical }
+        });
+      }
+    }
+  } catch {}
+}
+
+async function renameWeaponInAllDisks(oldId, newId) {
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+    for (const asset of data.assets) {
+      const assetData = asset.data || {};
+      const unlockIds = assetData.UnlockIds || [];
+      const idx = unlockIds.indexOf(oldId);
+      if (idx !== -1) {
+        unlockIds[idx] = newId;
+        assetData.UnlockIds = unlockIds;
+        const diskId = assetData.Id || asset.id.replace('_diskData', '');
+        const canonical = canonicalizeDiskData(assetData, diskId);
+        await api('asset', {
+          body: { project: selProject.id, category: 'Datadisks', id: asset.id, recordType: 'MGSC.DatadiskRecord', data: canonical }
+        });
+      }
+    }
+  } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CRAFTING RECIPE
+// ═══════════════════════════════════════════════════════════════════
+function addRecipeItemEntry(itemId, count) {
+  const list = document.getElementById('recipeItemList');
+  if (!itemId && list.querySelectorAll('.entry-item').length >= 5) { toast('Max 5 required items', 1); return; }
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field">
+      <label>Item Id</label>
+      <div class="combobox">
+        <input type="text" class="recipe-itemid" value="${esc(itemId || '')}" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow"><label>Count</label><input type="number" class="recipe-count" value="${count || 1}" min="1" step="1" oninput="validateDisCount(this)"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+  const cbList = entry.querySelector('.combobox-list');
+  cbList.innerHTML = (window._recipeItemOptions || []).map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
+}
+
+function addGradeEntry(key, value) {
+  const list = document.getElementById('gradeList');
+  if (!key && list.querySelectorAll('.entry-item').length >= 4) { toast('Max 4 modify items', 1); return; }
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field">
+      <label>Item Id</label>
+      <div class="combobox">
+        <input type="text" class="grade-key" value="${esc(key || '')}" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow"><label>Value</label><input type="number" class="grade-value" value="${value ?? ''}" step="1" oninput="validateDisCount(this)"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+  const cbList = entry.querySelector('.combobox-list');
+  cbList.innerHTML = (window._gradeItemOptions || []).map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
+}
+
+function newRecipeRecord(id) {
+  return {
+    RecordType: 'MGSC.ItemProduceReceipt',
+    Data: {
+      OutputItem: id,
+      RequiredItems: [],
+      ProduceTimeInHours: 10.0,
+      ModifyStartCost: 1,
+      ModifyStep: 1.05,
+      ModifyItemsGrades: {},
+      ModifyLevelLimit: 10,
+      Id: ''
+    }
+  };
+}
+
+function populateRecipe(data, weaponId) {
+  // Required Items
+  const list = document.getElementById('recipeItemList');
+  list.innerHTML = '';
+  (data?.RequiredItems || []).forEach(r => addRecipeItemEntry(r.ItemId, r.Count));
+
+  val('recipe-ProduceTimeInHours', data?.ProduceTimeInHours ?? 10);
+  val('recipe-ModifyStartCost', data?.ModifyStartCost ?? 1);
+  val('recipe-ModifyStep', data?.ModifyStep ?? 1.05);
+  val('recipe-ModifyLevelLimit', data?.ModifyLevelLimit ?? 10);
+
+  // Modify Item Grades
+  const gradeList = document.getElementById('gradeList');
+  gradeList.innerHTML = '';
+  const grades = data?.ModifyItemsGrades || {};
+  Object.entries(grades).forEach(([k, v]) => addGradeEntry(k, v));
+}
+
+function collectRecipe(weaponId) {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+
+  const requiredItems = [];
+  document.querySelectorAll('#recipeItemList .entry-item').forEach(el => {
+    const itemId = el.querySelector('.recipe-itemid').value.trim();
+    const count = parseInt(el.querySelector('.recipe-count').value) || 0;
+    if (itemId && count > 0) requiredItems.push({ ItemId: itemId, Count: count });
+  });
+
+  const grades = {};
+  document.querySelectorAll('#gradeList .entry-item').forEach(el => {
+    const key = el.querySelector('.grade-key').value.trim();
+    const value = parseInt(el.querySelector('.grade-value').value) || 0;
+    if (key) grades[key] = value;
+  });
+
+  return {
+    RecordType: 'MGSC.ItemProduceReceipt',
+    Data: {
+      OutputItem: weaponId,
+      RequiredItems: requiredItems,
+      ProduceTimeInHours: int('recipe-ProduceTimeInHours'),
+      ModifyStartCost: int('recipe-ModifyStartCost'),
+      ModifyStep: num('recipe-ModifyStep'),
+      ModifyItemsGrades: grades,
+      ModifyLevelLimit: int('recipe-ModifyLevelLimit'),
+      Id: ''
+    }
+  };
+}
+
+async function loadRecipe(weaponId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes', id: weaponId + '_receipt' } });
+    populateRecipe(data.Data, weaponId);
+  } catch {
+    populateRecipe(null, weaponId);
+  }
+}
+
+async function saveRecipe(weaponId) {
+  const recipe = collectRecipe(weaponId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Crafting Recipes', id: weaponId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DESCRIPTOR
+// ═══════════════════════════════════════════════════════════════════
+function populateDescriptor(data, weaponId) {
+  val('desc-Grip', data?.Grip || 'None');
+  chk('desc-HasHFGOverlay', data?.HasHFGOverlay);
+  const img = data?.ImageProperties || {};
+  val('desc-IconSpriteIdOrPath', img.IconSpriteIdOrPath || '');
+  val('desc-SmallIconSpriteIdOrPath', img.SmallIconSpriteIdOrPath || '');
+  val('desc-ShadowOnFloorSpriteIdOrPath', img.ShadowOnFloorSpriteIdOrPath || '');
+  const audio = data?.AudioProperties || {};
+  val('desc-ShootSoundIdOrPath', audio.ShootSoundIdOrPath || '');
+  val('desc-ReloadSoundIdOrPath', audio.ReloadSoundIdOrPath || '');
+  val('desc-DryShotSoundIdOrPath', audio.DryShotSoundIdOrPath || '');
+  val('desc-FailedAttackSoundIdOrPath', audio.FailedAttackSoundIdOrPath || '');
+  const model = data?.ModelProperties || {};
+  val('desc-AssetBundlePath', model.AssetBundlePath || '');
+  val('desc-TextureIdOrPath', model.TextureIdOrPath || '');
+  val('desc-MuzzleId', model.MuzzleId || '');
+  val('desc-PrefabId', model.PrefabId || '');
+  val('desc-PrefabScale', model.PrefabScale ?? 0.05);
+}
+
+function collectDescriptor(weaponId) {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const bool = (id) => document.getElementById(id).checked;
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomWeaponDescriptor',
+    Data: {
+      ItemId: weaponId,
+      Grip: str('desc-Grip'),
+      HasHFGOverlay: bool('desc-HasHFGOverlay'),
+      ImageProperties: {
+        IconSpriteIdOrPath: str('desc-IconSpriteIdOrPath'),
+        SmallIconSpriteIdOrPath: str('desc-SmallIconSpriteIdOrPath'),
+        ShadowOnFloorSpriteIdOrPath: str('desc-ShadowOnFloorSpriteIdOrPath'),
+      },
+      AudioProperties: {
+        ShootSoundIdOrPath: str('desc-ShootSoundIdOrPath'),
+        ReloadSoundIdOrPath: str('desc-ReloadSoundIdOrPath'),
+        DryShotSoundIdOrPath: str('desc-DryShotSoundIdOrPath'),
+        FailedAttackSoundIdOrPath: str('desc-FailedAttackSoundIdOrPath'),
+      },
+      ModelProperties: {
+        AssetBundlePath: str('desc-AssetBundlePath'),
+        TextureIdOrPath: str('desc-TextureIdOrPath'),
+        MuzzleId: str('desc-MuzzleId'),
+        PrefabId: str('desc-PrefabId'),
+        PrefabScale: num('desc-PrefabScale'),
+      }
+    }
+  };
+}
+
+function newDescriptorRecord(id, bundlePath) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomWeaponDescriptor',
+    Data: {
+      ItemId: id,
+      Grip: 'None',
+      HasHFGOverlay: false,
+      ImageProperties: {
+        IconSpriteIdOrPath: '',
+        SmallIconSpriteIdOrPath: '',
+        ShadowOnFloorSpriteIdOrPath: '',
+      },
+      AudioProperties: {
+        ShootSoundIdOrPath: '',
+        ReloadSoundIdOrPath: '',
+        DryShotSoundIdOrPath: '',
+        FailedAttackSoundIdOrPath: '',
+      },
+      ModelProperties: {
+        AssetBundlePath: bundlePath || '',
+        TextureIdOrPath: id + '_texture',
+        MuzzleId: '',
+        PrefabId: id + '_prefab',
+        PrefabScale: 0.05,
+      }
+    }
+  };
+}
+
+async function loadDescriptor(weaponId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor' } });
+    populateDescriptor(data.Data, weaponId);
+  } catch {
+    populateDescriptor(null, weaponId);
+  }
+}
+
+async function saveDescriptor(weaponId) {
+  const desc = collectDescriptor(weaponId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  LOCALIZATION
+// ═══════════════════════════════════════════════════════════════════
+const LOC_LANGS = [
+  { key: 'EnglishUS', label: 'English (US)' },
+  { key: 'Russian', label: 'Russian' },
+  { key: 'German', label: 'German' },
+  { key: 'French', label: 'French' },
+  { key: 'Spanish', label: 'Spanish' },
+  { key: 'Polish', label: 'Polish' },
+  { key: 'Turkish', label: 'Turkish' },
+  { key: 'BrazilianPortugal', label: 'Portuguese (BR)' },
+  { key: 'Korean', label: 'Korean' },
+  { key: 'Japanese', label: 'Japanese' },
+  { key: 'ChineseSimp', label: 'Chinese (Simp)' },
+];
+
+function buildLocRows() {
+  const container = document.getElementById('locRows');
+  container.innerHTML = LOC_LANGS.map(l => `
+    <div class="loc-row">
+      <span class="loc-lang">${esc(l.label)}</span>
+      <input class="loc-name" type="text" data-lang="${l.key}">
+      <input class="loc-sdesc" type="text" data-lang="${l.key}">
+    </div>
+  `).join('');
+}
+
+function populateLocalization(data, weaponId) {
+  const keys = data?.Data?.Keys || {};
+  const nameKey = `item.${weaponId}.name`;
+  const sdescKey = `item.${weaponId}.shortdesc`;
+  const names = keys[nameKey] || {};
+  const sdescs = keys[sdescKey] || {};
+
+  document.querySelectorAll('#locRows .loc-row').forEach(row => {
+    const lang = row.querySelector('.loc-name').dataset.lang;
+    row.querySelector('.loc-name').value = names[lang] || '';
+    row.querySelector('.loc-sdesc').value = sdescs[lang] || '';
+  });
+}
+
+function collectLocalization(weaponId) {
+  const nameObj = {};
+  const descObj = {};
+  const sdescObj = {};
+
+  document.querySelectorAll('#locRows .loc-row').forEach(row => {
+    const lang = row.querySelector('.loc-name').dataset.lang;
+    nameObj[lang] = row.querySelector('.loc-name').value;
+    descObj[lang] = '';
+    sdescObj[lang] = row.querySelector('.loc-sdesc').value;
+  });
+
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.LocalizationTemplate',
+    Data: {
+      Keys: {
+        [`item.${weaponId}.name`]: nameObj,
+        [`item.${weaponId}.desc`]: descObj,
+        [`item.${weaponId}.shortdesc`]: sdescObj,
+      }
+    }
+  };
+}
+
+async function loadLocalization(weaponId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Localization', id: weaponId + '_localization' } });
+    populateLocalization(data, weaponId);
+  } catch {
+    // No localization file yet — clear fields
+    document.querySelectorAll('#locRows .loc-name, #locRows .loc-sdesc').forEach(el => el.value = '');
+  }
+}
+
+async function saveLocalization(weaponId) {
+  const loc = collectLocalization(weaponId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Localization', id: weaponId + '_localization', recordType: loc.RecordType, data: loc.Data }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DISASSEMBLY ENTRIES
+// ═══════════════════════════════════════════════════════════════════
+function addDisassemblyEntry(itemId, count) {
+  const list = document.getElementById('disassemblyList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field">
+      <label>Item Id</label>
+      <div class="combobox">
+        <input type="text" class="dis-itemid" value="${esc(itemId || '')}" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow"><label>Count</label><input type="number" class="dis-count" value="${count || 1}" min="1" step="1" oninput="validateDisCount(this)"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+  // Populate the combobox list
+  const cbList = entry.querySelector('.combobox-list');
+  cbList.innerHTML = (window._disItemOptions || []).map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
+}
+
+function populateDisassembly(arr) {
+  const list = document.getElementById('disassemblyList');
+  list.innerHTML = '';
+  (arr || []).forEach(d => addDisassemblyEntry(d.ItemId, d.Count));
+}
+
+function collectDisassembly() {
+  const entries = [];
+  document.querySelectorAll('#disassemblyList .entry-item').forEach(el => {
+    const itemId = el.querySelector('.dis-itemid').value.trim();
+    const count = parseInt(el.querySelector('.dis-count').value) || 0;
+    if (itemId && count > 0) entries.push({ ItemId: itemId, Count: count });
+  });
+  return entries;
+}
+
+function validateDisCount(input) {
+  const v = parseFloat(input.value);
+  const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validatePrefabScale(input) {
+  const v = parseFloat(input.value);
+  const valid = !isNaN(v) && v > 0;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validateRecipeField(input, mustBeInt) {
+  const v = parseFloat(input.value);
+  const valid = !isNaN(v) && v > 0 && (!mustBeInt || Number.isInteger(v));
+  input.classList.toggle('invalid', !valid);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIRM POPUP
+// ═══════════════════════════════════════════════════════════════════
+let activeConfirm = null;
+
+function dismissConfirm() {
+  if (activeConfirm) { activeConfirm.remove(); activeConfirm = null; }
+}
+
+function showConfirm(message, onYes, btnLabel, btnClass) {
+  dismissConfirm();
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <p>${message}</p>
+    <div class="confirm-btns">
+      <button class="btn" id="confirmNo">Cancel</button>
+      <button class="btn ${btnClass || 'danger'}" id="confirmYes">${btnLabel || 'Delete'}</button>
+    </div>
+  </div>`;
+
+  document.body.appendChild(overlay);
+  activeConfirm = overlay;
+
+  overlay.querySelector('#confirmNo').addEventListener('click', dismissConfirm);
+  overlay.querySelector('#confirmYes').addEventListener('click', () => { dismissConfirm(); onYes(); });
+}
+
+function confirmDeleteWeapon(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteWeapon(id));
+}
+
+function confirmDeleteProject(btn, id) {
+  showConfirm('You are about to delete this project and all assets contained within. Are you sure?', () => deleteProjectById(id));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  COMBOBOX (text + dropdown suggestions, allows free text)
+// ═══════════════════════════════════════════════════════════════════
+function openCombobox(input) {
+  // Close any other open comboboxes
+  document.querySelectorAll('.combobox-list.open').forEach(l => l.classList.remove('open'));
+  const list = input.nextElementSibling;
+  filterCombobox(input);
+  list.classList.add('open');
+}
+
+function filterCombobox(input) {
+  const query = input.value.toLowerCase();
+  const list = input.nextElementSibling;
+  list.querySelectorAll('.cb-option').forEach(opt => {
+    opt.style.display = opt.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+}
+
+function pickCombobox(option) {
+  const combobox = option.closest('.combobox');
+  const input = combobox.querySelector('input');
+  input.value = option.textContent;
+  option.closest('.combobox-list').classList.remove('open');
+}
+
+// Close combobox on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.combobox')) {
+    document.querySelectorAll('.combobox-list.open').forEach(l => l.classList.remove('open'));
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+//  MULTI-SELECT DROPDOWN
+// ═══════════════════════════════════════════════════════════════════
+function toggleMultiSelect(display) {
+  const dropdown = display.nextElementSibling;
+  const isOpen = dropdown.classList.contains('open');
+  // Close any other open multi-selects
+  document.querySelectorAll('.multi-select-dropdown.open').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.multi-select-display.open').forEach(d => d.classList.remove('open'));
+  if (!isOpen) {
+    dropdown.classList.add('open');
+    display.classList.add('open');
+    const search = dropdown.querySelector('.multi-select-search input');
+    if (search) { search.value = ''; filterMultiSelect(search); search.focus(); }
+  }
+}
+
+function updateMultiSelectDisplay(checkbox) {
+  const container = checkbox.closest('.multi-select');
+  const max = parseInt(container.dataset.max) || 0;
+  const checked = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
+
+  // Enforce max selections
+  if (max > 0 && checked.length > max && checkbox.checked) {
+    checkbox.checked = false;
+    return;
+  }
+
+  const display = container.querySelector('.multi-select-display');
+  const values = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+  if (values.length) {
+    display.textContent = values.join(', ');
+  } else {
+    display.innerHTML = '<span class="placeholder">Select…</span>';
+  }
+}
+
+function filterMultiSelect(input) {
+  const query = input.value.toLowerCase();
+  const list = input.closest('.multi-select-dropdown').querySelector('.multi-select-list');
+  list.querySelectorAll('label').forEach(label => {
+    const text = label.textContent.toLowerCase();
+    label.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+
+function clearMultiSelect(btn) {
+  const container = btn.closest('.multi-select');
+  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => { cb.checked = false; });
+  const display = container.querySelector('.multi-select-display');
+  display.innerHTML = '<span class="placeholder">Select…</span>';
+}
+
+// Close multi-select on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.multi-select-display.open').forEach(d => d.classList.remove('open'));
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════════════════════
+let activeTab = 'weaponConfig';
+
+const TAB_PANES = {
+  weaponConfig: 'editorWrap',
+  descriptor: 'descriptorWrap',
+  localization: 'localizationWrap',
+  craftingRecipe: 'craftingRecipeWrap',
+  datadisk: 'datadiskWrap',
+  factionRewards: 'factionRewardsWrap',
+};
+
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.c-header-modes .btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
+
+  const titles = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes' };
+  document.getElementById('assetListTitle').textContent = titles[mode] || 'Assets';
+  document.getElementById('assetFilterInput').value = '';
+
+  // Hide current editor
+  selWeapon = null;
+  _formSnapshot = null;
+  document.getElementById('editorWrap').classList.remove('visible');
+  document.getElementById('tabBar')?.classList.remove('visible');
+  for (const paneId of Object.values(TAB_PANES)) {
+    document.getElementById(paneId)?.classList.remove('visible');
+  }
+  document.getElementById('emptyState').style.display = '';
+  document.getElementById('emptyState').querySelector('div:last-child').textContent = `No ${titles[mode].toLowerCase()} yet`;
+
+  // Re-render list from cached tree
+  if (selProject && selProject._tree) {
+    renderModeList(selProject._tree);
+  }
+}
+
+function switchTab(tabId) {
+  activeTab = tabId;
+  // Update tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add('active');
+  // Show/hide panes
+  for (const [id, paneId] of Object.entries(TAB_PANES)) {
+    document.getElementById(paneId).classList.toggle('visible', id === tabId);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  TOAST / UTILS
+// ═══════════════════════════════════════════════════════════════════
+let toastT;
+function toast(m, err) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.className = 'toast visible' + (err ? ' err' : '');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('visible'), 3000);
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function val(id, v) { document.getElementById(id).value = v ?? ''; }
+function chk(id, v) {
+  const cb = document.getElementById(id);
+  cb.checked = !!v;
+  const tog = cb.parentElement.querySelector('.tog');
+  if (tog) tog.classList.toggle('on', !!v);
+}
+function togClick(el) {
+  const cb = el.parentElement.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  el.classList.toggle('on', cb.checked);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+document.getElementById('btnNewProject').addEventListener('click', createNewProject);
+document.getElementById('btnNewAsset').addEventListener('click', () => {
+  if (currentMode === 'weapons') createNewWeapon();
+  else if (currentMode === 'ammo') createNewAmmo();
+  else if (currentMode === 'firemodes') createNewFiremode();
+});
+
+document.addEventListener('dblclick', (e) => {
+  if (e.target.matches('input[type="text"], input[type="number"]')) e.target.select();
+});
+
+function fillOverrideAmmoSelects() {
+  if (!REF) return;
+  const rows = REF.base?.ammo?.rows || [];
+  const implicted = rows
+    .map(r => (r.Id || '').trim().replace(/^\*/, ''))
+    .filter(v => v.startsWith('implicted_'));
+
+  let html = '<option value="" style="font-style:italic">empty</option>';
+  html += implicted.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+
+  document.getElementById('ed-OverrideAmmo1').innerHTML = html;
+  document.getElementById('ed-OverrideAmmo2').innerHTML = html;
+}
+
+function syncFiremodes() {
+  const fm1 = document.getElementById('ed-Firemode1');
+  const fm2 = document.getElementById('ed-Firemode2');
+  const oa1 = document.getElementById('ed-OverrideAmmo1');
+  const oa2 = document.getElementById('ed-OverrideAmmo2');
+
+  if (fm1.value) {
+    oa1.disabled = false;
+    fm2.disabled = false;
+  } else {
+    // FM1 cleared — cascade clear everything
+    oa1.value = ''; oa1.disabled = true;
+    fm2.value = ''; fm2.disabled = true;
+    oa2.value = ''; oa2.disabled = true;
+    return;
+  }
+
+  if (fm2.value) {
+    oa2.disabled = false;
+  } else {
+    oa2.value = ''; oa2.disabled = true;
+  }
+}
+
+function populateRefSelects() {
+  if (!REF) return;
+
+  function fillSelect(id, refPath, valueKey) {
+    const el = document.getElementById(id);
+    const rows = refPath?.rows || [];
+    el.innerHTML = rows.map(r => {
+      const v = r[valueKey] || '';
+      return `<option value="${esc(v)}">${esc(v)}</option>`;
+    }).join('');
+  }
+
+  function fillMultiSelect(containerId, refPath, valueKey) {
+    const container = document.getElementById(containerId);
+    const dropdown = container.querySelector('.multi-select-dropdown');
+    const rows = refPath?.rows || [];
+    const items = rows.map(r => {
+      const v = (r[valueKey] || '').trim().replace(/^\*/, '');
+      if (!v) return '';
+      return `<label><input type="checkbox" value="${esc(v)}" onchange="updateMultiSelectDisplay(this)">${esc(v)}</label>`;
+    }).filter(Boolean).join('');
+
+    dropdown.innerHTML = `<div class="multi-select-search"><input type="text" placeholder="Search…" oninput="filterMultiSelect(this)"><button class="multi-select-clear" onclick="clearMultiSelect(this)">Clear</button></div><div class="multi-select-list">${items}</div>`;
+  }
+
+  function fillSelectWithEmpty(id, refPath, valueKey) {
+    const el = document.getElementById(id);
+    const rows = refPath?.rows || [];
+    let html = '<option value="" style="font-style:italic">empty</option>';
+    html += rows.map(r => {
+      const v = (r[valueKey] || '').trim().replace(/^\*/, '');
+      if (!v) return '';
+      return `<option value="${esc(v)}">${esc(v)}</option>`;
+    }).filter(Boolean).join('');
+    el.innerHTML = html;
+  }
+
+  fillSelect('ed-WeaponClass', REF.enums?.weaponClass, 'Name');
+  fillSelect('ed-WeaponSubClass', REF.enums?.weaponSubClass, 'Name');
+  fillSelect('desc-Grip', REF.enums?.handGrips, 'Name');
+  fillSelectWithEmpty('ed-RequiredAmmo', REF.enums?.ammoTypes, 'name');
+  fillSelectWithEmpty('ed-DefaultAmmoId', REF.base?.ammo, 'Id');
+  fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectileIds, 'Name');
+  fillSelectWithEmpty('ed-DefaultGrenadeId', REF.base?.grenades, 'Id');
+  fillMultiSelect('ed-AllowedGrenadeIds', REF.base?.grenades, 'Id');
+
+  // Traits - filtered to WeaponTrait only
+  const weaponTraits = {
+    rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'WeaponTrait')
+  };
+  fillMultiSelect('ed-Traits', weaponTraits, 'Id');
+  const repairParts = {
+    rows: (REF.base?.repairs?.rows || []).filter(r => r.ItemClass !== 'RepairKit')
+  };
+  fillMultiSelect('ed-RepairItemIds', repairParts, 'Id');
+  fillMultiSelect('ed-Categories', REF.enums?.categories, 'Name');
+  fillMultiSelect('ed-Datadisks', REF.base?.datadisks, 'Id');
+  fillSelectWithEmpty('ed-Firemode1', REF.base?.firemodes, 'Id');
+  fillSelectWithEmpty('ed-Firemode2', REF.base?.firemodes, 'Id');
+  fillOverrideAmmoSelects();
+
+  // Disassembly item combobox options — combined repairs + trash Ids
+  const disItems = [
+    ...(REF.base?.repairs?.rows || []),
+    ...(REF.base?.trash?.rows || []),
+  ].map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  window._disItemOptions = [...new Set(disItems)].filter(v => !v.includes('quest_')).sort();
+
+  // Recipe required items — repairs + trash + pactcomponents, no filtering
+  const recipeItems = [
+    ...(REF.base?.repairs?.rows || []),
+    ...(REF.base?.trash?.rows || []),
+    ...(REF.base?.pactcomponents?.rows || []),
+  ].map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  window._recipeItemOptions = [...new Set(recipeItems)].filter(v => !v.includes('quest_')).sort();
+
+  // Grade/modify items — repairs + trash + pactcomponents + datadisks
+  const gradeItems = [
+    ...(REF.base?.repairs?.rows || []),
+    ...(REF.base?.trash?.rows || []),
+    ...(REF.base?.pactcomponents?.rows || []),
+    ...(REF.base?.datadisks?.rows || []),
+  ].map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  window._gradeItemOptions = [...new Set(gradeItems)].filter(v => !v.includes('quest_')).sort();
+}
+
+async function init() {
+  if (window.location.protocol === 'file:') {
+    document.getElementById('startupScreen').classList.remove('hidden');
+    return;
+  }
+  try { REF = await api('ref_all'); } catch (e) { console.warn('Failed to load ref data:', e.message); }
+  populateRefSelects();
+  buildLocRows();
+  await loadProjects();
+  const last = localStorage.getItem('lastProject');
+  if (last) {
+    try { await selectProject(last); }
+    catch { localStorage.removeItem('lastProject'); }
+  }
+}
+init();
+</script>
+
+</body>
+</html>

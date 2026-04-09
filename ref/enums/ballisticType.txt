@@ -1,0 +1,7 @@
+#ballisticType																									
+Name																									
+Ballistic																									
+Richoshet																									
+Flame																									
+ToxicFlame																									
+#end																									

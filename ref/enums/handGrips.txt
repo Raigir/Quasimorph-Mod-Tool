@@ -1,0 +1,13 @@
+#handGrips																									
+Name	Id																								
+None	0																								
+BareHands	1																								
+MeleeOneHanded	2																								
+MeleeTwoHanded	4																								
+Rifle	8																								
+Pistol	16																								
+Heavy	32																								
+BareHandAndShield	64																								
+MeleeAndShield	128																								
+PistolAndShield	256																								
+#end																									

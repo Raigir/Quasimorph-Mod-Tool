@@ -1,0 +1,74 @@
+#pactcomponents																																
+Id		Categories	TechLevel	Price	Weight	InventoryWidthSize	ItemClass	CanPutInVest	MaxStack	Essence	EssencePower	EssenceStability	Disassembly																			
+quasi_medical_kit_1										gavvakh	100	25																				
+quasi_repair_kit										siaira	100	25																				
+demonic_eye										agga	100	25																				
+ron_blood										shavva	100	25																				
+precious_metals										eon	110	25																				
+human_poop		Prison Civilian Possessed Medical	1	1	0.1	1	Organ	FALSE	10	eon	50	25																				
+human_rib										shavva	50	25																				
+human_skull		Prison Possessed Medical Quasi	1	5	1.3	1	Organ	FALSE	5	shavva	65	15																				
+human_ear		Prison Possessed Medical Quasi	1	3	0.1	1	Organ	FALSE	20	shavva	60	20																				
+human_eye		Prison Possessed Medical Quasi	1	5	0.1	1	Organ	FALSE	20	eon	60	20																				
+throwable_heart										gavvakh	60	20																				
+human_meat										gavvakh	65	15																				
+rotten_human_meat										gavvakh	75	10																				
+roasted_human_meat										gavvakh	65	20																				
+human_skin										gavvakh	50	25																				
+roasted_human_skin										gavvakh	50	25																				
+rotten_human_skin										gavvakh	50	25																				
+syringe_bloodbag										eon	75	20																				
+spider_brain		Tezctlan XiomaraMasks	1	10	0.4	1	QuasiOrgan	FALSE	10	agga	80	20																				
+spider_eye		Tezctlan XiomaraMasks	1	6	0.1	1	QuasiOrgan	FALSE	20	agga	70	20																				
+spider_chitin										agga	60	25																				
+spider_joint										agga	80	25																				
+spider_meat										agga	80	15																				
+rotten_spider_meat										agga	90	10																				
+roasted_spider_meat										agga	80	20																				
+soup_can_1										agga	80	15																				
+rotten_soup_can_1										agga	80	15																				
+dog_teeth		Possessed	1	3	0.1	1	Organ	FALSE	10	siaira	60	25																				
+dog_skull		Possessed	1	6	0.7	1	Organ	FALSE	5	siaira	70	20																				
+dog_meat										siaira	85	15																				
+rotten_dog_meat										siaira	95	10																				
+roasted_dog_meat										siaira	85	20																				
+dog_skin										siaira	70	25																				
+human_organ_1										siaira	90	12																				
+venus_guts		Gannix	1	40	0.2	1	QuasiOrgan	FALSE	20	gavvakh	130	20																				
+quasi_venus_rags										siaira	100	20																				
+quasi_venus_feather										siaira	130	15																				
+venus_armor_plates										siaira	90	25																				
+venus_melee_parts										gavvakh	90	25																				
+venus_weapon_parts										gavvakh	100	20																				
+quasi_darts_ammo										gavvakh	120	15																				
+quasi_basic_ammo										eon	80	20																				
+quasi_grenade										eon	150	12																				
+mercury_guts		Shartamakhum	1	40	0.2	1	QuasiOrgan	FALSE	20	agga	130	20																				
+mercury_scales		Shartamakhum	1	40	0.3	1	QuasiOrgan	FALSE	20	agga	120	25																				
+mercury_rags										agga	100	20																				
+mercury_glass										eon	90	25																				
+quasi_energy_ammo										eon	130	20																				
+moon_guts		Duggur	1	40	0.2	1	QuasiOrgan	FALSE	20	agga	130	20																				
+moon_weapon_parts										shavva	100	20																				
+moon_armor_plates										agga	100	20																				
+quasi_bolts_ammo										shavva	100	25																				
+quasi_ron_medicine_1										agga	110	25																				
+ron_tentacle										agga	130	15																				
+roasted_ron_tentacle										agga	130	20																				
+ron_mask_1										agga	125	30																				
+cattaram_geode		Cattaram	1	40	0.2	1	QuasiOrgan	FALSE	20	eon	120	25	ore_cargo 1 precious_metals 1 broken_weapon 1																			
+cattaram_stone										eon	130	20																				
+cattaram_mine										eon	130	15																				
+skrivnus_knife										gavvakh	140	15																				
+impaler										gavvakh	130	25																				
+urparp_grenade										shavva	120	12																				
+mars_gas_ammo										shavva	150	10																				
+mars_gear										shavva	130	20																				
+mars_skin										gavvakh	120	25																				
+mars_crab_meat										gavvakh	150	10																				
+roasted_mars_crab_meat										gavvakh	160	30																				
+jupiter_goulash										gavvakh	120	40																				
+jupiter_mushrooms										gavvakh	100	30																				
+jupiter_grass										shavva	130	15																				
+jupiter_guts		Flauros	1	40	0.2	1	QuasiOrgan	FALSE	20	shavva	120	25																				
+#end																																

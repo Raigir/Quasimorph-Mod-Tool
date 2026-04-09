@@ -1,0 +1,16 @@
+#ammoTypes
+name
+Bolts
+Bullets
+Medium
+Heavy
+SuperHeavy
+Shells
+Rocket
+BatteryCells
+Gas
+Toxic
+QuasiCells
+SawBlade
+
+#end

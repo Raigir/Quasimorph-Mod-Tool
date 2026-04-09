@@ -1,0 +1,762 @@
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════
+const PORT = 8080;
+const DATA_ROOT = path.join(__dirname, 'data');
+const REF_ROOT = path.join(__dirname, 'ref');
+
+// Asset categories — each project gets these subfolders under Assets/
+const ASSET_CATEGORIES = [
+  'Ammo',
+  'Armors',
+  'Bundles',
+  'Consumables',
+  'Crafting Recipes',
+  'Datadisks',
+  'Descriptors',
+  'Explosions',
+  'FactionRewards',
+  'Firemodes',
+  'Localization',
+  'Weapons',
+];
+
+// Valid image suffixes
+const IMAGE_SUFFIXES = ['sprite_icon', 'sprite_floor', 'sprite_shadow'];
+
+// Ensure data root exists
+if (!fs.existsSync(DATA_ROOT)) fs.mkdirSync(DATA_ROOT, { recursive: true });
+
+// ═══════════════════════════════════════════════════════════════════
+//  STATIC FILE SERVER
+// ═══════════════════════════════════════════════════════════════════
+const MIME = {
+  '.html': 'text/html',
+  '.css': 'text/css',
+  '.js': 'application/javascript',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+};
+
+function serveStatic(req, res) {
+  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const ext = path.extname(filePath);
+  const mime = MIME[ext] || 'application/octet-stream';
+
+  if (!fs.existsSync(filePath)) {
+    res.writeHead(404);
+    res.end('Not found');
+    return;
+  }
+
+  res.writeHead(200, { 'Content-Type': mime });
+  fs.createReadStream(filePath).pipe(res);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  API ROUTER
+// ═══════════════════════════════════════════════════════════════════
+async function handleApi(req, res, query) {
+  res.setHeader('Content-Type', 'application/json');
+  const action = query.action || '';
+  const method = req.method;
+
+  try {
+    switch (action) {
+
+      // ── Projects ──────────────────────────────────────────
+      case 'projects':
+        return json(res, listProjects());
+
+      case 'project':
+        if (method === 'POST') return json(res, createProject(await readBody(req)));
+        return json(res, getProject(query.id));
+
+      case 'project_rename':
+        return json(res, renameProject(await readBody(req)));
+
+      case 'project_delete':
+        return json(res, deleteProject(query.id));
+
+      case 'project_settings':
+        if (method === 'POST') return json(res, saveProjectSettings(await readBody(req)));
+        return json(res, getProjectSettings(query.id));
+
+      // ── Assets (CRUD) ────────────────────────────────────
+      case 'assets':
+        return json(res, listAssets(query.project, query.category));
+
+      case 'asset':
+        if (method === 'POST') return json(res, saveAsset(await readBody(req)));
+        return json(res, getAsset(query.project, query.category, query.id));
+
+      case 'asset_delete':
+        return json(res, deleteAsset(query.project, query.category, query.id));
+
+      // ── Bulk / Utility ────────────────────────────────────
+      case 'categories':
+        return json(res, { categories: ASSET_CATEGORIES });
+
+      case 'project_tree':
+        return json(res, getProjectTree(query.id));
+
+      // ── Images ─────────────────────────────────────────────
+      case 'image_upload':
+        return json(res, uploadImage(await readBody(req)));
+
+      case 'image_rename':
+        return json(res, renameImages(await readBody(req)));
+
+      case 'image':
+        return serveImage(res, query.project, query.id, query.suffix || 'sprite_icon', query.folder || '');
+
+      case 'image_folders':
+        return json(res, listImageFolders(query.project));
+
+      case 'image_folders_save':
+        return json(res, saveImageFolders(await readBody(req)));
+
+      case 'image_folder_check':
+        return json(res, checkImageFolder(query.project, query.folder));
+
+      case 'image_find':
+        return json(res, findImageFolder(query.project, query.id));
+
+      case 'image_move':
+        return json(res, moveImages(await readBody(req)));
+
+      // ── Datadisks ──────────────────────────────────────────
+      case 'datadisk_membership':
+        return json(res, getDatadiskMembership(query.project, query.id));
+
+      case 'datadisk_update':
+        return json(res, updateDatadiskMembership(await readBody(req)));
+
+      case 'datadisk_rename_weapon':
+        return json(res, renameWeaponInDatadisks(await readBody(req)));
+
+      case 'datadisk_remove_weapon':
+        return json(res, removeWeaponFromAllDatadisks(await readBody(req)));
+
+      case 'health':
+        return json(res, { status: 'ok', timestamp: Date.now() });
+
+      // ── Reference Data ─────────────────────────────────────
+      case 'ref_list':
+        return json(res, listRefFiles());
+
+      case 'ref':
+        return json(res, getRefData(query.folder, query.file));
+
+      case 'ref_all':
+        return json(res, getAllRefData());
+
+      default:
+        res.writeHead(404);
+        return json(res, { error: `Unknown action: ${action}` });
+    }
+  } catch (err) {
+    if (!res.headersSent) res.writeHead(err.status || 500);
+    json(res, { error: err.message });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PROJECTS
+// ═══════════════════════════════════════════════════════════════════
+
+function listProjects() {
+  if (!fs.existsSync(DATA_ROOT)) return { projects: [] };
+  const dirs = fs.readdirSync(DATA_ROOT, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => {
+      const assetsDir = path.join(DATA_ROOT, d.name, 'Assets');
+      let assetCount = 0;
+      if (fs.existsSync(assetsDir)) {
+        const weaponsDir = path.join(assetsDir, 'Weapons');
+        if (fs.existsSync(weaponsDir)) {
+          assetCount = glob(weaponsDir, '.json').length;
+        }
+      }
+      return { id: d.name, name: d.name, assetCount };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
+  return { projects: dirs };
+}
+
+function getProject(id) {
+  id = sanitizeProjectId(id);
+  const dir = path.join(DATA_ROOT, id);
+  if (!id || !fs.existsSync(dir)) throw httpErr(404, 'Project not found');
+  return { id, name: id };
+}
+
+function createProject(input) {
+  const name = (input.name || '').trim();
+  if (!name) throw httpErr(400, 'Project name is required');
+
+  const id = sanitizeProjectId(name);
+  if (!id) throw httpErr(400, 'Invalid project name');
+
+  const dir = path.join(DATA_ROOT, id);
+  if (fs.existsSync(dir)) throw httpErr(409, 'Project already exists');
+
+  // Create project with all asset category subfolders
+  fs.mkdirSync(dir, { recursive: true });
+  const assetsDir = path.join(dir, 'Assets');
+  fs.mkdirSync(assetsDir);
+  for (const cat of ASSET_CATEGORIES) {
+    fs.mkdirSync(path.join(assetsDir, cat), { recursive: true });
+  }
+  fs.mkdirSync(path.join(assetsDir, 'Images'), { recursive: true });
+
+  console.log(`[PROJECT] Created: ${id}`);
+  return { status: 'ok', id, name: id };
+}
+
+function renameProject(input) {
+  const oldId = sanitizeProjectId(input.id);
+  const newName = (input.name || '').trim();
+  if (!oldId || !newName) throw httpErr(400, 'Missing id or name');
+
+  const newId = sanitizeProjectId(newName);
+  if (!newId) throw httpErr(400, 'Invalid project name');
+
+  const oldDir = path.join(DATA_ROOT, oldId);
+  const newDir = path.join(DATA_ROOT, newId);
+
+  if (!fs.existsSync(oldDir)) throw httpErr(404, 'Project not found');
+  if (oldId !== newId && fs.existsSync(newDir)) throw httpErr(409, 'A project with that name already exists');
+
+  if (oldId !== newId) {
+    fs.renameSync(oldDir, newDir);
+    console.log(`[PROJECT] Renamed: ${oldId} → ${newId}`);
+  }
+
+  return { status: 'ok', id: newId, name: newId };
+}
+
+function deleteProject(id) {
+  id = sanitizeProjectId(id);
+  if (!id) throw httpErr(400, 'Missing id');
+
+  const dir = path.join(DATA_ROOT, id);
+  if (!fs.existsSync(dir)) throw httpErr(404, 'Project not found');
+
+  fs.rmSync(dir, { recursive: true, force: true });
+  console.log(`[PROJECT] Deleted: ${id}`);
+  return { status: 'ok' };
+}
+
+function getProjectSettings(id) {
+  id = sanitizeProjectId(id);
+  const filePath = path.join(DATA_ROOT, id, 'settings.json');
+  if (fs.existsSync(filePath)) return readJson(filePath);
+  return { bundlePath: 'Bundles/' };
+}
+
+function saveProjectSettings(input) {
+  const id = sanitizeProjectId(input.project);
+  if (!id) throw httpErr(400, 'Missing project');
+  const dir = path.join(DATA_ROOT, id);
+  if (!fs.existsSync(dir)) throw httpErr(404, 'Project not found');
+  const settings = { bundlePath: input.bundlePath || 'Bundles/' };
+  writeJson(path.join(dir, 'settings.json'), settings);
+  console.log(`[PROJECT] Settings saved: ${id}`);
+  return { status: 'ok', ...settings };
+}
+
+function getProjectTree(id) {
+  id = sanitizeProjectId(id);
+  const assetsDir = path.join(DATA_ROOT, id, 'Assets');
+  if (!fs.existsSync(assetsDir)) throw httpErr(404, 'Project not found');
+
+  const tree = {};
+  for (const cat of ASSET_CATEGORIES) {
+    const catDir = path.join(assetsDir, cat);
+    if (fs.existsSync(catDir)) {
+      const files = glob(catDir, '.json').map(f => {
+        const data = readJson(f);
+        const fileId = path.basename(f, '.json');
+        return {
+          id: fileId,
+          recordType: data.RecordType || '',
+          dataId: data.Data?.Id || data.Data?.ItemId || fileId,
+        };
+      });
+      tree[cat] = files;
+    } else {
+      tree[cat] = [];
+    }
+  }
+
+  // Look up English names from localization files for weapons
+  const locDir = path.join(assetsDir, 'Localization');
+  if (tree['Weapons'] && fs.existsSync(locDir)) {
+    for (const w of tree['Weapons']) {
+      const locFile = path.join(locDir, `${w.dataId}_localization.json`);
+      if (fs.existsSync(locFile)) {
+        try {
+          const loc = readJson(locFile);
+          const nameKey = `item.${w.dataId}.name`;
+          w.englishName = loc.Data?.Keys?.[nameKey]?.EnglishUS || '';
+        } catch {}
+      }
+    }
+  }
+
+  return { id, tree };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  ASSETS (generic CRUD across all categories)
+// ═══════════════════════════════════════════════════════════════════
+
+function listAssets(projectId, category) {
+  projectId = sanitizeProjectId(projectId);
+  category = validateCategory(category);
+
+  const catDir = path.join(DATA_ROOT, projectId, 'Assets', category);
+  if (!fs.existsSync(catDir)) return { assets: [] };
+
+  const assets = glob(catDir, '.json').map(f => {
+    const data = readJson(f);
+    const fileId = path.basename(f, '.json');
+    return {
+      id: fileId,
+      recordType: data.RecordType || '',
+      dataId: data.Data?.Id || data.Data?.ItemId || fileId,
+      data: data.Data || {},
+    };
+  }).sort((a, b) => a.id.localeCompare(b.id));
+
+  return { project: projectId, category, assets };
+}
+
+function getAsset(projectId, category, assetId) {
+  projectId = sanitizeProjectId(projectId);
+  category = validateCategory(category);
+  assetId = sanitizeAssetId(assetId);
+
+  const filePath = path.join(DATA_ROOT, projectId, 'Assets', category, `${assetId}.json`);
+  if (!fs.existsSync(filePath)) throw httpErr(404, 'Asset not found');
+
+  return readJson(filePath);
+}
+
+function saveAsset(input) {
+  const projectId = sanitizeProjectId(input.project);
+  const category = validateCategory(input.category);
+  const assetId = sanitizeAssetId(input.id || input.data?.Id || input.data?.ItemId);
+
+  if (!projectId) throw httpErr(400, 'Missing project');
+  if (!assetId) throw httpErr(400, 'Missing asset id');
+
+  // Ensure category dir exists
+  const catDir = path.join(DATA_ROOT, projectId, 'Assets', category);
+  if (!fs.existsSync(catDir)) fs.mkdirSync(catDir, { recursive: true });
+
+  // Build the file content in the standard format
+  const record = {
+    RecordType: input.recordType || input.RecordType || '',
+    Data: input.data || input.Data || {},
+  };
+
+  const filePath = path.join(catDir, `${assetId}.json`);
+  const isNew = !fs.existsSync(filePath);
+
+  writeJson(filePath, record);
+  console.log(`[ASSET] ${isNew ? 'Created' : 'Updated'}: ${projectId}/${category}/${assetId}`);
+
+  return { status: 'ok', project: projectId, category, id: assetId, isNew };
+}
+
+function deleteAsset(projectId, category, assetId) {
+  projectId = sanitizeProjectId(projectId);
+  category = validateCategory(category);
+  assetId = sanitizeAssetId(assetId);
+
+  const filePath = path.join(DATA_ROOT, projectId, 'Assets', category, `${assetId}.json`);
+  if (!fs.existsSync(filePath)) throw httpErr(404, 'Asset not found');
+
+  fs.unlinkSync(filePath);
+
+  // Clean up all associated images (root + subfolders)
+  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+  const foldersToCheck = [''];
+  if (fs.existsSync(imagesDir)) {
+    fs.readdirSync(imagesDir, { withFileTypes: true })
+      .filter(d => d.isDirectory()).forEach(d => foldersToCheck.push(d.name));
+  }
+  for (const folder of foldersToCheck) {
+    const dir = resolveImagesDir(projectId, folder);
+    for (const suffix of IMAGE_SUFFIXES) {
+      const imgPath = path.join(dir, `${assetId}_${suffix}.png`);
+      if (fs.existsSync(imgPath)) {
+        fs.unlinkSync(imgPath);
+        console.log(`[IMAGE] Cleaned up: ${folder ? folder + '/' : ''}${assetId}_${suffix}.png`);
+      }
+    }
+  }
+
+  console.log(`[ASSET] Deleted: ${projectId}/${category}/${assetId}`);
+  return { status: 'ok' };
+}
+// ═══════════════════════════════════════════════════════════════════
+//  IMAGES
+// ═══════════════════════════════════════════════════════════════════
+
+function validateSuffix(suffix) {
+  if (!IMAGE_SUFFIXES.includes(suffix)) {
+    throw httpErr(400, `Invalid image suffix: ${suffix}. Valid: ${IMAGE_SUFFIXES.join(', ')}`);
+  }
+  return suffix;
+}
+
+function resolveImagesDir(projectId, folder) {
+  const base = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+  if (!folder) return base;
+  const clean = folder.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\.\./g, '');
+  if (!clean) return base;
+  return path.join(base, clean);
+}
+
+function listImageFolders(projectId) {
+  projectId = sanitizeProjectId(projectId);
+  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+  if (!fs.existsSync(imagesDir)) return { folders: [] };
+  const folders = fs.readdirSync(imagesDir, { withFileTypes: true })
+    .filter(d => d.isDirectory()).map(d => d.name).sort();
+  return { folders };
+}
+
+function saveImageFolders(input) {
+  const projectId = sanitizeProjectId(input.project);
+  if (!projectId) throw httpErr(400, 'Missing project');
+  const desired = (input.folders || []).map(f => f.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\.\./g, '')).filter(Boolean);
+  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+  if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+  const current = fs.readdirSync(imagesDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+
+  // Check for non-empty folders being removed
+  const blocked = [];
+  for (const f of current) {
+    if (!desired.includes(f)) {
+      const dir = path.join(imagesDir, f);
+      const contents = fs.readdirSync(dir);
+      if (contents.length > 0) blocked.push(f);
+    }
+  }
+  if (blocked.length) {
+    throw httpErr(400, `Cannot remove folders that contain images: ${blocked.join(', ')}`);
+  }
+
+  // Create new folders
+  for (const f of desired) {
+    const dir = path.join(imagesDir, f);
+    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); console.log(`[IMAGE] Created folder: Images/${f}`); }
+  }
+  // Remove empty folders no longer in list
+  for (const f of current) {
+    if (!desired.includes(f)) {
+      fs.rmdirSync(path.join(imagesDir, f));
+      console.log(`[IMAGE] Removed empty folder: Images/${f}`);
+    }
+  }
+  return { status: 'ok', folders: desired };
+}
+
+function checkImageFolder(projectId, folder) {
+  projectId = sanitizeProjectId(projectId);
+  if (!folder) return { empty: true };
+  const dir = resolveImagesDir(projectId, folder);
+  if (!fs.existsSync(dir)) return { empty: true };
+  const contents = fs.readdirSync(dir);
+  return { empty: contents.length === 0, count: contents.length };
+}
+
+function findImageFolder(projectId, imageId) {
+  projectId = sanitizeProjectId(projectId);
+  imageId = sanitizeAssetId(imageId);
+  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+  if (!fs.existsSync(imagesDir)) return { folder: '' };
+  const rootFile = path.join(imagesDir, `${imageId}_sprite_icon.png`);
+  if (fs.existsSync(rootFile)) return { folder: '' };
+  for (const d of fs.readdirSync(imagesDir, { withFileTypes: true })) {
+    if (d.isDirectory()) {
+      if (fs.existsSync(path.join(imagesDir, d.name, `${imageId}_sprite_icon.png`))) return { folder: d.name };
+    }
+  }
+  return { folder: '' };
+}
+
+function moveImages(input) {
+  const projectId = sanitizeProjectId(input.project);
+  const imageId = sanitizeAssetId(input.id);
+  const fromFolder = input.from || '';
+  const toFolder = input.to || '';
+  if (!projectId || !imageId) throw httpErr(400, 'Missing project or id');
+  if (fromFolder === toFolder) return { status: 'ok', moved: [] };
+  const fromDir = resolveImagesDir(projectId, fromFolder);
+  const toDir = resolveImagesDir(projectId, toFolder);
+  if (!fs.existsSync(toDir)) fs.mkdirSync(toDir, { recursive: true });
+  const moved = [];
+  for (const suffix of IMAGE_SUFFIXES) {
+    const oldPath = path.join(fromDir, `${imageId}_${suffix}.png`);
+    const newPath = path.join(toDir, `${imageId}_${suffix}.png`);
+    if (fs.existsSync(oldPath)) { fs.renameSync(oldPath, newPath); moved.push(suffix); console.log(`[IMAGE] Moved: ${imageId}_${suffix}.png ${fromFolder || 'root'} → ${toFolder || 'root'}`); }
+  }
+  return { status: 'ok', moved };
+}
+
+function uploadImage(input) {
+  const projectId = sanitizeProjectId(input.project);
+  const imageId = sanitizeAssetId(input.id);
+  const suffix = validateSuffix(input.suffix || 'sprite_icon');
+  const folder = input.folder || '';
+  const base64 = input.data;
+  if (!projectId) throw httpErr(400, 'Missing project');
+  if (!imageId) throw httpErr(400, 'Missing image id');
+  if (!base64) throw httpErr(400, 'Missing image data');
+  const raw = base64.replace(/^data:image\/png;base64,/, '');
+  const buf = Buffer.from(raw, 'base64');
+  if (buf.length < 8 || buf[0] !== 0x89 || buf[1] !== 0x50 || buf[2] !== 0x4E || buf[3] !== 0x47) {
+    throw httpErr(400, 'Image must be a PNG file');
+  }
+  const dir = resolveImagesDir(projectId, folder);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const fileName = `${imageId}_${suffix}.png`;
+  fs.writeFileSync(path.join(dir, fileName), buf);
+  console.log(`[IMAGE] Uploaded: ${projectId}/Images/${folder ? folder + '/' : ''}${fileName} (${buf.length} bytes)`);
+  return { status: 'ok', project: projectId, id: imageId, suffix, folder, file: fileName, size: buf.length };
+}
+
+function renameImages(input) {
+  const projectId = sanitizeProjectId(input.project);
+  const oldId = sanitizeAssetId(input.oldId);
+  const newId = sanitizeAssetId(input.newId);
+  const folder = input.folder || '';
+  if (!projectId || !oldId || !newId) throw httpErr(400, 'Missing project, oldId, or newId');
+  if (oldId === newId) return { status: 'ok', renamed: [] };
+  const dir = resolveImagesDir(projectId, folder);
+  const renamed = [];
+  for (const suffix of IMAGE_SUFFIXES) {
+    const oldPath = path.join(dir, `${oldId}_${suffix}.png`);
+    const newPath = path.join(dir, `${newId}_${suffix}.png`);
+    if (fs.existsSync(oldPath)) { fs.renameSync(oldPath, newPath); renamed.push(suffix); console.log(`[IMAGE] Renamed: ${oldId}_${suffix}.png → ${newId}_${suffix}.png`); }
+  }
+  return { status: 'ok', renamed };
+}
+
+function serveImage(res, projectId, imageId, suffix, folder) {
+  projectId = sanitizeProjectId(projectId);
+  imageId = sanitizeAssetId(imageId);
+  suffix = validateSuffix(suffix);
+  const fileName = `${imageId}_${suffix}.png`;
+
+  // Try the specified folder first
+  const dir = resolveImagesDir(projectId, folder || '');
+  let filePath = path.join(dir, fileName);
+
+  // If not found and no explicit folder, scan subfolders
+  if (!fs.existsSync(filePath) && !folder) {
+    const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+    if (fs.existsSync(imagesDir)) {
+      for (const d of fs.readdirSync(imagesDir, { withFileTypes: true })) {
+        if (d.isDirectory()) {
+          const subPath = path.join(imagesDir, d.name, fileName);
+          if (fs.existsSync(subPath)) { filePath = subPath; break; }
+        }
+      }
+    }
+  }
+
+  if (!fs.existsSync(filePath)) { res.writeHead(404); res.end('Not found'); return; }
+  res.writeHead(200, { 'Content-Type': 'image/png' });
+  fs.createReadStream(filePath).pipe(res);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  REFERENCE DATA (TSV files in ref/)
+// ═══════════════════════════════════════════════════════════════════
+
+function parseTsv(filePath) {
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const lines = raw.split(/\r?\n/).filter(l => l.trim() && !l.startsWith('#'));
+
+  if (lines.length < 1) return { columns: [], rows: [] };
+
+  // Keep raw positions so cells align; track which indices have named columns
+  const rawColumns = lines[0].split('\t').map(c => c.trim());
+  const columns = rawColumns.filter(Boolean);
+  const rows = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cells = lines[i].split('\t').map(c => c.trim());
+    const row = {};
+    for (let j = 0; j < rawColumns.length; j++) {
+      if (rawColumns[j]) {
+        row[rawColumns[j]] = cells[j] || '';
+      }
+    }
+    rows.push(row);
+  }
+
+  return { columns, rows };
+}
+
+function listRefFiles() {
+  const result = {};
+  for (const folder of ['base', 'enums']) {
+    const dir = path.join(REF_ROOT, folder);
+    if (fs.existsSync(dir)) {
+      result[folder] = fs.readdirSync(dir)
+        .filter(f => f.endsWith('.txt'))
+        .map(f => f.replace('.txt', ''));
+    } else {
+      result[folder] = [];
+    }
+  }
+  return result;
+}
+
+function getRefData(folder, file) {
+  if (!folder || !file) throw httpErr(400, 'Missing folder or file');
+  if (!['base', 'enums'].includes(folder)) throw httpErr(400, 'Invalid folder');
+
+  const filePath = path.join(REF_ROOT, folder, `${file}.txt`);
+  if (!fs.existsSync(filePath)) throw httpErr(404, `Ref file not found: ${folder}/${file}`);
+
+  return parseTsv(filePath);
+}
+
+function getAllRefData() {
+  const all = { base: {}, enums: {} };
+
+  for (const folder of ['base', 'enums']) {
+    const dir = path.join(REF_ROOT, folder);
+    if (!fs.existsSync(dir)) continue;
+
+    for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.txt'))) {
+      const name = file.replace('.txt', '');
+      all[folder][name] = parseTsv(path.join(dir, file));
+    }
+  }
+
+  return all;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════════
+
+function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+// Fields the game expects as floats (integer values need trailing .0)
+const FLOAT_FIELDS = ['Price', 'Weight', 'Points'];
+
+function writeJson(filePath, data) {
+  let json = JSON.stringify(data, null, 2);
+  // Force .0 on known float fields that serialize as integers
+  for (const field of FLOAT_FIELDS) {
+    json = json.replace(new RegExp(`("${field}":\\s*)(\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) => {
+      return num.includes('.') ? m : `${pre}${num}.0${post}`;
+    });
+  }
+  fs.writeFileSync(filePath, json, 'utf8');
+}
+
+function glob(dir, ext) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith(ext))
+    .map(f => path.join(dir, f));
+}
+
+/** Project IDs preserve casing and allow spaces (folder names) */
+function sanitizeProjectId(str) {
+  if (!str) return '';
+  return str.trim().replace(/[<>:"/\\|?*]/g, '');
+}
+
+/** Asset IDs are the filename stem — allow underscores, hyphens, alphanumeric */
+function sanitizeAssetId(str) {
+  if (!str) return '';
+  return str.trim().replace(/[^a-zA-Z0-9_\-]/g, '');
+}
+
+/** Validate that a category is one of the known ones */
+function validateCategory(cat) {
+  if (!cat) throw httpErr(400, 'Missing category');
+  const match = ASSET_CATEGORIES.find(c => c.toLowerCase() === cat.toLowerCase());
+  if (!match) throw httpErr(400, `Unknown category: ${cat}. Valid: ${ASSET_CATEGORIES.join(', ')}`);
+  return match; // return the canonical casing
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try { resolve(JSON.parse(body || '{}')); }
+      catch { reject(httpErr(400, 'Invalid JSON')); }
+    });
+    req.on('error', reject);
+  });
+}
+
+function json(res, data) {
+  if (!res.headersSent) res.writeHead(200);
+  res.end(JSON.stringify(data));
+}
+
+function httpErr(status, message) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SERVER
+// ═══════════════════════════════════════════════════════════════════
+
+const server = http.createServer(async (req, res) => {
+  const parsed = new URL(req.url, 'http://localhost');
+
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+
+  // API routes
+  if (parsed.pathname === '/api') {
+    return handleApi(req, res, Object.fromEntries(parsed.searchParams));
+  }
+
+  // Static files
+  serveStatic(req, res);
+});
+
+server.listen(PORT, () => {
+  console.log('');
+  console.log('  ╔══════════════════════════════════════╗');
+  console.log('  ║      Mod Workflow Tool running        ║');
+  console.log(`  ║   http://localhost:${PORT}/              ║`);
+  console.log('  ║   Press Ctrl+C to stop               ║');
+  console.log('  ╚══════════════════════════════════════╝');
+  console.log('');
+});
+
+process.on('SIGINT', () => { console.log('\nShutting down...'); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 2000); });
+process.on('SIGTERM', () => { console.log('\nShutting down...'); server.close(() => process.exit(0)); setTimeout(() => process.exit(0), 2000); });
