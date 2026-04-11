@@ -1092,13 +1092,13 @@
     <div class="ed-section">
       <div class="ed-section-title">Image Properties</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Icon Sprite Path</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Icon Sprite Path/ID</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Small Icon Sprite Path</label><input type="text" id="desc-SmallIconSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Small Icon Sprite Path/ID</label><input type="text" id="desc-SmallIconSpriteIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Shadow Sprite Path</label><input type="text" id="desc-ShadowOnFloorSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Shadow Sprite Path/ID</label><input type="text" id="desc-ShadowOnFloorSpriteIdOrPath"></div>
       </div>
     </div>
 
@@ -1106,12 +1106,12 @@
     <div class="ed-section">
       <div class="ed-section-title">Audio Properties</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Shoot Sound</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
-        <div class="ed-field"><label>Reload Sound</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
+        <div class="ed-field"><label>Shoot Sound ID</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
+        <div class="ed-field"><label>Reload Sound ID</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Dry Shot Sound</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
-        <div class="ed-field"><label>Failed Attack Sound</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
+        <div class="ed-field"><label>Dry Shot Sound ID</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
+        <div class="ed-field"><label>Failed Attack Sound ID</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
       </div>
     </div>
 
@@ -1120,7 +1120,7 @@
       <div class="ed-section-title">Model Properties</div>
       <div class="ed-row">
         <div class="ed-field"><label>Asset Bundle Path</label><input type="text" id="desc-AssetBundlePath"></div>
-        <div class="ed-field"><label>Texture Id/Path</label><input type="text" id="desc-TextureIdOrPath"></div>
+        <div class="ed-field"><label>Texture ID</label><input type="text" id="desc-TextureIdOrPath"></div>
       </div>
       <div class="ed-row">
         <div class="ed-field"><label>Muzzle Id</label><input type="text" id="desc-MuzzleId"></div>
@@ -1209,6 +1209,52 @@
     </div>
   </div>
 
+  <!-- Firemode Editor -->
+  <!-- Firemode Editor -->
+  <div class="editor-wrap" id="fmConfigWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Firemode Config</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Id</label><input type="text" id="fm-Id"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Required All Ammo To Shot</label><input type="checkbox" id="fm-RequiredAllAmmoToShot"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Per Shot</label><input type="number" id="fm-AmmoPerShot" step="1" oninput="validateFmField(this, 'int_gte0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Weapon Casts Count</label><input type="number" id="fm-WeaponCastsCount" step="1" oninput="validateFmField(this, 'int_gt0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Accuracy</label><input type="number" id="fm-Accuracy" step="0.01"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Scatter Angle</label><input type="number" id="fm-ScatterAngle" step="0.01"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Damage Mult</label><input type="number" id="fm-DamageMult" step="0.01" oninput="validateFmField(this, 'num_gt0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Delay Between Shots</label><input type="number" id="fm-DelayInSecsBetweenShots" step="0.01" oninput="validateFmField(this, 'num_gte0')"></div>
+      </div>
+    </div>
+    <div class="ed-section">
+      <div class="ed-section-title">Descriptor</div>
+      <div class="img-upload-area" style="margin-bottom:10px;">
+        <div class="img-upload-slot">
+          <span class="slot-label">Sprite</span>
+          <div class="img-preview" id="fmSpritePreview"><span class="placeholder-text">No image</span></div>
+          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
+          <input type="file" id="fmSpriteFile" accept=".png,image/png" style="display:none" onchange="handleFmSpriteUpload(this)">
+          <span class="img-hint">PNG only</span>
+        </div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Sprite Path/ID</label><input type="text" id="fmd-SpriteIdOrPath"></div>
+      </div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveFiremode()">Save</button>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 </div>
@@ -1233,7 +1279,7 @@
         </div>
       </div>
       <div class="ed-section">
-        <div class="ed-section-title">Image Folders</div>
+        <div class="ed-section-title">Weapon Image Folders</div>
         <div class="ed-row" style="margin-bottom:8px;">
           <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
         </div>
@@ -1253,6 +1299,7 @@
 // ═══════════════════════════════════════════════════════════════════
 let selProject = null;
 let selWeapon = null;
+let selFiremode = null;
 let REF = null;
 let curImageFolder = '';
 let currentMode = 'weapons';
@@ -1315,10 +1362,10 @@ async function deleteProjectById(id) {
     if (selProject?.id === id) {
       selProject = null;
       selWeapon = null;
+      selFiremode = null;
       localStorage.removeItem('lastProject');
       document.querySelector('.c-header-title').textContent = '—';
-      document.getElementById('editorWrap').classList.remove('visible');
-      document.getElementById('tabBar').classList.remove('visible');
+      hideAllEditors();
       for (const paneId of Object.values(TAB_PANES)) {
         document.getElementById(paneId)?.classList.remove('visible');
       }
@@ -1525,9 +1572,9 @@ async function selectProject(id, skipAutoSelect) {
     document.getElementById('assetFilter').style.display = '';
     document.getElementById('assetFilterInput').value = '';
     selWeapon = null;
+    selFiremode = null;
     _formSnapshot = null;
-    document.getElementById('editorWrap').classList.remove('visible');
-    document.getElementById('tabBar').classList.remove('visible');
+    hideAllEditors();
     for (const paneId of Object.values(TAB_PANES)) {
       document.getElementById(paneId)?.classList.remove('visible');
     }
@@ -1563,6 +1610,7 @@ function renderModeList(tree, skipAutoSelect) {
     renderFiremodeList(items);
     if (items.length) {
       emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectFiremode(items[0].id);
     } else {
       emptyState.style.display = '';
       emptyState.querySelector('div:last-child').textContent = 'No firemodes yet';
@@ -1589,7 +1637,7 @@ function renderFiremodeList(items) {
   const el = document.getElementById('assetList');
   if (!items.length) { el.innerHTML = '<div class="sb-empty">No firemodes yet</div>'; return; }
   el.innerHTML = items.map(f => `
-    <div class="card" onclick="selectFiremode('${esc(f.id)}')">
+    <div class="card" onclick="guardSelectFiremode('${esc(f.id)}')">
       <div class="card-top"><div class="card-info">
         <div class="c-name">${esc(f.dataId || f.id)}</div>
         <div class="c-sub">${esc(f.recordType)}</div>
@@ -1602,13 +1650,362 @@ function renderFiremodeList(items) {
 
 // Stubs — will be implemented later
 function createNewAmmo() { toast('Ammo editor coming soon'); }
-function createNewFiremode() { toast('Firemode editor coming soon'); }
 function selectAmmo(id) { toast('Ammo editor coming soon'); }
-function selectFiremode(id) { toast('Firemode editor coming soon'); }
 function confirmDeleteAmmo(btn, id) { toast('Ammo editor coming soon'); }
-function confirmDeleteFiremode(btn, id) { toast('Firemode editor coming soon'); }
 function confirmCopyAmmo(id) { toast('Ammo editor coming soon'); }
-function confirmCopyFiremode(id) { toast('Firemode editor coming soon'); }
+
+// ═══════════════════════════════════════════════════════════════════
+//  FIREMODE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+function newFiremodeRecord(id) {
+  return {
+    RecordType: 'MGSC.FireModeRecord',
+    Data: {
+      Id: id || 'tempId',
+      AmmoPerShot: 1,
+      WeaponCastsCount: 1,
+      RequiredAllAmmoToShot: false,
+      Accuracy: 0.0,
+      DamageMult: 1.0,
+      ScatterAngle: 0.0,
+      DelayInSecsBetweenShots: 0.0,
+    }
+  };
+}
+
+function populateFiremodeEditor(d) {
+  val('fm-Id', d.Id);
+  val('fm-AmmoPerShot', d.AmmoPerShot ?? 1);
+  val('fm-WeaponCastsCount', d.WeaponCastsCount ?? 1);
+  chk('fm-RequiredAllAmmoToShot', d.RequiredAllAmmoToShot);
+  val('fm-Accuracy', d.Accuracy ?? 0);
+  val('fm-DamageMult', d.DamageMult ?? 1);
+  val('fm-ScatterAngle', d.ScatterAngle ?? 0);
+  val('fm-DelayInSecsBetweenShots', d.DelayInSecsBetweenShots ?? 0);
+}
+
+function collectFiremodeEditor() {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  const bool = (id) => document.getElementById(id).checked;
+  return {
+    Id: str('fm-Id').trim(),
+    AmmoPerShot: int('fm-AmmoPerShot'),
+    WeaponCastsCount: int('fm-WeaponCastsCount'),
+    RequiredAllAmmoToShot: bool('fm-RequiredAllAmmoToShot'),
+    Accuracy: num('fm-Accuracy'),
+    DamageMult: num('fm-DamageMult'),
+    ScatterAngle: num('fm-ScatterAngle'),
+    DelayInSecsBetweenShots: num('fm-DelayInSecsBetweenShots'),
+  };
+}
+
+async function createNewFiremode() {
+  if (!selProject || isSaving) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`tempId${n}`)) n++;
+    const newId = `tempId${n}`;
+    const record = newFiremodeRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    // Create blank descriptor
+    const fmDesc = newFiremodeDescriptorRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: fmDesc.RecordType, data: fmDesc.Data }
+    });
+    toast(`Created firemode "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function newFiremodeDescriptorRecord(id) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor',
+    Data: {
+      SpriteIdOrPath: '',
+      ItemId: id,
+    }
+  };
+}
+
+function populateFiremodeDescriptor(data) {
+  val('fmd-SpriteIdOrPath', data?.SpriteIdOrPath || '');
+}
+
+function collectFiremodeDescriptor(firemodeId) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor',
+    Data: {
+      SpriteIdOrPath: document.getElementById('fmd-SpriteIdOrPath').value,
+      ItemId: firemodeId,
+    }
+  };
+}
+
+async function loadFiremodeDescriptor(firemodeId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: firemodeId + '_descriptor' } });
+    populateFiremodeDescriptor(data.Data);
+  } catch {
+    populateFiremodeDescriptor(null);
+  }
+  loadFmSprite(firemodeId);
+}
+
+function loadFmSprite(firemodeId) {
+  const preview = document.getElementById('fmSpritePreview');
+  const img = new Image();
+  const url = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(firemodeId)}&suffix=sprite&folder=Firemodes&t=${Date.now()}`;
+  img.onload = () => { preview.innerHTML = ''; preview.appendChild(img); };
+  img.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
+  img.src = url;
+}
+
+async function handleFmSpriteUpload(input) {
+  if (!input.files.length || !selFiremode || !selProject) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64 = reader.result;
+    try {
+      await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
+      toast('Sprite uploaded');
+      loadFmSprite(selFiremode.id);
+      val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
+    } catch (e) { toast(e.message, 1); }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveFiremodeDescriptor(firemodeId) {
+  const desc = collectFiremodeDescriptor(firemodeId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Descriptors/Firemodes', id: firemodeId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+  });
+}
+
+async function selectFiremode(id) {
+  if (!selProject) return;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Firemodes', id } });
+    selFiremode = { id, record };
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateFiremodeEditor(record.Data);
+    await loadFiremodeDescriptor(id);
+    document.getElementById('tabBar').classList.remove('visible');
+    // Hide weapon editor, show firemode editor
+    document.getElementById('editorWrap').classList.remove('visible');
+    for (const paneId of Object.values(TAB_PANES)) {
+      document.getElementById(paneId)?.classList.remove('visible');
+    }
+    document.getElementById('fmConfigWrap').classList.add('visible');
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    try { _formSnapshot = captureFiremodeSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+}
+
+function captureFiremodeSnapshot() {
+  const parts = [];
+  document.querySelectorAll('#fmConfigWrap input, #fmConfigWrap select').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
+    else parts.push(el.id + ':' + el.value);
+  });
+  return parts.join('|');
+}
+
+function isFiremodeDirty() {
+  if (!_formSnapshot || !selFiremode) return false;
+  return captureFiremodeSnapshot() !== _formSnapshot;
+}
+
+function validateFmField(input, rule) {
+  const v = parseFloat(input.value);
+  let valid = !isNaN(v);
+  if (rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+  else if (rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+  else if (rule === 'num_gt0') valid = valid && v > 0;
+  else if (rule === 'num_gte0') valid = valid && v >= 0;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validateAllFiremode() {
+  let allValid = true;
+  const checks = [
+    { id: 'fm-AmmoPerShot', rule: 'int_gte0' },
+    { id: 'fm-WeaponCastsCount', rule: 'int_gt0' },
+    { id: 'fm-DamageMult', rule: 'num_gt0' },
+    { id: 'fm-DelayInSecsBetweenShots', rule: 'num_gte0' },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    const v = parseFloat(el.value);
+    let valid = !isNaN(v);
+    if (c.rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+    else if (c.rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+    else if (c.rule === 'num_gt0') valid = valid && v > 0;
+    else if (c.rule === 'num_gte0') valid = valid && v >= 0;
+    el.classList.toggle('invalid', !valid);
+    if (!valid) allValid = false;
+  }
+  return allValid;
+}
+
+function collectFmValidationErrors() {
+  const errors = [];
+  const add = (msg) => errors.push({ tab: 'Firemode Config', section: 'Firemode Config', msg });
+  const pf = (id) => parseFloat(document.getElementById(id).value);
+  const v1 = pf('fm-AmmoPerShot');
+  if (isNaN(v1) || !Number.isInteger(v1) || v1 < 0) add('Ammo Per Shot — integer ≥ 0');
+  const v2 = pf('fm-WeaponCastsCount');
+  if (isNaN(v2) || !Number.isInteger(v2) || v2 <= 0) add('Weapon Casts Count — integer > 0');
+  const v3 = pf('fm-DamageMult');
+  if (isNaN(v3) || v3 <= 0) add('Damage Mult — must be positive');
+  const v4 = pf('fm-DelayInSecsBetweenShots');
+  if (isNaN(v4) || v4 < 0) add('Delay Between Shots — no negative');
+  return errors;
+}
+
+async function saveFiremode() {
+  if (!selProject || !selFiremode || isSaving) return;
+
+  if (!validateAllFiremode()) {
+    showValidationErrorModal(collectFmValidationErrors());
+    return;
+  }
+
+  const data = collectFiremodeEditor();
+  const newId = data.Id;
+  const oldId = selFiremode.id;
+
+  // Validate Id
+  if (!newId) { toast('Firemode Id cannot be empty', 1); document.getElementById('fm-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Firemode Id contains invalid characters', 1); document.getElementById('fm-Id').classList.add('invalid'); return; }
+  document.getElementById('fm-Id').classList.remove('invalid');
+
+  // Duplicate check — project firemodes
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Firemodes', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('fm-Id').classList.add('invalid');
+      return;
+    } catch {}
+  }
+
+  // Duplicate check — base game firemodes
+  const baseIds = (REF?.base?.firemodes?.rows || []).map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  if (baseIds.includes(newId)) {
+    toast('ID conflicts with base game firemode', 1);
+    document.getElementById('fm-Id').classList.add('invalid');
+    return;
+  }
+
+  isSaving = true;
+  try {
+    if (newId !== oldId) {
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: 'Firemodes' } });
+      await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: oldId + '_descriptor' } }); } catch {}
+      // Update sprite path if it was set
+      const curPath = document.getElementById('fmd-SpriteIdOrPath').value;
+      if (curPath && curPath.includes(oldId)) {
+        val('fmd-SpriteIdOrPath', curPath.replace(oldId, newId));
+      }
+    }
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: 'MGSC.FireModeRecord', data }
+    });
+    await saveFiremodeDescriptor(newId);
+    selFiremode.id = newId;
+    toast('Saved');
+    _formSnapshot = captureFiremodeSnapshot();
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function deleteFiremode(id) {
+  if (!selProject) return;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id } });
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: id + '_descriptor' } }); } catch {}
+    toast(`Deleted "${id}"`);
+    selFiremode = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+}
+
+function confirmDeleteFiremode(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteFiremode(id));
+}
+
+function confirmCopyFiremode(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyFiremode(id), 'Copy', 'primary');
+}
+
+async function copyFiremode(sourceId) {
+  if (!selProject || isSaving) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+
+    const src = await api('asset', { params: { project: selProject.id, category: 'Firemodes', id: sourceId } });
+    const data = { ...src.Data, Id: newId };
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: 'MGSC.FireModeRecord', data }
+    });
+
+    // Copy descriptor (clear sprite path — image not copied)
+    try {
+      const srcDesc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: sourceId + '_descriptor' } });
+      const descData = { ...srcDesc.Data, ItemId: newId, SpriteIdOrPath: '' };
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: srcDesc.RecordType, data: descData }
+      });
+    } catch {
+      const fmDesc = newFiremodeDescriptorRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: fmDesc.RecordType, data: fmDesc.Data }
+      });
+    }
+
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function guardSelectFiremode(id) {
+  if (selFiremode?.id === id) return;
+  const checkDirty = currentMode === 'firemodes' ? isFiremodeDirty : isFormDirty;
+  if (checkDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectFiremode(id), 'Yes', '');
+  } else {
+    selectFiremode(id);
+  }
+}
 
 function confirmCopyWeapon(id) {
   showConfirm(`Copy the asset "${id}"?`, () => copyWeapon(id), 'Copy', 'primary');
@@ -1655,7 +2052,7 @@ async function copyWeapon(sourceId) {
 
     // Copy descriptor
     try {
-      const desc = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: sourceId + '_descriptor' } });
+      const desc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: sourceId + '_descriptor' } });
       const descData = JSON.parse(JSON.stringify(desc.Data));
       descData.ItemId = newId;
       // Update ID-derived fields
@@ -1670,14 +2067,14 @@ async function copyWeapon(sourceId) {
         descData.ImageProperties.ShadowOnFloorSpriteIdOrPath = '';
       }
       await api('asset', {
-        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: descData }
+        body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: descData }
       });
     } catch {
       let bundlePath = 'Bundles/';
       try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
       const desc = newDescriptorRecord(newId, bundlePath);
       await api('asset', {
-        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+        body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
       });
     }
 
@@ -1719,25 +2116,23 @@ async function copyWeapon(sourceId) {
       const frAssets = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
       for (const asset of frAssets.assets) {
         const assetData = asset.data || {};
-        const rewardList = assetData.FactionRewardList || [];
-        const newEntries = [];
-        for (const reward of rewardList) {
-          const cids = reward.contentRecords?.[0]?.ContentIds || [];
-          if (cids.includes(sourceId)) {
-            newEntries.push({
-              FactionName: reward.FactionName,
-              RewardType: 'rewardEquipment',
-              contentRecords: [{
-                TechLevel: reward.contentRecords[0].TechLevel,
+        let changed = false;
+        for (const reward of (assetData.FactionRewardList || [])) {
+          const newCrs = [];
+          for (const cr of (reward.contentRecords || [])) {
+            if ((cr.ContentIds || []).includes(sourceId)) {
+              newCrs.push({
+                TechLevel: cr.TechLevel,
                 ContentIds: [newId],
-                Weight: reward.contentRecords[0].Weight,
-                Points: reward.contentRecords[0].Points,
-              }]
-            });
+                Weight: cr.Weight,
+                Points: cr.Points,
+              });
+              changed = true;
+            }
           }
+          reward.contentRecords = [...(reward.contentRecords || []), ...newCrs];
         }
-        if (newEntries.length) {
-          assetData.FactionRewardList = [...rewardList, ...newEntries];
+        if (changed) {
           await api('asset', {
             body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
           });
@@ -1790,7 +2185,7 @@ async function deleteWeapon(id) {
   try {
     await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id } });
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: id + '_localization' } }); } catch {}
-    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: id + '_descriptor' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
     await removeWeaponFromAllDisks(id);
     await removeWeaponFromAllFactions(id);
@@ -1921,7 +2316,7 @@ async function createNewWeapon() {
     try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
     const desc = newDescriptorRecord(newId, bundlePath);
     await api('asset', {
-      body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+      body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
     });
     // Create blank recipe
     const recipe = newRecipeRecord(newId);
@@ -2344,12 +2739,22 @@ function guardSelectWeapon(id) {
 
 function guardSwitchMode(mode) {
   if (currentMode === mode) return;
-  guardNavigation(() => switchMode(mode));
+  const dirty = (currentMode === 'firemodes') ? isFiremodeDirty() : isFormDirty();
+  if (dirty) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => switchMode(mode), 'Yes', '');
+  } else {
+    switchMode(mode);
+  }
 }
 
 function guardSelectProject(id) {
   if (selProject?.id === id) return;
-  guardNavigation(() => selectProject(id));
+  const dirty = (currentMode === 'firemodes') ? isFiremodeDirty() : isFormDirty();
+  if (dirty) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectProject(id), 'Yes', '');
+  } else {
+    selectProject(id);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2384,12 +2789,12 @@ async function saveWeapon() {
 
   try {
     if (newId !== oldId) {
-      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: curImageFolder } });
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: weaponImgFolder(curImageFolder) } });
       await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
       // Delete old localization file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: oldId + '_localization' } }); } catch {}
       // Delete old descriptor file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: oldId + '_descriptor' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: oldId + '_descriptor' } }); } catch {}
       // Delete old recipe file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
       // Rename weapon in datadisks
@@ -2433,9 +2838,12 @@ async function loadImageFolders() {
   } catch {}
 }
 
+function weaponImgFolder(sub) {
+  return sub ? 'Weapons/' + sub : 'Weapons';
+}
+
 function imgUrl(id, suffix) {
-  const folder = curImageFolder || '';
-  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(folder)}&t=${Date.now()}`;
+  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(weaponImgFolder(curImageFolder))}&t=${Date.now()}`;
 }
 
 function loadWeaponImage(id, suffix, type) {
@@ -2465,7 +2873,7 @@ function loadAllWeaponImages(id) {
 }
 
 function updateDescriptorImagePaths(id, folder) {
-  const prefix = folder ? `Images/${folder}/` : 'Images/';
+  const prefix = folder ? `Images/Weapons/${folder}/` : 'Images/Weapons/';
   val('desc-IconSpriteIdOrPath', `${prefix}${id}_sprite_icon.png`);
   val('desc-SmallIconSpriteIdOrPath', `${prefix}${id}_sprite_floor.png`);
   val('desc-ShadowOnFloorSpriteIdOrPath', `${prefix}${id}_sprite_shadow.png`);
@@ -2477,7 +2885,7 @@ async function onImageFolderChange(newFolder) {
   if (newFolder === oldFolder) return;
 
   try {
-    await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: oldFolder, to: newFolder } });
+    await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: weaponImgFolder(oldFolder), to: weaponImgFolder(newFolder) } });
     curImageFolder = newFolder;
     updateDescriptorImagePaths(selWeapon.id, newFolder);
     loadAllWeaponImages(selWeapon.id);
@@ -2514,7 +2922,7 @@ async function handleImageUpload(input, suffix, type) {
       }
 
       try {
-        await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: curImageFolder, data: base64 } });
+        await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: weaponImgFolder(curImageFolder), data: base64 } });
         toast('Image uploaded');
         updateDescriptorImagePaths(selWeapon.id, curImageFolder);
         loadWeaponImage(selWeapon.id, suffix, type);
@@ -2606,12 +3014,12 @@ async function loadFactionRewards(weaponId) {
     for (const asset of data.assets) {
       const rewardList = asset.data?.FactionRewardList || [];
       for (const reward of rewardList) {
-        const contentIds = reward.contentRecords?.[0]?.ContentIds || [];
-        if (contentIds.includes(weaponId)) {
-          const cr = reward.contentRecords[0];
-          const factionId = reward.FactionName || '';
-          addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
-          _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+        const factionId = reward.FactionName || '';
+        for (const cr of (reward.contentRecords || [])) {
+          if ((cr.ContentIds || []).includes(weaponId)) {
+            addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
+            _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+          }
         }
       }
     }
@@ -2628,19 +3036,6 @@ function collectFactionRewards() {
     if (factionId) entries.push({ factionId, techLevel, weight, points });
   });
   return entries;
-}
-
-function buildFactionRewardEntry(factionName, weaponId, techLevel, weight, points) {
-  return {
-    FactionName: factionName,
-    RewardType: 'rewardEquipment',
-    contentRecords: [{
-      TechLevel: techLevel,
-      ContentIds: [weaponId],
-      Weight: weight,
-      Points: points
-    }]
-  };
 }
 
 async function saveFactionRewards(weaponId) {
@@ -2678,19 +3073,32 @@ async function saveFactionRewards(weaponId) {
     const data = record.Data || record.data || {};
     let rewardList = data.FactionRewardList || [];
 
-    // Remove all entries for this weapon from this faction
-    rewardList = rewardList.filter(r => {
-      const cids = r.contentRecords?.[0]?.ContentIds || [];
-      return !cids.includes(weaponId);
-    });
-
-    // Add new entries for this weapon
-    for (const e of newEntries) {
-      rewardList.push(buildFactionRewardEntry(factionId, weaponId, e.techLevel, e.weight, e.points));
+    // Find or create the faction entry
+    let factionEntry = rewardList.find(r => r.FactionName === factionId);
+    if (!factionEntry) {
+      factionEntry = { FactionName: factionId, RewardType: 'rewardEquipment', contentRecords: [] };
+      rewardList.push(factionEntry);
     }
 
+    // Remove this weapon's contentRecords from the faction entry
+    factionEntry.contentRecords = (factionEntry.contentRecords || []).filter(cr =>
+      !(cr.ContentIds || []).includes(weaponId)
+    );
+
+    // Add new contentRecords for this weapon
+    for (const e of newEntries) {
+      factionEntry.contentRecords.push({
+        TechLevel: e.techLevel,
+        ContentIds: [weaponId],
+        Weight: e.weight,
+        Points: e.points
+      });
+    }
+
+    // Clean up empty faction entries
+    rewardList = rewardList.filter(r => (r.contentRecords || []).length > 0);
+
     if (rewardList.length === 0) {
-      // No entries left — delete the file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } }); } catch {}
     } else {
       data.FactionRewardList = rewardList;
@@ -2709,15 +3117,22 @@ async function removeWeaponFromAllFactions(weaponId) {
     for (const asset of data.assets) {
       const assetData = asset.data || {};
       let rewardList = assetData.FactionRewardList || [];
-      const filtered = rewardList.filter(r => {
-        const cids = r.contentRecords?.[0]?.ContentIds || [];
-        return !cids.includes(weaponId);
-      });
-      if (filtered.length !== rewardList.length) {
-        if (filtered.length === 0) {
+      let changed = false;
+
+      for (const reward of rewardList) {
+        const before = (reward.contentRecords || []).length;
+        reward.contentRecords = (reward.contentRecords || []).filter(cr =>
+          !(cr.ContentIds || []).includes(weaponId)
+        );
+        if (reward.contentRecords.length !== before) changed = true;
+      }
+
+      if (changed) {
+        rewardList = rewardList.filter(r => (r.contentRecords || []).length > 0);
+        if (rewardList.length === 0) {
           await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: asset.id } });
         } else {
-          assetData.FactionRewardList = filtered;
+          assetData.FactionRewardList = rewardList;
           await api('asset', {
             body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
           });
@@ -2734,9 +3149,10 @@ async function renameWeaponInAllFactions(oldId, newId) {
       const assetData = asset.data || {};
       let changed = false;
       for (const reward of (assetData.FactionRewardList || [])) {
-        const cids = reward.contentRecords?.[0]?.ContentIds || [];
-        const idx = cids.indexOf(oldId);
-        if (idx !== -1) { cids[idx] = newId; changed = true; }
+        for (const cr of (reward.contentRecords || [])) {
+          const idx = (cr.ContentIds || []).indexOf(oldId);
+          if (idx !== -1) { cr.ContentIds[idx] = newId; changed = true; }
+        }
       }
       if (changed) {
         await api('asset', {
@@ -3112,7 +3528,7 @@ function newDescriptorRecord(id, bundlePath) {
 
 async function loadDescriptor(weaponId) {
   try {
-    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor' } });
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: weaponId + '_descriptor' } });
     populateDescriptor(data.Data, weaponId);
   } catch {
     populateDescriptor(null, weaponId);
@@ -3122,7 +3538,7 @@ async function loadDescriptor(weaponId) {
 async function saveDescriptor(weaponId) {
   const desc = collectDescriptor(weaponId);
   await api('asset', {
-    body: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+    body: { project: selProject.id, category: 'Descriptors/Weapons', id: weaponId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
   });
 }
 
@@ -3404,6 +3820,7 @@ document.addEventListener('click', (e) => {
 // ═══════════════════════════════════════════════════════════════════
 let activeTab = 'weaponConfig';
 
+
 const TAB_PANES = {
   weaponConfig: 'editorWrap',
   descriptor: 'descriptorWrap',
@@ -3412,6 +3829,16 @@ const TAB_PANES = {
   datadisk: 'datadiskWrap',
   factionRewards: 'factionRewardsWrap',
 };
+
+
+function hideAllEditors() {
+  document.getElementById('editorWrap').classList.remove('visible');
+  document.getElementById('tabBar')?.classList.remove('visible');
+  document.getElementById('fmConfigWrap')?.classList.remove('visible');
+  for (const paneId of Object.values(TAB_PANES)) {
+    document.getElementById(paneId)?.classList.remove('visible');
+  }
+}
 
 function switchMode(mode) {
   currentMode = mode;
@@ -3424,12 +3851,9 @@ function switchMode(mode) {
 
   // Hide current editor
   selWeapon = null;
+  selFiremode = null;
   _formSnapshot = null;
-  document.getElementById('editorWrap').classList.remove('visible');
-  document.getElementById('tabBar')?.classList.remove('visible');
-  for (const paneId of Object.values(TAB_PANES)) {
-    document.getElementById(paneId)?.classList.remove('visible');
-  }
+  hideAllEditors();
   document.getElementById('emptyState').style.display = '';
   document.getElementById('emptyState').querySelector('div:last-child').textContent = `No ${titles[mode].toLowerCase()} yet`;
 
