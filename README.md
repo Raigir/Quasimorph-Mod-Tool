@@ -1,6 +1,6 @@
 # Quasimorph Mod Tool
 
-A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, sprites, localization, descriptors, crafting recipes, datadisks, and faction rewards.
+A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, sprites, localization, descriptors, crafting recipes, datadisks, and faction rewards.
 
 ## Requirements
 
@@ -49,16 +49,21 @@ mod-workflow/
 │           ├── Weapons/               # Weapon records (.json)
 │           ├── Ammo/                  # Ammo records
 │           ├── Firemodes/             # Firemode records
-│           ├── Localization/          # {id}_localization.json
-│           ├── Descriptors/           # {id}_descriptor.json
+│           ├── Localization/
+│           │   ├── Weapons/           # {id}_localization.json
+│           │   └── Ammo/             # {id}_localization.json
+│           ├── Descriptors/
+│           │   ├── Weapons/           # {id}_descriptor.json
+│           │   ├── Firemodes/         # {id}_descriptor.json
+│           │   └── Ammo/             # {id}_descriptor.json
 │           ├── Crafting Recipes/      # {id}_receipt.json
 │           ├── Datadisks/             # {diskId}_diskData.json (shared)
 │           ├── FactionRewards/        # {factionId}_factionData.json (shared)
-│           ├── Images/                # Sprite PNGs (root or subfolders)
-│           │   ├── {id}_sprite_icon.png
-│           │   ├── {id}_sprite_floor.png
-│           │   ├── {id}_sprite_shadow.png
-│           │   └── {subfolder}/       # User-named (e.g., chu, cor)
+│           ├── Images/
+│           │   ├── Weapons/           # Weapon sprites (root or subfolders)
+│           │   │   └── {subfolder}/   # User-named (e.g., chu, cor)
+│           │   ├── Firemodes/         # Firemode sprites
+│           │   └── Ammo/             # Ammo sprites
 │           ├── Bundles/               # Asset bundles
 │           ├── Armors/
 │           ├── Consumables/
@@ -71,7 +76,6 @@ mod-workflow/
     │   ├── itemTraits.txt
     │   ├── repairs.txt
     │   ├── trash.txt
-    │   ├── projectiles.txt
     │   ├── datadisks.txt
     │   ├── explosions.txt
     │   ├── factions.txt
@@ -82,6 +86,7 @@ mod-workflow/
         ├── categories.txt
         ├── ammoTypes.txt
         ├── projectileIds.txt
+        ├── projectiles.txt
         ├── ballisticType.txt
         ├── damageTypes.txt
         ├── factionIdCodes.txt

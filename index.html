@@ -48,7 +48,7 @@
 
   /* ── SIDEBAR ─────────────────────────────────────────────── */
   .sidebar {
-    width: 280px;
+    width: 310px;
     background: var(--bg-panel);
     border-right: 1px solid var(--border);
     display: flex;
@@ -152,7 +152,7 @@
   #assetList .card { min-height:76px; }
   .card-top { display:flex; align-items:center; gap:10px; }
   .card-thumb {
-    width:50px; height:25px; flex-shrink:0;
+    width:100px; height:50px; flex-shrink:0;
     border-radius:3px; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
   }
@@ -420,8 +420,8 @@
   }
   .info-icon:hover .info-tip { display:block; }
   .ed-field select option.opt-empty { font-style:italic; color:var(--text-dim); }
-  .ed-field input.invalid { border-color:var(--error); }
-  .ed-field input.invalid:focus { border-color:var(--error); }
+  .ed-field input.invalid, .ed-field select.invalid { border-color:var(--error); }
+  .ed-field input.invalid:focus, .ed-field select.invalid:focus { border-color:var(--error); }
   .ed-field input[type="number"]::-webkit-inner-spin-button,
   .ed-field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
   .ed-field input[type="number"] { -moz-appearance:textfield; }
@@ -541,8 +541,8 @@
     letter-spacing:0.05em; color:var(--text-dim);
   }
   .loc-lang-col { flex:0 0 110px; }
-  .loc-name-col { flex:3; }
-  .loc-desc-col { flex:7; }
+  .loc-name-col { flex:3; padding-left:9px; }
+  .loc-desc-col { flex:7; padding-left:9px; }
   .loc-row {
     display:flex; gap:8px; align-items:center; margin-bottom:4px;
   }
@@ -899,8 +899,8 @@
         <div class="ed-field narrow"><label>Weight</label><input type="number" id="ed-Weight" step="0.01"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow"><label>Inv Sort Order</label><input type="number" id="ed-InventorySortOrder" step="1"></div>
-        <div class="ed-field narrow"><label>Inv Width</label><input type="number" id="ed-InventoryWidthSize" step="1"></div>
+        <div class="ed-field narrow"><label>Inv Sort Order</label><input type="number" id="ed-InventorySortOrder" step="1" oninput="liveValidate(this)"></div>
+        <div class="ed-field narrow"><label>Inv Width</label><input type="number" id="ed-InventoryWidthSize" step="1" oninput="liveValidate(this)"></div>
       </div>
     </div>
 
@@ -977,16 +977,16 @@
     <div class="ed-section">
       <div class="ed-section-title">Firemodes & Ammo</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Firemode 1</label><select id="ed-Firemode1" onchange="syncFiremodes()"></select></div>
-        <div class="ed-field"><label>Override Ammo 1</label><select id="ed-OverrideAmmo1" disabled></select></div>
+        <div class="ed-field"><label>Firemode 1</label><select id="ed-Firemode1" onchange="onFiremodeSelectChange(this)"></select></div>
+        <div class="ed-field"><label>Override Ammo 1</label><select id="ed-OverrideAmmo1" disabled onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Firemode 2</label><select id="ed-Firemode2" disabled onchange="syncFiremodes()"></select></div>
-        <div class="ed-field"><label>Override Ammo 2</label><select id="ed-OverrideAmmo2" disabled></select></div>
+        <div class="ed-field"><label>Firemode 2</label><select id="ed-Firemode2" disabled onchange="onFiremodeSelectChange(this)"></select></div>
+        <div class="ed-field"><label>Override Ammo 2</label><select id="ed-OverrideAmmo2" disabled onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo"></select></div>
-        <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId"></select></div>
+        <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId" onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field"><label>Override Projectile Id</label><select id="ed-OverrideProjectileId"></select></div>
@@ -1092,13 +1092,13 @@
     <div class="ed-section">
       <div class="ed-section-title">Image Properties</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Icon Sprite Path</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Icon Sprite Path/ID</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Small Icon Sprite Path</label><input type="text" id="desc-SmallIconSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Small Icon Sprite Path/ID</label><input type="text" id="desc-SmallIconSpriteIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Shadow Sprite Path</label><input type="text" id="desc-ShadowOnFloorSpriteIdOrPath"></div>
+        <div class="ed-field"><label>Shadow Sprite Path/ID</label><input type="text" id="desc-ShadowOnFloorSpriteIdOrPath"></div>
       </div>
     </div>
 
@@ -1106,12 +1106,12 @@
     <div class="ed-section">
       <div class="ed-section-title">Audio Properties</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Shoot Sound</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
-        <div class="ed-field"><label>Reload Sound</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
+        <div class="ed-field"><label>Shoot Sound ID</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
+        <div class="ed-field"><label>Reload Sound ID</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Dry Shot Sound</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
-        <div class="ed-field"><label>Failed Attack Sound</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
+        <div class="ed-field"><label>Dry Shot Sound ID</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
+        <div class="ed-field"><label>Failed Attack Sound ID</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
       </div>
     </div>
 
@@ -1120,7 +1120,7 @@
       <div class="ed-section-title">Model Properties</div>
       <div class="ed-row">
         <div class="ed-field"><label>Asset Bundle Path</label><input type="text" id="desc-AssetBundlePath"></div>
-        <div class="ed-field"><label>Texture Id/Path</label><input type="text" id="desc-TextureIdOrPath"></div>
+        <div class="ed-field"><label>Texture ID</label><input type="text" id="desc-TextureIdOrPath"></div>
       </div>
       <div class="ed-row">
         <div class="ed-field"><label>Muzzle Id</label><input type="text" id="desc-MuzzleId"></div>
@@ -1209,6 +1209,235 @@
     </div>
   </div>
 
+  <!-- Firemode Editor -->
+  <!-- Firemode Editor -->
+  <div class="editor-wrap" id="fmConfigWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Firemode Config</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Id</label><input type="text" id="fm-Id"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Require All Ammo To Shoot</label><input type="checkbox" id="fm-RequiredAllAmmoToShot"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Per Shot</label><input type="number" id="fm-AmmoPerShot" step="1" oninput="validateFmField(this, 'int_gte0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Weapon Casts Count</label><input type="number" id="fm-WeaponCastsCount" step="1" oninput="validateFmField(this, 'int_gt0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Accuracy</label><input type="number" id="fm-Accuracy" step="0.01"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Scatter Angle</label><input type="number" id="fm-ScatterAngle" step="0.01"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Damage Mult</label><input type="number" id="fm-DamageMult" step="0.01" oninput="validateFmField(this, 'num_gt0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Delay Between Shots</label><input type="number" id="fm-DelayInSecsBetweenShots" step="0.01" oninput="validateFmField(this, 'num_gte0')"></div>
+      </div>
+    </div>
+    <div class="ed-section">
+      <div class="ed-section-title">Descriptor</div>
+      <div class="img-upload-area" style="margin-bottom:10px;">
+        <div class="img-upload-slot">
+          <span class="slot-label">Sprite</span>
+          <div class="img-preview" id="fmSpritePreview"><span class="placeholder-text">No image</span></div>
+          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
+          <input type="file" id="fmSpriteFile" accept=".png,image/png" style="display:none" onchange="handleFmSpriteUpload(this)">
+          <span class="img-hint">PNG only</span>
+        </div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Sprite Path/ID</label><input type="text" id="fmd-SpriteIdOrPath"></div>
+      </div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveFiremode()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Tab Bar -->
+  <div class="tab-bar" id="ammoTabBar">
+    <button class="tab-btn active" onclick="switchAmmoTab('ammoConfig')">Ammo Config</button>
+    <button class="tab-btn" onclick="switchAmmoTab('ammoDescriptor')">Descriptor</button>
+    <button class="tab-btn" onclick="switchAmmoTab('ammoLocalization')">Localization</button>
+  </div>
+
+  <!-- Ammo Config Tab -->
+  <div class="editor-wrap" id="ammoConfigWrap">
+
+    <!-- Sprite -->
+    <div class="ed-section">
+      <div class="ed-section-title">Sprite</div>
+      <div class="img-upload-area">
+        <div class="img-upload-slot">
+          <span class="slot-label">Inventory</span>
+          <div class="img-preview" id="ammoImgPreview">
+            <span class="placeholder-text">No image</span>
+          </div>
+          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoImgFile').click()">Upload</button>
+          <input type="file" id="ammoImgFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_icon', 'icon')">
+          <span class="img-hint">PNG only — 50x50 or 100x50</span>
+        </div>
+        <div class="img-upload-slot">
+          <span class="slot-label">Floor</span>
+          <div class="img-slot-preview" id="ammoFloorPreview">
+            <span class="placeholder-text" style="font-size:9px;">—</span>
+          </div>
+          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
+          <input type="file" id="ammoFloorFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_floor', 'floor')">
+          <span class="img-hint">PNG, max 30x30</span>
+        </div>
+        <div class="img-upload-slot">
+          <span class="slot-label">Shadow</span>
+          <div class="img-slot-preview" id="ammoShadowPreview">
+            <span class="placeholder-text" style="font-size:9px;">—</span>
+          </div>
+          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
+          <input type="file" id="ammoShadowFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_shadow', 'shadow')">
+          <span class="img-hint">PNG, max 30x30</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Identity -->
+    <div class="ed-section">
+      <div class="ed-section-title">Identity</div>
+      <div class="ed-row">
+        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Tech Level</label><input type="number" id="ammo-TechLevel" step="1" oninput="validateAmmoField(this, 'int_1_10')"></div>
+        <div class="ed-field narrow"><label>Price</label><input type="number" id="ammo-Price" step="1" oninput="validateAmmoField(this, 'int_gte0')"></div>
+        <div class="ed-field narrow"><label>Weight</label><input type="number" id="ammo-Weight" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Inv Sort Order</label><input type="number" id="ammo-InventorySortOrder" step="1" oninput="validateAmmoField(this, 'int_gte0')"></div>
+        <div class="ed-field narrow"><label>Inv Width</label><input type="number" id="ammo-InventoryWidthSize" step="1" oninput="validateAmmoField(this, 'int_gte0')"></div>
+        <div class="ed-field"><label>Can Put In Vest</label><input type="checkbox" id="ammo-CanPutInVest"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <!-- Ammo Properties -->
+    <div class="ed-section">
+      <div class="ed-section-title">Ammo Properties</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Type</label><select id="ammo-AmmoType"></select></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Damage Type</label><select id="ammo-DmgType"></select></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Projectile Id</label><select id="ammo-ProjectileId"></select></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Max Stack</label><input type="number" id="ammo-MaxStack" step="1" oninput="validateAmmoField(this, 'int_gt0')"></div>
+        <div class="ed-field narrow"><label>Min Ammo Amount</label><input type="number" id="ammo-MinAmmoAmount" step="1" oninput="validateAmmoField(this, 'int_gte0')"></div>
+        <div class="ed-field narrow"><label>Max Ammo Amount</label><input type="number" id="ammo-MaxAmmoAmount" step="1" oninput="validateAmmoField(this, 'int_gte0')"></div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="ed-section">
+      <div class="ed-section-title">Categories</div>
+      <div class="ed-row">
+        <div class="ed-field">
+          <div class="multi-select" id="ammo-Categories">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select categories…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="ed-section">
+      <div class="ed-section-title">Statistics</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Damage Mult</label><input type="number" id="ammo-DamageMult" step="0.01"></div>
+        <div class="ed-field narrow"><label>Crit Chance</label><input type="number" id="ammo-DmgCritChance" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Range Bonus</label><input type="number" id="ammo-RangeBonus" step="1" oninput="validateAmmoField(this, 'int')"></div>
+        <div class="ed-field narrow"><label>Accuracy Mult</label><input type="number" id="ammo-AccuracyMult" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Scatter Mult</label><input type="number" id="ammo-ScatterMult" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
+        <div class="ed-field narrow"><label>Bullet Casts Per Shot</label><input type="number" id="ammo-BulletCastsPerShot" step="1" oninput="validateAmmoField(this, 'int_gt0')"></div>
+      </div>
+    </div>
+
+    <!-- Status Effects -->
+    <div class="ed-section">
+      <div class="ed-section-title">Status Effects</div>
+      <div class="ed-row">
+        <div class="ed-field id-field"><label>Status Effect Id</label><input type="text" id="ammo-StatusEffectId"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Chance To Apply</label><input type="number" id="ammo-ChanceToApply" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
+        <div class="ed-field narrow"><label>Status Damage Modifier</label><input type="number" id="ammo-StatusDamageModifier" step="0.01"></div>
+        <div class="ed-field narrow"><label>Status Resist Modifier</label><input type="number" id="ammo-StatusResistModifier" step="0.01"></div>
+      </div>
+    </div>
+
+    <!-- Traits -->
+    <div class="ed-section">
+      <div class="ed-section-title">Traits</div>
+      <div class="ed-row">
+        <div class="ed-field">
+          <div class="multi-select" id="ammo-Traits">
+            <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select traits…</span></div>
+            <div class="multi-select-dropdown"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Descriptor Tab -->
+  <div class="editor-wrap" id="ammoDescriptorWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Image Properties</div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Icon Sprite Path/ID</label><input type="text" id="ad-IconSpriteIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Small Icon Sprite Path/ID</label><input type="text" id="ad-SmallIconSpriteIdOrPath"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field"><label>Shadow Sprite Path/ID</label><input type="text" id="ad-ShadowOnFloorSpriteIdOrPath"></div>
+      </div>
+    </div>
+    <div class="ed-section">
+      <div class="ed-section-title">Gibs</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Sprites ID</label><input type="text" id="ad-BulletSpritesId"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Shadows ID</label><input type="text" id="ad-BulletShadowsId"></div>
+      </div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Localization Tab -->
+  <div class="editor-wrap" id="ammoLocalizationWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Localization</div>
+      <div class="loc-header">
+        <span class="loc-lang-col">Language</span>
+        <span class="loc-name-col">Name</span>
+        <span class="loc-desc-col">Short Desc</span>
+      </div>
+      <div id="ammoLocRows"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 </div>
@@ -1233,7 +1462,7 @@
         </div>
       </div>
       <div class="ed-section">
-        <div class="ed-section-title">Image Folders</div>
+        <div class="ed-section-title">Weapon Image Folders</div>
         <div class="ed-row" style="margin-bottom:8px;">
           <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
         </div>
@@ -1253,10 +1482,13 @@
 // ═══════════════════════════════════════════════════════════════════
 let selProject = null;
 let selWeapon = null;
+let selFiremode = null;
+let selAmmo = null;
 let REF = null;
 let curImageFolder = '';
 let currentMode = 'weapons';
 let isSaving = false;
+let isLoading = false;
 let cachedProjects = [];
 let _formSnapshot = null;
 
@@ -1315,10 +1547,11 @@ async function deleteProjectById(id) {
     if (selProject?.id === id) {
       selProject = null;
       selWeapon = null;
+      selFiremode = null;
+      selAmmo = null;
       localStorage.removeItem('lastProject');
       document.querySelector('.c-header-title').textContent = '—';
-      document.getElementById('editorWrap').classList.remove('visible');
-      document.getElementById('tabBar').classList.remove('visible');
+      hideAllEditors();
       for (const paneId of Object.values(TAB_PANES)) {
         document.getElementById(paneId)?.classList.remove('visible');
       }
@@ -1525,9 +1758,10 @@ async function selectProject(id, skipAutoSelect) {
     document.getElementById('assetFilter').style.display = '';
     document.getElementById('assetFilterInput').value = '';
     selWeapon = null;
+    selFiremode = null;
+    selAmmo = null;
     _formSnapshot = null;
-    document.getElementById('editorWrap').classList.remove('visible');
-    document.getElementById('tabBar').classList.remove('visible');
+    hideAllEditors();
     for (const paneId of Object.values(TAB_PANES)) {
       document.getElementById(paneId)?.classList.remove('visible');
     }
@@ -1555,6 +1789,7 @@ function renderModeList(tree, skipAutoSelect) {
     renderAmmoList(items);
     if (items.length) {
       emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectAmmo(items[0].id);
     } else {
       emptyState.style.display = '';
       emptyState.querySelector('div:last-child').textContent = 'No ammo yet';
@@ -1563,6 +1798,7 @@ function renderModeList(tree, skipAutoSelect) {
     renderFiremodeList(items);
     if (items.length) {
       emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectFiremode(items[0].id);
     } else {
       emptyState.style.display = '';
       emptyState.querySelector('div:last-child').textContent = 'No firemodes yet';
@@ -1574,11 +1810,17 @@ function renderAmmoList(items) {
   const el = document.getElementById('assetList');
   if (!items.length) { el.innerHTML = '<div class="sb-empty">No ammo yet</div>'; return; }
   el.innerHTML = items.map(a => `
-    <div class="card" onclick="selectAmmo('${esc(a.id)}')">
-      <div class="card-top"><div class="card-info">
-        <div class="c-name">${esc(a.dataId || a.id)}</div>
-        <div class="c-sub">${esc(a.recordType)}</div>
-      </div></div>
+    <div class="card" onclick="guardSelectAmmo('${esc(a.id)}')">
+      <div class="card-top">
+        <div class="card-thumb">
+          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(a.id)}&suffix=sprite_icon&folder=Ammo&t=${Date.now()}" onerror="this.style.display='none'">
+        </div>
+        <div class="card-info">
+          <div class="c-name">${esc(a.dataId || a.id)}</div>
+          ${a.englishName ? `<div class="c-sub">${esc(a.englishName)}</div>` : ''}
+          <div class="c-sub">${esc(a.recordType)}</div>
+        </div>
+      </div>
       <button class="card-copy" onclick="event.stopPropagation(); confirmCopyAmmo('${esc(a.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
       <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteAmmo(this, '${esc(a.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
     </div>
@@ -1589,7 +1831,7 @@ function renderFiremodeList(items) {
   const el = document.getElementById('assetList');
   if (!items.length) { el.innerHTML = '<div class="sb-empty">No firemodes yet</div>'; return; }
   el.innerHTML = items.map(f => `
-    <div class="card" onclick="selectFiremode('${esc(f.id)}')">
+    <div class="card" onclick="guardSelectFiremode('${esc(f.id)}')">
       <div class="card-top"><div class="card-info">
         <div class="c-name">${esc(f.dataId || f.id)}</div>
         <div class="c-sub">${esc(f.recordType)}</div>
@@ -1600,22 +1842,934 @@ function renderFiremodeList(items) {
   `).join('');
 }
 
-// Stubs — will be implemented later
-function createNewAmmo() { toast('Ammo editor coming soon'); }
-function createNewFiremode() { toast('Firemode editor coming soon'); }
-function selectAmmo(id) { toast('Ammo editor coming soon'); }
-function selectFiremode(id) { toast('Firemode editor coming soon'); }
-function confirmDeleteAmmo(btn, id) { toast('Ammo editor coming soon'); }
-function confirmDeleteFiremode(btn, id) { toast('Firemode editor coming soon'); }
-function confirmCopyAmmo(id) { toast('Ammo editor coming soon'); }
-function confirmCopyFiremode(id) { toast('Firemode editor coming soon'); }
+// ═══════════════════════════════════════════════════════════════════
+//  AMMO FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+function newAmmoRecord(id) {
+  return {
+    RecordType: 'MGSC.AmmoRecord',
+    Data: {
+      Id: id || 'tempId',
+      InventorySortOrder: 8,
+      InventoryWidthSize: 1,
+      ItemClass: 'Ammo',
+      TechLevel: 1,
+      Price: 1,
+      Weight: 0.01,
+      AmmoType: '',
+      DmgType: '',
+      DamageMult: 1.0,
+      DmgCritChance: 0.12,
+      RangeBonus: 0,
+      AccuracyMult: 1.0,
+      ScatterMult: 1.0,
+      BulletCastsPerShot: 1,
+      MinAmmoAmount: 1,
+      MaxAmmoAmount: 5,
+      MaxStack: 60,
+      StatusEffectId: '',
+      ChanceToApply: 0.0,
+      StatusDamageModifier: 0.0,
+      StatusResistModifier: 0.0,
+      Traits: [],
+      Categories: [],
+      ProjectileId: '',
+      CanPutInVest: true,
+      IsImplictedAmmo: false,
+      IsChargeOnly: false,
+      BallisticType: 'Ballistic',
+    }
+  };
+}
+
+function populateAmmoEditor(d) {
+  val('ammo-Id', d.Id);
+  val('ammo-TechLevel', d.TechLevel ?? 1);
+  val('ammo-Price', d.Price ?? 1);
+  val('ammo-Weight', d.Weight ?? 0.01);
+  val('ammo-InventorySortOrder', d.InventorySortOrder ?? 8);
+  val('ammo-InventoryWidthSize', d.InventoryWidthSize ?? 1);
+  chk('ammo-CanPutInVest', d.CanPutInVest !== false);
+  val('ammo-AmmoType', d.AmmoType || '');
+  val('ammo-DmgType', d.DmgType || '');
+  val('ammo-ProjectileId', d.ProjectileId || '');
+  val('ammo-DamageMult', d.DamageMult ?? 1.0);
+  val('ammo-DmgCritChance', d.DmgCritChance ?? 0.12);
+  val('ammo-RangeBonus', d.RangeBonus ?? 0);
+  val('ammo-AccuracyMult', d.AccuracyMult ?? 1.0);
+  val('ammo-ScatterMult', d.ScatterMult ?? 1.0);
+  val('ammo-BulletCastsPerShot', d.BulletCastsPerShot ?? 1);
+  val('ammo-MinAmmoAmount', d.MinAmmoAmount ?? 1);
+  val('ammo-MaxAmmoAmount', d.MaxAmmoAmount ?? 5);
+  val('ammo-MaxStack', d.MaxStack ?? 60);
+  val('ammo-StatusEffectId', d.StatusEffectId || '');
+  val('ammo-ChanceToApply', d.ChanceToApply ?? 0.0);
+  val('ammo-StatusDamageModifier', d.StatusDamageModifier ?? 0.0);
+  val('ammo-StatusResistModifier', d.StatusResistModifier ?? 0.0);
+  // Traits
+  document.querySelectorAll('#ammo-Traits input[type="checkbox"]').forEach(cb => {
+    cb.checked = (d.Traits || []).includes(cb.value);
+  });
+  updateMultiSelectDisplay(document.querySelector('#ammo-Traits input[type="checkbox"]'));
+  // Categories
+  document.querySelectorAll('#ammo-Categories input[type="checkbox"]').forEach(cb => {
+    cb.checked = (d.Categories || []).includes(cb.value);
+  });
+  updateMultiSelectDisplay(document.querySelector('#ammo-Categories input[type="checkbox"]'));
+}
+
+function collectAmmoEditor() {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  const bool = (id) => document.getElementById(id).checked;
+  return {
+    Id: str('ammo-Id').trim(),
+    InventorySortOrder: int('ammo-InventorySortOrder'),
+    InventoryWidthSize: int('ammo-InventoryWidthSize'),
+    ItemClass: 'Ammo',
+    TechLevel: int('ammo-TechLevel'),
+    Price: int('ammo-Price'),
+    Weight: num('ammo-Weight'),
+    AmmoType: str('ammo-AmmoType').trim(),
+    DmgType: str('ammo-DmgType').trim(),
+    DamageMult: num('ammo-DamageMult'),
+    DmgCritChance: num('ammo-DmgCritChance'),
+    RangeBonus: int('ammo-RangeBonus'),
+    AccuracyMult: num('ammo-AccuracyMult'),
+    ScatterMult: num('ammo-ScatterMult'),
+    BulletCastsPerShot: int('ammo-BulletCastsPerShot'),
+    MinAmmoAmount: int('ammo-MinAmmoAmount'),
+    MaxAmmoAmount: int('ammo-MaxAmmoAmount'),
+    MaxStack: int('ammo-MaxStack'),
+    StatusEffectId: str('ammo-StatusEffectId').trim(),
+    ChanceToApply: num('ammo-ChanceToApply'),
+    StatusDamageModifier: num('ammo-StatusDamageModifier'),
+    StatusResistModifier: num('ammo-StatusResistModifier'),
+    Traits: Array.from(document.querySelectorAll('#ammo-Traits input[type="checkbox"]:checked')).map(cb => cb.value),
+    Categories: Array.from(document.querySelectorAll('#ammo-Categories input[type="checkbox"]:checked')).map(cb => cb.value),
+    ProjectileId: str('ammo-ProjectileId').trim(),
+    CanPutInVest: bool('ammo-CanPutInVest'),
+    IsImplictedAmmo: false,
+    IsChargeOnly: false,
+    BallisticType: 'Ballistic',
+  };
+}
+
+function captureAmmoSnapshot() {
+  const parts = [];
+  document.querySelectorAll('#ammoConfigWrap input, #ammoConfigWrap select, #ammoDescriptorWrap input, #ammoDescriptorWrap select, #ammoLocalizationWrap input').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.closest('.multi-select-search')) return;
+    if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
+    else parts.push((el.id || el.className) + ':' + el.value);
+  });
+  return parts.join('|');
+}
+
+function isAmmoDirty() {
+  if (!_formSnapshot || !selAmmo) return false;
+  return captureAmmoSnapshot() !== _formSnapshot;
+}
+
+async function createNewAmmo() {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`tempId${n}`)) n++;
+    const newId = `tempId${n}`;
+    const record = newAmmoRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Ammo', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    // Create blank descriptor
+    const desc = newAmmoDescriptorRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Descriptors/Ammo', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+    });
+    // Create blank localization
+    const loc = newLocalizationRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Localization/Ammo', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+    });
+    toast(`Created ammo "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectAmmo(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AMMO DESCRIPTOR
+// ═══════════════════════════════════════════════════════════════════
+function newAmmoDescriptorRecord(id) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
+    Data: {
+      ItemId: id,
+      MeleeMakeBlood: true,
+      ImageProperties: {
+        IconSpriteIdOrPath: '',
+        SmallIconSpriteIdOrPath: '',
+        ShadowOnFloorSpriteIdOrPath: '',
+      },
+      Gibs: {
+        FlightDurationMsMin: 0.25,
+        FlightDurationMsMax: 0.35,
+        BulletSpritesId: '',
+        BulletShadowsId: '',
+        AnimationFramerate: 10,
+      }
+    }
+  };
+}
+
+function populateAmmoDescriptor(data) {
+  const ip = data?.ImageProperties || {};
+  val('ad-IconSpriteIdOrPath', ip.IconSpriteIdOrPath || '');
+  val('ad-SmallIconSpriteIdOrPath', ip.SmallIconSpriteIdOrPath || '');
+  val('ad-ShadowOnFloorSpriteIdOrPath', ip.ShadowOnFloorSpriteIdOrPath || '');
+  const g = data?.Gibs || {};
+  val('ad-BulletSpritesId', g.BulletSpritesId || '');
+  val('ad-BulletShadowsId', g.BulletShadowsId || '');
+}
+
+function collectAmmoDescriptor(ammoId) {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
+    Data: {
+      ItemId: ammoId,
+      MeleeMakeBlood: true,
+      ImageProperties: {
+        IconSpriteIdOrPath: str('ad-IconSpriteIdOrPath'),
+        SmallIconSpriteIdOrPath: str('ad-SmallIconSpriteIdOrPath'),
+        ShadowOnFloorSpriteIdOrPath: str('ad-ShadowOnFloorSpriteIdOrPath'),
+      },
+      Gibs: {
+        FlightDurationMsMin: 0.25,
+        FlightDurationMsMax: 0.35,
+        BulletSpritesId: str('ad-BulletSpritesId'),
+        BulletShadowsId: str('ad-BulletShadowsId'),
+        AnimationFramerate: 10,
+      }
+    }
+  };
+}
+
+async function loadAmmoDescriptor(ammoId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: ammoId + '_descriptor' } });
+    populateAmmoDescriptor(data.Data);
+  } catch {
+    populateAmmoDescriptor(null);
+  }
+}
+
+async function saveAmmoDescriptor(ammoId) {
+  const desc = collectAmmoDescriptor(ammoId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Descriptors/Ammo', id: ammoId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+  });
+}
+
+function loadAmmoSprite(ammoId) {
+  // Icon
+  const preview = document.getElementById('ammoImgPreview');
+  const iconImg = new Image();
+  iconImg.onload = () => { preview.innerHTML = ''; preview.appendChild(iconImg); };
+  iconImg.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
+  iconImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_icon&folder=Ammo&t=${Date.now()}`;
+  // Floor
+  const floorEl = document.getElementById('ammoFloorPreview');
+  const floorImg = new Image();
+  floorImg.onload = () => { floorEl.innerHTML = ''; floorEl.appendChild(floorImg); };
+  floorImg.onerror = () => { floorEl.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
+  floorImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_floor&folder=Ammo&t=${Date.now()}`;
+  // Shadow
+  const shadowEl = document.getElementById('ammoShadowPreview');
+  const shadowImg = new Image();
+  shadowImg.onload = () => { shadowEl.innerHTML = ''; shadowEl.appendChild(shadowImg); };
+  shadowImg.onerror = () => { shadowEl.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
+  shadowImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_shadow&folder=Ammo&t=${Date.now()}`;
+}
+
+async function handleAmmoImageUpload(input, suffix, type) {
+  if (!input.files.length || !selAmmo || !selProject) return;
+  const file = input.files[0];
+  if (file.type !== 'image/png') { toast('Only PNG files are allowed', 1); input.value = ''; return; }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const img = new Image();
+    img.onload = async () => {
+      if (type === 'icon') {
+        const valid = (img.width === 50 && img.height === 50) || (img.width === 100 && img.height === 50);
+        if (!valid) { toast(`Icon must be 50x50 or 100x50 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      } else {
+        if (img.width > 30 || img.height > 30) { toast(`Floor/shadow must be max 30x30 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      }
+      try {
+        await api('image_upload', { body: { project: selProject.id, id: selAmmo.id, suffix, folder: 'Ammo', data: base64 } });
+        toast('Image uploaded');
+        loadAmmoSprite(selAmmo.id);
+        // Auto-fill descriptor path
+        const pathMap = {
+          'sprite_icon': 'ad-IconSpriteIdOrPath',
+          'sprite_floor': 'ad-SmallIconSpriteIdOrPath',
+          'sprite_shadow': 'ad-ShadowOnFloorSpriteIdOrPath',
+        };
+        if (pathMap[suffix]) val(pathMap[suffix], `Images/Ammo/${selAmmo.id}_${suffix}.png`);
+        if (type === 'icon') {
+          const tree = await api('project_tree', { params: { id: selProject.id } });
+          renderAmmoList(tree.tree['Ammo'] || []);
+          document.querySelectorAll('#assetList .card').forEach(c => {
+            if (c.querySelector('.c-name')?.textContent === selAmmo.id) c.classList.add('active');
+          });
+        }
+      } catch (err) { toast(err.message, 1); }
+      input.value = '';
+    };
+    img.src = base64;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function selectAmmo(id) {
+  if (!selProject || isLoading) return;
+  isLoading = true;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Ammo', id } });
+    selAmmo = { id, record };
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateAmmoEditor(record.Data);
+    await loadAmmoDescriptor(id);
+    await loadAmmoLocalization(id);
+    loadAmmoSprite(id);
+    document.getElementById('tabBar').classList.remove('visible');
+    document.getElementById('editorWrap').classList.remove('visible');
+    document.getElementById('fmConfigWrap')?.classList.remove('visible');
+    for (const paneId of Object.values(TAB_PANES)) {
+      document.getElementById(paneId)?.classList.remove('visible');
+    }
+    document.getElementById('ammoTabBar').classList.add('visible');
+    switchAmmoTab(activeAmmoTab);
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    try { _formSnapshot = captureAmmoSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+  finally { isLoading = false; }
+}
+
+function validateAmmoField(input, rule) {
+  const v = parseFloat(input.value);
+  let valid = !isNaN(v);
+  if (rule === 'int') valid = valid && Number.isInteger(v);
+  else if (rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+  else if (rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+  else if (rule === 'int_1_10') valid = valid && Number.isInteger(v) && v >= 1 && v <= 10;
+  else if (rule === 'num_gt0') valid = valid && v > 0;
+  else if (rule === 'num_gte0') valid = valid && v >= 0;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validateAllAmmo() {
+  let allValid = true;
+  const checks = [
+    { id: 'ammo-TechLevel', rule: 'int_1_10' },
+    { id: 'ammo-Price', rule: 'int_gte0' },
+    { id: 'ammo-Weight', rule: 'num_gte0' },
+    { id: 'ammo-InventorySortOrder', rule: 'int_gte0' },
+    { id: 'ammo-InventoryWidthSize', rule: 'int_gte0' },
+    { id: 'ammo-DmgCritChance', rule: 'num_gte0' },
+    { id: 'ammo-RangeBonus', rule: 'int' },
+    { id: 'ammo-AccuracyMult', rule: 'num_gte0' },
+    { id: 'ammo-ScatterMult', rule: 'num_gte0' },
+    { id: 'ammo-BulletCastsPerShot', rule: 'int_gt0' },
+    { id: 'ammo-MinAmmoAmount', rule: 'int_gte0' },
+    { id: 'ammo-MaxAmmoAmount', rule: 'int_gte0' },
+    { id: 'ammo-MaxStack', rule: 'int_gt0' },
+    { id: 'ammo-ChanceToApply', rule: 'num_gte0' },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    const v = parseFloat(el.value);
+    let valid = !isNaN(v);
+    if (c.rule === 'int') valid = valid && Number.isInteger(v);
+    else if (c.rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+    else if (c.rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+    else if (c.rule === 'int_1_10') valid = valid && Number.isInteger(v) && v >= 1 && v <= 10;
+    else if (c.rule === 'num_gt0') valid = valid && v > 0;
+    else if (c.rule === 'num_gte0') valid = valid && v >= 0;
+    el.classList.toggle('invalid', !valid);
+    if (!valid) allValid = false;
+  }
+  // Cross-field: MaxAmmoAmount >= MinAmmoAmount
+  const minA = parseInt(document.getElementById('ammo-MinAmmoAmount').value) || 0;
+  const maxA = parseInt(document.getElementById('ammo-MaxAmmoAmount').value) || 0;
+  if (maxA < minA) {
+    document.getElementById('ammo-MaxAmmoAmount').classList.add('invalid');
+    allValid = false;
+  }
+  return allValid;
+}
+
+function collectAmmoValidationErrors() {
+  const errors = [];
+  const add = (section, msg) => errors.push({ tab: 'Ammo Config', section, msg });
+  const fMap = {
+    'ammo-TechLevel': { section: 'Identity', label: 'Tech Level', hint: 'integer 1–10' },
+    'ammo-Price': { section: 'Identity', label: 'Price', hint: 'integer ≥ 0' },
+    'ammo-Weight': { section: 'Identity', label: 'Weight', hint: 'no negative' },
+    'ammo-InventorySortOrder': { section: 'Identity', label: 'Inv Sort Order', hint: 'integer ≥ 0' },
+    'ammo-InventoryWidthSize': { section: 'Identity', label: 'Inv Width', hint: 'integer ≥ 0' },
+    'ammo-DmgCritChance': { section: 'Statistics', label: 'Crit Chance', hint: 'no negative' },
+    'ammo-RangeBonus': { section: 'Statistics', label: 'Range Bonus', hint: 'integer only' },
+    'ammo-AccuracyMult': { section: 'Statistics', label: 'Accuracy Mult', hint: 'no negative' },
+    'ammo-ScatterMult': { section: 'Statistics', label: 'Scatter Mult', hint: 'no negative' },
+    'ammo-BulletCastsPerShot': { section: 'Statistics', label: 'Bullet Casts Per Shot', hint: 'integer > 0' },
+    'ammo-MinAmmoAmount': { section: 'Ammo Properties', label: 'Min Ammo Amount', hint: 'integer ≥ 0' },
+    'ammo-MaxAmmoAmount': { section: 'Ammo Properties', label: 'Max Ammo Amount', hint: 'integer ≥ 0' },
+    'ammo-MaxStack': { section: 'Ammo Properties', label: 'Max Stack', hint: 'integer > 0' },
+    'ammo-ChanceToApply': { section: 'Status Effects', label: 'Chance To Apply', hint: 'no negative' },
+  };
+  for (const [id, m] of Object.entries(fMap)) {
+    const el = document.getElementById(id);
+    if (el.classList.contains('invalid')) add(m.section, `${m.label} — ${m.hint}`);
+  }
+  const minA = parseInt(document.getElementById('ammo-MinAmmoAmount').value) || 0;
+  const maxA = parseInt(document.getElementById('ammo-MaxAmmoAmount').value) || 0;
+  if (maxA < minA) add('Ammo Properties', 'Max Ammo Amount must be ≥ Min Ammo Amount');
+  return errors;
+}
+
+async function saveAmmo() {
+  if (!selProject || !selAmmo || isSaving || isLoading) return;
+
+  if (!validateAllAmmo()) {
+    showValidationErrorModal(collectAmmoValidationErrors());
+    return;
+  }
+
+  const data = collectAmmoEditor();
+  const newId = data.Id;
+  const oldId = selAmmo.id;
+
+  // Validate Id
+  if (!newId) { toast('Ammo Id cannot be empty', 1); document.getElementById('ammo-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Ammo Id contains invalid characters', 1); document.getElementById('ammo-Id').classList.add('invalid'); return; }
+  document.getElementById('ammo-Id').classList.remove('invalid');
+
+  // Duplicate check — project ammo
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Ammo', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('ammo-Id').classList.add('invalid');
+      return;
+    } catch {}
+  }
+
+  // Duplicate check — base game ammo
+  const baseAmmoIds = (REF?.base?.ammo?.rows || []).map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  if (baseAmmoIds.includes(newId)) {
+    toast('ID conflicts with base game ammo', 1);
+    document.getElementById('ammo-Id').classList.add('invalid');
+    return;
+  }
+
+  isSaving = true;
+  try {
+    if (newId !== oldId) {
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: 'Ammo' } });
+      await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: oldId + '_descriptor' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: oldId + '_localization' } }); } catch {}
+      // Update descriptor image paths if they reference the old ID
+      ['ad-IconSpriteIdOrPath', 'ad-SmallIconSpriteIdOrPath', 'ad-ShadowOnFloorSpriteIdOrPath'].forEach(fid => {
+        const el = document.getElementById(fid);
+        if (el.value && el.value.includes(oldId)) el.value = el.value.replace(oldId, newId);
+      });
+    }
+    await api('asset', {
+      body: { project: selProject.id, category: 'Ammo', id: newId, recordType: 'MGSC.AmmoRecord', data }
+    });
+    await saveAmmoDescriptor(newId);
+    await saveAmmoLocalization(newId);
+    selAmmo.id = newId;
+    toast('Saved');
+    _formSnapshot = captureAmmoSnapshot();
+    await selectProject(selProject.id, true);
+    selectAmmo(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function deleteAmmo(id) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id } });
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: id + '_descriptor' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: id + '_localization' } }); } catch {}
+    toast(`Deleted "${id}"`);
+    selAmmo = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    await selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function confirmDeleteAmmo(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteAmmo(id));
+}
+
+function confirmCopyAmmo(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyAmmo(id), 'Copy', 'primary');
+}
+
+async function copyAmmo(sourceId) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+
+    const src = await api('asset', { params: { project: selProject.id, category: 'Ammo', id: sourceId } });
+    const data = { ...src.Data, Id: newId };
+    await api('asset', {
+      body: { project: selProject.id, category: 'Ammo', id: newId, recordType: 'MGSC.AmmoRecord', data }
+    });
+
+    // Copy descriptor (clear image paths)
+    try {
+      const srcDesc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: sourceId + '_descriptor' } });
+      const descData = JSON.parse(JSON.stringify(srcDesc.Data));
+      descData.ItemId = newId;
+      if (descData.ImageProperties) {
+        descData.ImageProperties.IconSpriteIdOrPath = '';
+        descData.ImageProperties.SmallIconSpriteIdOrPath = '';
+        descData.ImageProperties.ShadowOnFloorSpriteIdOrPath = '';
+      }
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Ammo', id: newId + '_descriptor', recordType: srcDesc.RecordType, data: descData }
+      });
+    } catch {
+      const desc = newAmmoDescriptorRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Ammo', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+      });
+    }
+
+    // Copy localization (remap keys)
+    try {
+      const loc = await api('asset', { params: { project: selProject.id, category: 'Localization/Ammo', id: sourceId + '_localization' } });
+      const locData = JSON.parse(JSON.stringify(loc.Data));
+      const newKeys = {};
+      for (const [key, val] of Object.entries(locData.Keys || {})) {
+        newKeys[key.replace(`item.${sourceId}.`, `item.${newId}.`)] = val;
+      }
+      locData.Keys = newKeys;
+      await api('asset', {
+        body: { project: selProject.id, category: 'Localization/Ammo', id: newId + '_localization', recordType: loc.RecordType, data: locData }
+      });
+    } catch {
+      const loc = newLocalizationRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Localization/Ammo', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+      });
+    }
+
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectAmmo(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function guardSelectAmmo(id) {
+  if (selAmmo?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectAmmo(id), 'Yes', '');
+  } else {
+    selectAmmo(id);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  FIREMODE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+function newFiremodeRecord(id) {
+  return {
+    RecordType: 'MGSC.FireModeRecord',
+    Data: {
+      Id: id || 'tempId',
+      AmmoPerShot: 1,
+      WeaponCastsCount: 1,
+      RequiredAllAmmoToShot: false,
+      Accuracy: 0.0,
+      DamageMult: 1.0,
+      ScatterAngle: 0.0,
+      DelayInSecsBetweenShots: 0.0,
+    }
+  };
+}
+
+function populateFiremodeEditor(d) {
+  val('fm-Id', d.Id);
+  val('fm-AmmoPerShot', d.AmmoPerShot ?? 1);
+  val('fm-WeaponCastsCount', d.WeaponCastsCount ?? 1);
+  chk('fm-RequiredAllAmmoToShot', d.RequiredAllAmmoToShot);
+  val('fm-Accuracy', d.Accuracy ?? 0);
+  val('fm-DamageMult', d.DamageMult ?? 1);
+  val('fm-ScatterAngle', d.ScatterAngle ?? 0);
+  val('fm-DelayInSecsBetweenShots', d.DelayInSecsBetweenShots ?? 0);
+}
+
+function collectFiremodeEditor() {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  const bool = (id) => document.getElementById(id).checked;
+  return {
+    Id: str('fm-Id').trim(),
+    AmmoPerShot: int('fm-AmmoPerShot'),
+    WeaponCastsCount: int('fm-WeaponCastsCount'),
+    RequiredAllAmmoToShot: bool('fm-RequiredAllAmmoToShot'),
+    Accuracy: num('fm-Accuracy'),
+    DamageMult: num('fm-DamageMult'),
+    ScatterAngle: num('fm-ScatterAngle'),
+    DelayInSecsBetweenShots: num('fm-DelayInSecsBetweenShots'),
+  };
+}
+
+async function createNewFiremode() {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`tempId${n}`)) n++;
+    const newId = `tempId${n}`;
+    const record = newFiremodeRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    // Create blank descriptor
+    const fmDesc = newFiremodeDescriptorRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: fmDesc.RecordType, data: fmDesc.Data }
+    });
+    toast(`Created firemode "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function newFiremodeDescriptorRecord(id) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor',
+    Data: {
+      SpriteIdOrPath: '',
+      ItemId: id,
+    }
+  };
+}
+
+function populateFiremodeDescriptor(data) {
+  val('fmd-SpriteIdOrPath', data?.SpriteIdOrPath || '');
+}
+
+function collectFiremodeDescriptor(firemodeId) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor',
+    Data: {
+      SpriteIdOrPath: document.getElementById('fmd-SpriteIdOrPath').value,
+      ItemId: firemodeId,
+    }
+  };
+}
+
+async function loadFiremodeDescriptor(firemodeId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: firemodeId + '_descriptor' } });
+    populateFiremodeDescriptor(data.Data);
+  } catch {
+    populateFiremodeDescriptor(null);
+  }
+  loadFmSprite(firemodeId);
+}
+
+function loadFmSprite(firemodeId) {
+  const preview = document.getElementById('fmSpritePreview');
+  const img = new Image();
+  const url = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(firemodeId)}&suffix=sprite&folder=Firemodes&t=${Date.now()}`;
+  img.onload = () => { preview.innerHTML = ''; preview.appendChild(img); };
+  img.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
+  img.src = url;
+}
+
+async function handleFmSpriteUpload(input) {
+  if (!input.files.length || !selFiremode || !selProject) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64 = reader.result;
+    try {
+      await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
+      toast('Sprite uploaded');
+      loadFmSprite(selFiremode.id);
+      val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
+    } catch (e) { toast(e.message, 1); }
+    input.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveFiremodeDescriptor(firemodeId) {
+  const desc = collectFiremodeDescriptor(firemodeId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Descriptors/Firemodes', id: firemodeId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+  });
+}
+
+async function selectFiremode(id) {
+  if (!selProject || isLoading) return;
+  isLoading = true;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Firemodes', id } });
+    selFiremode = { id, record };
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateFiremodeEditor(record.Data);
+    await loadFiremodeDescriptor(id);
+    document.getElementById('tabBar').classList.remove('visible');
+    document.getElementById('editorWrap').classList.remove('visible');
+    for (const paneId of Object.values(TAB_PANES)) {
+      document.getElementById(paneId)?.classList.remove('visible');
+    }
+    document.getElementById('fmConfigWrap').classList.add('visible');
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    try { _formSnapshot = captureFiremodeSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+  finally { isLoading = false; }
+}
+
+function captureFiremodeSnapshot() {
+  const parts = [];
+  document.querySelectorAll('#fmConfigWrap input, #fmConfigWrap select').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
+    else parts.push(el.id + ':' + el.value);
+  });
+  return parts.join('|');
+}
+
+function isFiremodeDirty() {
+  if (!_formSnapshot || !selFiremode) return false;
+  return captureFiremodeSnapshot() !== _formSnapshot;
+}
+
+function validateFmField(input, rule) {
+  const v = parseFloat(input.value);
+  let valid = !isNaN(v);
+  if (rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+  else if (rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+  else if (rule === 'num_gt0') valid = valid && v > 0;
+  else if (rule === 'num_gte0') valid = valid && v >= 0;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validateAllFiremode() {
+  let allValid = true;
+  const checks = [
+    { id: 'fm-AmmoPerShot', rule: 'int_gte0' },
+    { id: 'fm-WeaponCastsCount', rule: 'int_gt0' },
+    { id: 'fm-DamageMult', rule: 'num_gt0' },
+    { id: 'fm-DelayInSecsBetweenShots', rule: 'num_gte0' },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    const v = parseFloat(el.value);
+    let valid = !isNaN(v);
+    if (c.rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+    else if (c.rule === 'int_gt0') valid = valid && Number.isInteger(v) && v > 0;
+    else if (c.rule === 'num_gt0') valid = valid && v > 0;
+    else if (c.rule === 'num_gte0') valid = valid && v >= 0;
+    el.classList.toggle('invalid', !valid);
+    if (!valid) allValid = false;
+  }
+  return allValid;
+}
+
+function collectFmValidationErrors() {
+  const errors = [];
+  const add = (msg) => errors.push({ tab: 'Firemode Config', section: 'Firemode Config', msg });
+  const pf = (id) => parseFloat(document.getElementById(id).value);
+  const v1 = pf('fm-AmmoPerShot');
+  if (isNaN(v1) || !Number.isInteger(v1) || v1 < 0) add('Ammo Per Shot — integer ≥ 0');
+  const v2 = pf('fm-WeaponCastsCount');
+  if (isNaN(v2) || !Number.isInteger(v2) || v2 <= 0) add('Weapon Casts Count — integer > 0');
+  const v3 = pf('fm-DamageMult');
+  if (isNaN(v3) || v3 <= 0) add('Damage Mult — must be positive');
+  const v4 = pf('fm-DelayInSecsBetweenShots');
+  if (isNaN(v4) || v4 < 0) add('Delay Between Shots — no negative');
+  return errors;
+}
+
+async function saveFiremode() {
+  if (!selProject || !selFiremode || isSaving || isLoading) return;
+
+  if (!validateAllFiremode()) {
+    showValidationErrorModal(collectFmValidationErrors());
+    return;
+  }
+
+  const data = collectFiremodeEditor();
+  const newId = data.Id;
+  const oldId = selFiremode.id;
+
+  // Validate Id
+  if (!newId) { toast('Firemode Id cannot be empty', 1); document.getElementById('fm-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Firemode Id contains invalid characters', 1); document.getElementById('fm-Id').classList.add('invalid'); return; }
+  document.getElementById('fm-Id').classList.remove('invalid');
+
+  // Duplicate check — project firemodes
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Firemodes', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('fm-Id').classList.add('invalid');
+      return;
+    } catch {}
+  }
+
+  // Duplicate check — base game firemodes
+  const baseIds = (REF?.base?.firemodes?.rows || []).map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  if (baseIds.includes(newId)) {
+    toast('ID conflicts with base game firemode', 1);
+    document.getElementById('fm-Id').classList.add('invalid');
+    return;
+  }
+
+  isSaving = true;
+  try {
+    if (newId !== oldId) {
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: 'Firemodes' } });
+      await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: oldId + '_descriptor' } }); } catch {}
+      // Update sprite path if it was set
+      const curPath = document.getElementById('fmd-SpriteIdOrPath').value;
+      if (curPath && curPath.includes(oldId)) {
+        val('fmd-SpriteIdOrPath', curPath.replace(oldId, newId));
+      }
+    }
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: 'MGSC.FireModeRecord', data }
+    });
+    await saveFiremodeDescriptor(newId);
+    selFiremode.id = newId;
+    toast('Saved');
+    _formSnapshot = captureFiremodeSnapshot();
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function deleteFiremode(id) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id } });
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: id + '_descriptor' } }); } catch {}
+    toast(`Deleted "${id}"`);
+    selFiremode = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    await selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function confirmDeleteFiremode(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteFiremode(id));
+}
+
+function confirmCopyFiremode(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyFiremode(id), 'Copy', 'primary');
+}
+
+async function copyFiremode(sourceId) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+
+    const src = await api('asset', { params: { project: selProject.id, category: 'Firemodes', id: sourceId } });
+    const data = { ...src.Data, Id: newId };
+    await api('asset', {
+      body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: 'MGSC.FireModeRecord', data }
+    });
+
+    // Copy descriptor (clear sprite path — image not copied)
+    try {
+      const srcDesc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: sourceId + '_descriptor' } });
+      const descData = { ...srcDesc.Data, ItemId: newId, SpriteIdOrPath: '' };
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: srcDesc.RecordType, data: descData }
+      });
+    } catch {
+      const fmDesc = newFiremodeDescriptorRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Firemodes', id: newId + '_descriptor', recordType: fmDesc.RecordType, data: fmDesc.Data }
+      });
+    }
+
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectFiremode(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function guardSelectFiremode(id) {
+  if (selFiremode?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectFiremode(id), 'Yes', '');
+  } else {
+    selectFiremode(id);
+  }
+}
 
 function confirmCopyWeapon(id) {
   showConfirm(`Copy the asset "${id}"?`, () => copyWeapon(id), 'Copy', 'primary');
 }
 
 async function copyWeapon(sourceId) {
-  if (!selProject || isSaving) return;
+  if (!selProject || isSaving || isLoading) return;
   isSaving = true;
   try {
     // Generate new ID
@@ -1635,7 +2789,7 @@ async function copyWeapon(sourceId) {
 
     // Copy localization
     try {
-      const loc = await api('asset', { params: { project: selProject.id, category: 'Localization', id: sourceId + '_localization' } });
+      const loc = await api('asset', { params: { project: selProject.id, category: 'Localization/Weapons', id: sourceId + '_localization' } });
       const locData = JSON.parse(JSON.stringify(loc.Data));
       // Remap keys from old ID to new ID
       const newKeys = {};
@@ -1644,18 +2798,18 @@ async function copyWeapon(sourceId) {
       }
       locData.Keys = newKeys;
       await api('asset', {
-        body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: locData }
+        body: { project: selProject.id, category: 'Localization/Weapons', id: newId + '_localization', recordType: loc.RecordType, data: locData }
       });
     } catch {
       const loc = newLocalizationRecord(newId);
       await api('asset', {
-        body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+        body: { project: selProject.id, category: 'Localization/Weapons', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
       });
     }
 
     // Copy descriptor
     try {
-      const desc = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: sourceId + '_descriptor' } });
+      const desc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: sourceId + '_descriptor' } });
       const descData = JSON.parse(JSON.stringify(desc.Data));
       descData.ItemId = newId;
       // Update ID-derived fields
@@ -1670,14 +2824,14 @@ async function copyWeapon(sourceId) {
         descData.ImageProperties.ShadowOnFloorSpriteIdOrPath = '';
       }
       await api('asset', {
-        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: descData }
+        body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: descData }
       });
     } catch {
       let bundlePath = 'Bundles/';
       try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
       const desc = newDescriptorRecord(newId, bundlePath);
       await api('asset', {
-        body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+        body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
       });
     }
 
@@ -1719,25 +2873,23 @@ async function copyWeapon(sourceId) {
       const frAssets = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
       for (const asset of frAssets.assets) {
         const assetData = asset.data || {};
-        const rewardList = assetData.FactionRewardList || [];
-        const newEntries = [];
-        for (const reward of rewardList) {
-          const cids = reward.contentRecords?.[0]?.ContentIds || [];
-          if (cids.includes(sourceId)) {
-            newEntries.push({
-              FactionName: reward.FactionName,
-              RewardType: 'rewardEquipment',
-              contentRecords: [{
-                TechLevel: reward.contentRecords[0].TechLevel,
+        let changed = false;
+        for (const reward of (assetData.FactionRewardList || [])) {
+          const newCrs = [];
+          for (const cr of (reward.contentRecords || [])) {
+            if ((cr.ContentIds || []).includes(sourceId)) {
+              newCrs.push({
+                TechLevel: cr.TechLevel,
                 ContentIds: [newId],
-                Weight: reward.contentRecords[0].Weight,
-                Points: reward.contentRecords[0].Points,
-              }]
-            });
+                Weight: cr.Weight,
+                Points: cr.Points,
+              });
+              changed = true;
+            }
           }
+          reward.contentRecords = [...(reward.contentRecords || []), ...newCrs];
         }
-        if (newEntries.length) {
-          assetData.FactionRewardList = [...rewardList, ...newEntries];
+        if (changed) {
           await api('asset', {
             body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
           });
@@ -1759,8 +2911,8 @@ function filterAssetList() {
   const query = (document.getElementById('assetFilterInput').value || '').toLowerCase();
   document.querySelectorAll('#assetList .card').forEach(card => {
     const name = (card.querySelector('.c-name')?.textContent || '').toLowerCase();
-    const sub = (card.querySelector('.c-sub')?.textContent || '').toLowerCase();
-    card.style.display = (!query || name.includes(query) || sub.includes(query)) ? '' : 'none';
+    const subs = Array.from(card.querySelectorAll('.c-sub')).map(el => (el.textContent || '').toLowerCase()).join(' ');
+    card.style.display = (!query || name.includes(query) || subs.includes(query)) ? '' : 'none';
   });
 }
 
@@ -1786,26 +2938,34 @@ function renderWeaponList(weapons) {
 }
 
 async function deleteWeapon(id) {
-  if (!selProject) return;
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
   try {
     await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id } });
-    try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: id + '_localization' } }); } catch {}
-    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: id + '_descriptor' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: id + '_localization' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
     await removeWeaponFromAllDisks(id);
     await removeWeaponFromAllFactions(id);
     toast(`Deleted "${id}"`);
-    selectProject(selProject.id);
+    selWeapon = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    await selectProject(selProject.id);
   } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
 }
 
 async function selectWeapon(id) {
-  if (!selProject) return;
+  if (!selProject || isLoading) return;
+  isLoading = true;
   try {
     const record = await api('asset', { params: { project: selProject.id, category: 'Weapons', id } });
     selWeapon = { id, record };
     // Clear stale validation
     document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    await refreshFiremodeSelects();
+    await refreshAmmoSelects();
     populateEditor(record.Data);
     // Detect image folder and load folders list
     await loadImageFolders();
@@ -1828,6 +2988,7 @@ async function selectWeapon(id) {
     // Capture clean state
     try { _formSnapshot = captureFormSnapshot(); } catch { _formSnapshot = null; }
   } catch (e) { toast(e.message, 1); }
+  finally { isLoading = false; }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1898,7 +3059,7 @@ function newLocalizationRecord(id) {
 }
 
 async function createNewWeapon() {
-  if (!selProject || isSaving) return;
+  if (!selProject || isSaving || isLoading) return;
   isSaving = true;
 
   try {
@@ -1914,14 +3075,14 @@ async function createNewWeapon() {
     // Create blank localization
     const loc = newLocalizationRecord(newId);
     await api('asset', {
-      body: { project: selProject.id, category: 'Localization', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
+      body: { project: selProject.id, category: 'Localization/Weapons', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
     });
     // Create blank descriptor
     let bundlePath = 'Bundles/';
     try { const ps = await api('project_settings', { params: { id: selProject.id } }); bundlePath = ps.bundlePath || 'Bundles/'; } catch {}
     const desc = newDescriptorRecord(newId, bundlePath);
     await api('asset', {
-      body: { project: selProject.id, category: 'Descriptors', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+      body: { project: selProject.id, category: 'Descriptors/Weapons', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
     });
     // Create blank recipe
     const recipe = newRecipeRecord(newId);
@@ -1961,14 +3122,14 @@ function populateEditor(d) {
   val('ed-critDmg', d.Damage?.critDmg);
   // Firemodes
   const fms = d.Firemodes || [];
-  val('ed-Firemode1', fms[0] || '');
-  val('ed-Firemode2', fms[1] || '');
+  setFiremodeValue('ed-Firemode1', fms[0] || '');
+  setFiremodeValue('ed-Firemode2', fms[1] || '');
   val('ed-RequiredAmmo', d.RequiredAmmo);
-  val('ed-DefaultAmmoId', d.DefaultAmmoId);
+  setAmmoValue('ed-DefaultAmmoId', d.DefaultAmmoId);
   // Override Ammo
   const oa = d.OverrideAmmo || [];
-  val('ed-OverrideAmmo1', oa[0] || '');
-  val('ed-OverrideAmmo2', oa[1] || '');
+  setAmmoValue('ed-OverrideAmmo1', oa[0] || '');
+  setAmmoValue('ed-OverrideAmmo2', oa[1] || '');
   syncFiremodes();
   val('ed-OverrideProjectileId', d.OverrideProjectileId);
   val('ed-Range', d.Range);
@@ -2070,8 +3231,8 @@ function collectEditor() {
 const validationRules = {
   'ed-TechLevel': v => Number.isInteger(v) && v >= 1 && v <= 10,
   'ed-Price': v => Number.isInteger(v) && v >= 0,
-  'ed-InventorySortOrder': v => Number.isInteger(v),
-  'ed-InventoryWidthSize': v => Number.isInteger(v),
+  'ed-InventorySortOrder': v => Number.isInteger(v) && v >= 0,
+  'ed-InventoryWidthSize': v => Number.isInteger(v) && v >= 0,
   'ed-minDmg': v => Number.isInteger(v) && v >= 0,
   'ed-maxDmg': v => Number.isInteger(v) && v >= 0,
   'ed-Range': v => Number.isInteger(v) && v >= 0,
@@ -2089,8 +3250,8 @@ const validationRules = {
 const FIELD_META = {
   'ed-TechLevel': { tab: 'Weapon Config', section: 'Identity', label: 'Tech Level', hint: 'integer 1–10' },
   'ed-Price': { tab: 'Weapon Config', section: 'Identity', label: 'Price', hint: 'integer ≥ 0' },
-  'ed-InventorySortOrder': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Sort Order', hint: 'integer' },
-  'ed-InventoryWidthSize': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Width Size', hint: 'integer' },
+  'ed-InventorySortOrder': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Sort Order', hint: 'integer ≥ 0' },
+  'ed-InventoryWidthSize': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Width Size', hint: 'integer ≥ 0' },
   'ed-minDmg': { tab: 'Weapon Config', section: 'Damage', label: 'Min Damage', hint: 'integer ≥ 0' },
   'ed-maxDmg': { tab: 'Weapon Config', section: 'Damage', label: 'Max Damage', hint: 'integer ≥ 0, must be ≥ min' },
   'ed-Range': { tab: 'Weapon Config', section: 'Range & Accuracy', label: 'Range', hint: 'integer ≥ 0' },
@@ -2174,6 +3335,22 @@ function validateAll() {
     const ptsOk = !isNaN(pv) && Number.isInteger(pv) && pv > 0;
     pts.classList.toggle('invalid', !ptsOk); if (!ptsOk) allValid = false;
   });
+  // Firemode select validation (orphaned references)
+  ['ed-Firemode1', 'ed-Firemode2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.value && el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`)) {
+      el.classList.add('invalid');
+      allValid = false;
+    }
+  });
+  // Ammo select validation (orphaned references)
+  ['ed-DefaultAmmoId', 'ed-OverrideAmmo1', 'ed-OverrideAmmo2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.value && el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`)) {
+      el.classList.add('invalid');
+      allValid = false;
+    }
+  });
   return allValid;
 }
 
@@ -2235,6 +3412,30 @@ function collectValidationErrors() {
     if (isNaN(v) || !Number.isInteger(v) || v <= 0) grErr++;
   });
   if (grErr) add('Crafting Recipe', 'Workshop Settings', `${grErr} modify item${grErr > 1 ? 's have' : ' has'} invalid value (integer > 0)`);
+
+  // Firemode select validation
+  const fm1El = document.getElementById('ed-Firemode1');
+  if (fm1El.value && fm1El.querySelector(`.orphan-opt[value="${CSS.escape(fm1El.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Firemode 1 "${fm1El.value}" — not found in base game or project firemodes`);
+  }
+  const fm2El = document.getElementById('ed-Firemode2');
+  if (fm2El.value && fm2El.querySelector(`.orphan-opt[value="${CSS.escape(fm2El.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Firemode 2 "${fm2El.value}" — not found in base game or project firemodes`);
+  }
+
+  // Ammo select validation
+  const daEl = document.getElementById('ed-DefaultAmmoId');
+  if (daEl.value && daEl.querySelector(`.orphan-opt[value="${CSS.escape(daEl.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Default Ammo "${daEl.value}" — not found in base game or project ammo`);
+  }
+  const oa1El = document.getElementById('ed-OverrideAmmo1');
+  if (oa1El.value && oa1El.querySelector(`.orphan-opt[value="${CSS.escape(oa1El.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Override Ammo 1 "${oa1El.value}" — not found in base game or project ammo`);
+  }
+  const oa2El = document.getElementById('ed-OverrideAmmo2');
+  if (oa2El.value && oa2El.querySelector(`.orphan-opt[value="${CSS.escape(oa2El.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Override Ammo 2 "${oa2El.value}" — not found in base game or project ammo`);
+  }
 
   // Faction Rewards
   let frIdx = 0;
@@ -2338,25 +3539,43 @@ function guardNavigation(callback) {
 }
 
 function guardSelectWeapon(id) {
-  if (selWeapon?.id === id) return;
-  guardNavigation(() => selectWeapon(id));
+  if (selWeapon?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectWeapon(id), 'Yes', '');
+  } else {
+    selectWeapon(id);
+  }
+}
+
+function isCurrentModeDirty() {
+  if (currentMode === 'ammo') return isAmmoDirty();
+  if (currentMode === 'firemodes') return isFiremodeDirty();
+  return isFormDirty();
 }
 
 function guardSwitchMode(mode) {
-  if (currentMode === mode) return;
-  guardNavigation(() => switchMode(mode));
+  if (currentMode === mode || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => switchMode(mode), 'Yes', '');
+  } else {
+    switchMode(mode);
+  }
 }
 
 function guardSelectProject(id) {
-  if (selProject?.id === id) return;
-  guardNavigation(() => selectProject(id));
+  if (selProject?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectProject(id), 'Yes', '');
+  } else {
+    selectProject(id);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════
 //  SAVE
 // ═══════════════════════════════════════════════════════════════════
 async function saveWeapon() {
-  if (!selProject || !selWeapon || isSaving) return;
+  if (!selProject || !selWeapon || isSaving || isLoading) return;
   if (!validateAll()) {
     showValidationErrorModal(collectValidationErrors());
     return;
@@ -2384,12 +3603,12 @@ async function saveWeapon() {
 
   try {
     if (newId !== oldId) {
-      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: curImageFolder } });
+      await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: weaponImgFolder(curImageFolder) } });
       await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
       // Delete old localization file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization', id: oldId + '_localization' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: oldId + '_localization' } }); } catch {}
       // Delete old descriptor file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors', id: oldId + '_descriptor' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: oldId + '_descriptor' } }); } catch {}
       // Delete old recipe file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
       // Rename weapon in datadisks
@@ -2433,9 +3652,12 @@ async function loadImageFolders() {
   } catch {}
 }
 
+function weaponImgFolder(sub) {
+  return sub ? 'Weapons/' + sub : 'Weapons';
+}
+
 function imgUrl(id, suffix) {
-  const folder = curImageFolder || '';
-  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(folder)}&t=${Date.now()}`;
+  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(weaponImgFolder(curImageFolder))}&t=${Date.now()}`;
 }
 
 function loadWeaponImage(id, suffix, type) {
@@ -2465,7 +3687,7 @@ function loadAllWeaponImages(id) {
 }
 
 function updateDescriptorImagePaths(id, folder) {
-  const prefix = folder ? `Images/${folder}/` : 'Images/';
+  const prefix = folder ? `Images/Weapons/${folder}/` : 'Images/Weapons/';
   val('desc-IconSpriteIdOrPath', `${prefix}${id}_sprite_icon.png`);
   val('desc-SmallIconSpriteIdOrPath', `${prefix}${id}_sprite_floor.png`);
   val('desc-ShadowOnFloorSpriteIdOrPath', `${prefix}${id}_sprite_shadow.png`);
@@ -2477,7 +3699,7 @@ async function onImageFolderChange(newFolder) {
   if (newFolder === oldFolder) return;
 
   try {
-    await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: oldFolder, to: newFolder } });
+    await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: weaponImgFolder(oldFolder), to: weaponImgFolder(newFolder) } });
     curImageFolder = newFolder;
     updateDescriptorImagePaths(selWeapon.id, newFolder);
     loadAllWeaponImages(selWeapon.id);
@@ -2514,7 +3736,7 @@ async function handleImageUpload(input, suffix, type) {
       }
 
       try {
-        await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: curImageFolder, data: base64 } });
+        await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: weaponImgFolder(curImageFolder), data: base64 } });
         toast('Image uploaded');
         updateDescriptorImagePaths(selWeapon.id, curImageFolder);
         loadWeaponImage(selWeapon.id, suffix, type);
@@ -2606,12 +3828,12 @@ async function loadFactionRewards(weaponId) {
     for (const asset of data.assets) {
       const rewardList = asset.data?.FactionRewardList || [];
       for (const reward of rewardList) {
-        const contentIds = reward.contentRecords?.[0]?.ContentIds || [];
-        if (contentIds.includes(weaponId)) {
-          const cr = reward.contentRecords[0];
-          const factionId = reward.FactionName || '';
-          addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
-          _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+        const factionId = reward.FactionName || '';
+        for (const cr of (reward.contentRecords || [])) {
+          if ((cr.ContentIds || []).includes(weaponId)) {
+            addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
+            _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+          }
         }
       }
     }
@@ -2628,19 +3850,6 @@ function collectFactionRewards() {
     if (factionId) entries.push({ factionId, techLevel, weight, points });
   });
   return entries;
-}
-
-function buildFactionRewardEntry(factionName, weaponId, techLevel, weight, points) {
-  return {
-    FactionName: factionName,
-    RewardType: 'rewardEquipment',
-    contentRecords: [{
-      TechLevel: techLevel,
-      ContentIds: [weaponId],
-      Weight: weight,
-      Points: points
-    }]
-  };
 }
 
 async function saveFactionRewards(weaponId) {
@@ -2678,19 +3887,32 @@ async function saveFactionRewards(weaponId) {
     const data = record.Data || record.data || {};
     let rewardList = data.FactionRewardList || [];
 
-    // Remove all entries for this weapon from this faction
-    rewardList = rewardList.filter(r => {
-      const cids = r.contentRecords?.[0]?.ContentIds || [];
-      return !cids.includes(weaponId);
-    });
-
-    // Add new entries for this weapon
-    for (const e of newEntries) {
-      rewardList.push(buildFactionRewardEntry(factionId, weaponId, e.techLevel, e.weight, e.points));
+    // Find or create the faction entry
+    let factionEntry = rewardList.find(r => r.FactionName === factionId);
+    if (!factionEntry) {
+      factionEntry = { FactionName: factionId, RewardType: 'rewardEquipment', contentRecords: [] };
+      rewardList.push(factionEntry);
     }
 
+    // Remove this weapon's contentRecords from the faction entry
+    factionEntry.contentRecords = (factionEntry.contentRecords || []).filter(cr =>
+      !(cr.ContentIds || []).includes(weaponId)
+    );
+
+    // Add new contentRecords for this weapon
+    for (const e of newEntries) {
+      factionEntry.contentRecords.push({
+        TechLevel: e.techLevel,
+        ContentIds: [weaponId],
+        Weight: e.weight,
+        Points: e.points
+      });
+    }
+
+    // Clean up empty faction entries
+    rewardList = rewardList.filter(r => (r.contentRecords || []).length > 0);
+
     if (rewardList.length === 0) {
-      // No entries left — delete the file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } }); } catch {}
     } else {
       data.FactionRewardList = rewardList;
@@ -2709,15 +3931,22 @@ async function removeWeaponFromAllFactions(weaponId) {
     for (const asset of data.assets) {
       const assetData = asset.data || {};
       let rewardList = assetData.FactionRewardList || [];
-      const filtered = rewardList.filter(r => {
-        const cids = r.contentRecords?.[0]?.ContentIds || [];
-        return !cids.includes(weaponId);
-      });
-      if (filtered.length !== rewardList.length) {
-        if (filtered.length === 0) {
+      let changed = false;
+
+      for (const reward of rewardList) {
+        const before = (reward.contentRecords || []).length;
+        reward.contentRecords = (reward.contentRecords || []).filter(cr =>
+          !(cr.ContentIds || []).includes(weaponId)
+        );
+        if (reward.contentRecords.length !== before) changed = true;
+      }
+
+      if (changed) {
+        rewardList = rewardList.filter(r => (r.contentRecords || []).length > 0);
+        if (rewardList.length === 0) {
           await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: asset.id } });
         } else {
-          assetData.FactionRewardList = filtered;
+          assetData.FactionRewardList = rewardList;
           await api('asset', {
             body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
           });
@@ -2734,9 +3963,10 @@ async function renameWeaponInAllFactions(oldId, newId) {
       const assetData = asset.data || {};
       let changed = false;
       for (const reward of (assetData.FactionRewardList || [])) {
-        const cids = reward.contentRecords?.[0]?.ContentIds || [];
-        const idx = cids.indexOf(oldId);
-        if (idx !== -1) { cids[idx] = newId; changed = true; }
+        for (const cr of (reward.contentRecords || [])) {
+          const idx = (cr.ContentIds || []).indexOf(oldId);
+          if (idx !== -1) { cr.ContentIds[idx] = newId; changed = true; }
+        }
       }
       if (changed) {
         await api('asset', {
@@ -3112,7 +4342,7 @@ function newDescriptorRecord(id, bundlePath) {
 
 async function loadDescriptor(weaponId) {
   try {
-    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor' } });
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: weaponId + '_descriptor' } });
     populateDescriptor(data.Data, weaponId);
   } catch {
     populateDescriptor(null, weaponId);
@@ -3122,7 +4352,7 @@ async function loadDescriptor(weaponId) {
 async function saveDescriptor(weaponId) {
   const desc = collectDescriptor(weaponId);
   await api('asset', {
-    body: { project: selProject.id, category: 'Descriptors', id: weaponId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+    body: { project: selProject.id, category: 'Descriptors/Weapons', id: weaponId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
   });
 }
 
@@ -3194,7 +4424,7 @@ function collectLocalization(weaponId) {
 
 async function loadLocalization(weaponId) {
   try {
-    const data = await api('asset', { params: { project: selProject.id, category: 'Localization', id: weaponId + '_localization' } });
+    const data = await api('asset', { params: { project: selProject.id, category: 'Localization/Weapons', id: weaponId + '_localization' } });
     populateLocalization(data, weaponId);
   } catch {
     // No localization file yet — clear fields
@@ -3205,7 +4435,75 @@ async function loadLocalization(weaponId) {
 async function saveLocalization(weaponId) {
   const loc = collectLocalization(weaponId);
   await api('asset', {
-    body: { project: selProject.id, category: 'Localization', id: weaponId + '_localization', recordType: loc.RecordType, data: loc.Data }
+    body: { project: selProject.id, category: 'Localization/Weapons', id: weaponId + '_localization', recordType: loc.RecordType, data: loc.Data }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AMMO LOCALIZATION
+// ═══════════════════════════════════════════════════════════════════
+function buildAmmoLocRows() {
+  const container = document.getElementById('ammoLocRows');
+  container.innerHTML = LOC_LANGS.map(l => `
+    <div class="loc-row">
+      <span class="loc-lang">${esc(l.label)}</span>
+      <input class="loc-name" type="text" data-lang="${l.key}">
+      <input class="loc-sdesc" type="text" data-lang="${l.key}">
+    </div>
+  `).join('');
+}
+
+function populateAmmoLocalization(data, ammoId) {
+  const keys = data?.Data?.Keys || {};
+  const nameKey = `item.${ammoId}.name`;
+  const sdescKey = `item.${ammoId}.shortdesc`;
+  const names = keys[nameKey] || {};
+  const sdescs = keys[sdescKey] || {};
+
+  document.querySelectorAll('#ammoLocRows .loc-row').forEach(row => {
+    const lang = row.querySelector('.loc-name').dataset.lang;
+    row.querySelector('.loc-name').value = names[lang] || '';
+    row.querySelector('.loc-sdesc').value = sdescs[lang] || '';
+  });
+}
+
+function collectAmmoLocalization(ammoId) {
+  const nameObj = {};
+  const descObj = {};
+  const sdescObj = {};
+
+  document.querySelectorAll('#ammoLocRows .loc-row').forEach(row => {
+    const lang = row.querySelector('.loc-name').dataset.lang;
+    nameObj[lang] = row.querySelector('.loc-name').value;
+    descObj[lang] = '';
+    sdescObj[lang] = row.querySelector('.loc-sdesc').value;
+  });
+
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.LocalizationTemplate',
+    Data: {
+      Keys: {
+        [`item.${ammoId}.name`]: nameObj,
+        [`item.${ammoId}.desc`]: descObj,
+        [`item.${ammoId}.shortdesc`]: sdescObj,
+      }
+    }
+  };
+}
+
+async function loadAmmoLocalization(ammoId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Localization/Ammo', id: ammoId + '_localization' } });
+    populateAmmoLocalization(data, ammoId);
+  } catch {
+    document.querySelectorAll('#ammoLocRows .loc-name, #ammoLocRows .loc-sdesc').forEach(el => el.value = '');
+  }
+}
+
+async function saveAmmoLocalization(ammoId) {
+  const loc = collectAmmoLocalization(ammoId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Localization/Ammo', id: ammoId + '_localization', recordType: loc.RecordType, data: loc.Data }
   });
 }
 
@@ -3403,6 +4701,7 @@ document.addEventListener('click', (e) => {
 //  TABS
 // ═══════════════════════════════════════════════════════════════════
 let activeTab = 'weaponConfig';
+let activeAmmoTab = 'ammoConfig';
 
 const TAB_PANES = {
   weaponConfig: 'editorWrap',
@@ -3412,6 +4711,35 @@ const TAB_PANES = {
   datadisk: 'datadiskWrap',
   factionRewards: 'factionRewardsWrap',
 };
+
+const AMMO_TAB_PANES = {
+  ammoConfig: 'ammoConfigWrap',
+  ammoDescriptor: 'ammoDescriptorWrap',
+  ammoLocalization: 'ammoLocalizationWrap',
+};
+
+function switchAmmoTab(tabId) {
+  activeAmmoTab = tabId;
+  document.querySelectorAll('#ammoTabBar .tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`#ammoTabBar .tab-btn[onclick*="${tabId}"]`).classList.add('active');
+  for (const [id, paneId] of Object.entries(AMMO_TAB_PANES)) {
+    document.getElementById(paneId).classList.toggle('visible', id === tabId);
+  }
+}
+
+
+function hideAllEditors() {
+  document.getElementById('editorWrap').classList.remove('visible');
+  document.getElementById('tabBar')?.classList.remove('visible');
+  document.getElementById('fmConfigWrap')?.classList.remove('visible');
+  document.getElementById('ammoTabBar')?.classList.remove('visible');
+  for (const paneId of Object.values(AMMO_TAB_PANES)) {
+    document.getElementById(paneId)?.classList.remove('visible');
+  }
+  for (const paneId of Object.values(TAB_PANES)) {
+    document.getElementById(paneId)?.classList.remove('visible');
+  }
+}
 
 function switchMode(mode) {
   currentMode = mode;
@@ -3424,26 +4752,24 @@ function switchMode(mode) {
 
   // Hide current editor
   selWeapon = null;
+  selFiremode = null;
+  selAmmo = null;
   _formSnapshot = null;
-  document.getElementById('editorWrap').classList.remove('visible');
-  document.getElementById('tabBar')?.classList.remove('visible');
-  for (const paneId of Object.values(TAB_PANES)) {
-    document.getElementById(paneId)?.classList.remove('visible');
-  }
+  hideAllEditors();
   document.getElementById('emptyState').style.display = '';
   document.getElementById('emptyState').querySelector('div:last-child').textContent = `No ${titles[mode].toLowerCase()} yet`;
 
   // Re-render list from cached tree
   if (selProject && selProject._tree) {
+    if (mode === 'weapons') { refreshFiremodeSelects(); refreshAmmoSelects(); }
     renderModeList(selProject._tree);
   }
 }
 
 function switchTab(tabId) {
   activeTab = tabId;
-  // Update tab buttons
-  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick*="${tabId}"]`).classList.add('active');
+  document.querySelectorAll('#tabBar .tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`#tabBar .tab-btn[onclick*="${tabId}"]`).classList.add('active');
   // Show/hide panes
   for (const [id, paneId] of Object.entries(TAB_PANES)) {
     document.getElementById(paneId).classList.toggle('visible', id === tabId);
@@ -3487,18 +4813,135 @@ document.addEventListener('dblclick', (e) => {
   if (e.target.matches('input[type="text"], input[type="number"]')) e.target.select();
 });
 
-function fillOverrideAmmoSelects() {
-  if (!REF) return;
-  const rows = REF.base?.ammo?.rows || [];
-  const implicted = rows
-    .map(r => (r.Id || '').trim().replace(/^\*/, ''))
-    .filter(v => v.startsWith('implicted_'));
+async function refreshFiremodeSelects() {
+  const baseRows = (REF?.base?.firemodes?.rows || []);
+  const baseIds = baseRows.map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+
+  // Fetch project-local firemodes
+  let projectIds = [];
+  if (selProject) {
+    try {
+      const data = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
+      projectIds = data.assets.map(a => a.dataId || a.id).filter(Boolean);
+    } catch {}
+  }
+
+  const allIds = [...new Set([...baseIds, ...projectIds])].sort();
+
+  // Preserve current selections
+  const fm1Val = document.getElementById('ed-Firemode1').value;
+  const fm2Val = document.getElementById('ed-Firemode2').value;
 
   let html = '<option value="" style="font-style:italic">empty</option>';
-  html += implicted.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  html += allIds.map(v => {
+    const isCustom = projectIds.includes(v) && !baseIds.includes(v);
+    const label = isCustom ? v + ' - *Custom*' : v;
+    return `<option value="${esc(v)}">${esc(label)}</option>`;
+  }).join('');
 
-  document.getElementById('ed-OverrideAmmo1').innerHTML = html;
-  document.getElementById('ed-OverrideAmmo2').innerHTML = html;
+  document.getElementById('ed-Firemode1').innerHTML = html;
+  document.getElementById('ed-Firemode2').innerHTML = html;
+
+  // Restore selections
+  if (fm1Val) document.getElementById('ed-Firemode1').value = fm1Val;
+  if (fm2Val) document.getElementById('ed-Firemode2').value = fm2Val;
+}
+
+async function refreshAmmoSelects() {
+  const baseRows = (REF?.base?.ammo?.rows || []);
+  const baseIds = baseRows.map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  const implictedIds = baseIds.filter(v => v.startsWith('implicted_'));
+
+  // Fetch project-local ammo
+  let projectIds = [];
+  if (selProject) {
+    try {
+      const data = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
+      projectIds = data.assets.map(a => a.dataId || a.id).filter(Boolean);
+    } catch {}
+  }
+
+  // DefaultAmmoId — all base + project
+  const allAmmoIds = [...new Set([...baseIds, ...projectIds])].sort();
+  const da1Val = document.getElementById('ed-DefaultAmmoId').value;
+  let daHtml = '<option value="" style="font-style:italic">empty</option>';
+  daHtml += allAmmoIds.map(v => {
+    const isCustom = projectIds.includes(v) && !baseIds.includes(v);
+    const label = isCustom ? v + ' - *Custom*' : v;
+    return `<option value="${esc(v)}">${esc(label)}</option>`;
+  }).join('');
+  document.getElementById('ed-DefaultAmmoId').innerHTML = daHtml;
+  if (da1Val) document.getElementById('ed-DefaultAmmoId').value = da1Val;
+
+  // OverrideAmmo — base implicted_ + all project
+  const overrideIds = [...new Set([...implictedIds, ...projectIds])].sort();
+  const oa1Val = document.getElementById('ed-OverrideAmmo1').value;
+  const oa2Val = document.getElementById('ed-OverrideAmmo2').value;
+  let oaHtml = '<option value="" style="font-style:italic">empty</option>';
+  oaHtml += overrideIds.map(v => {
+    const isCustom = projectIds.includes(v) && !implictedIds.includes(v);
+    const label = isCustom ? v + ' - *Custom*' : v;
+    return `<option value="${esc(v)}">${esc(label)}</option>`;
+  }).join('');
+  document.getElementById('ed-OverrideAmmo1').innerHTML = oaHtml;
+  document.getElementById('ed-OverrideAmmo2').innerHTML = oaHtml;
+  if (oa1Val) document.getElementById('ed-OverrideAmmo1').value = oa1Val;
+  if (oa2Val) document.getElementById('ed-OverrideAmmo2').value = oa2Val;
+}
+
+function setAmmoValue(selectId, value) {
+  const el = document.getElementById(selectId);
+  el.querySelectorAll('.orphan-opt').forEach(o => o.remove());
+  if (value) {
+    const exists = Array.from(el.options).some(o => o.value === value);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value + ' (missing)';
+      opt.className = 'orphan-opt';
+      opt.style.color = '#c05050';
+      el.appendChild(opt);
+    }
+  }
+  el.value = value;
+  validateAmmoSelect(el);
+}
+
+function validateAmmoSelect(el) {
+  if (!el.value) { el.classList.remove('invalid'); return; }
+  const isOrphan = el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`);
+  el.classList.toggle('invalid', !!isOrphan);
+}
+
+function setFiremodeValue(selectId, value) {
+  const el = document.getElementById(selectId);
+  // Remove any previously injected orphan option
+  el.querySelectorAll('.orphan-opt').forEach(o => o.remove());
+  if (value) {
+    const exists = Array.from(el.options).some(o => o.value === value);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value + ' (missing)';
+      opt.className = 'orphan-opt';
+      opt.style.color = '#c05050';
+      el.appendChild(opt);
+    }
+  }
+  el.value = value;
+  validateFiremodeSelect(el);
+}
+
+function validateFiremodeSelect(el) {
+  if (!el.value) { el.classList.remove('invalid'); return; }
+  const isOrphan = el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`);
+  el.classList.toggle('invalid', !!isOrphan);
+}
+
+function onFiremodeSelectChange(el) {
+  // If user picks a valid option, remove orphan class
+  validateFiremodeSelect(el);
+  syncFiremodes();
 }
 
 function syncFiremodes() {
@@ -3566,8 +5009,7 @@ function populateRefSelects() {
   fillSelect('ed-WeaponSubClass', REF.enums?.weaponSubClass, 'Name');
   fillSelect('desc-Grip', REF.enums?.handGrips, 'Name');
   fillSelectWithEmpty('ed-RequiredAmmo', REF.enums?.ammoTypes, 'name');
-  fillSelectWithEmpty('ed-DefaultAmmoId', REF.base?.ammo, 'Id');
-  fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectileIds, 'Name');
+  fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectiles, 'Id');
   fillSelectWithEmpty('ed-DefaultGrenadeId', REF.base?.grenades, 'Id');
   fillMultiSelect('ed-AllowedGrenadeIds', REF.base?.grenades, 'Id');
 
@@ -3582,9 +5024,8 @@ function populateRefSelects() {
   fillMultiSelect('ed-RepairItemIds', repairParts, 'Id');
   fillMultiSelect('ed-Categories', REF.enums?.categories, 'Name');
   fillMultiSelect('ed-Datadisks', REF.base?.datadisks, 'Id');
-  fillSelectWithEmpty('ed-Firemode1', REF.base?.firemodes, 'Id');
-  fillSelectWithEmpty('ed-Firemode2', REF.base?.firemodes, 'Id');
-  fillOverrideAmmoSelects();
+  refreshFiremodeSelects();
+  refreshAmmoSelects();
 
   // Disassembly item combobox options — combined repairs + trash Ids
   const disItems = [
@@ -3609,6 +5050,16 @@ function populateRefSelects() {
     ...(REF.base?.datadisks?.rows || []),
   ].map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
   window._gradeItemOptions = [...new Set(gradeItems)].filter(v => !v.includes('quest_')).sort();
+
+  // ── Ammo editor selects ──
+  fillSelectWithEmpty('ammo-AmmoType', REF.enums?.ammoTypes, 'name');
+  fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
+  fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
+  const ammoTraits = {
+    rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
+  };
+  fillMultiSelect('ammo-Traits', ammoTraits, 'Id');
+  fillMultiSelect('ammo-Categories', REF.enums?.categories, 'Name');
 }
 
 async function init() {
@@ -3619,6 +5070,7 @@ async function init() {
   try { REF = await api('ref_all'); } catch (e) { console.warn('Failed to load ref data:', e.message); }
   populateRefSelects();
   buildLocRows();
+  buildAmmoLocRows();
   await loadProjects();
   const last = localStorage.getItem('lastProject');
   if (last) {

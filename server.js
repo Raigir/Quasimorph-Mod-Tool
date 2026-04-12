@@ -17,16 +17,19 @@ const ASSET_CATEGORIES = [
   'Consumables',
   'Crafting Recipes',
   'Datadisks',
-  'Descriptors',
+  'Descriptors/Ammo',
+  'Descriptors/Firemodes',
+  'Descriptors/Weapons',
   'Explosions',
   'FactionRewards',
   'Firemodes',
-  'Localization',
+  'Localization/Ammo',
+  'Localization/Weapons',
   'Weapons',
 ];
 
 // Valid image suffixes
-const IMAGE_SUFFIXES = ['sprite_icon', 'sprite_floor', 'sprite_shadow'];
+const IMAGE_SUFFIXES = ['sprite_icon', 'sprite_floor', 'sprite_shadow', 'sprite'];
 
 // Ensure data root exists
 if (!fs.existsSync(DATA_ROOT)) fs.mkdirSync(DATA_ROOT, { recursive: true });
@@ -217,6 +220,9 @@ function createProject(input) {
     fs.mkdirSync(path.join(assetsDir, cat), { recursive: true });
   }
   fs.mkdirSync(path.join(assetsDir, 'Images'), { recursive: true });
+  fs.mkdirSync(path.join(assetsDir, 'Images', 'Weapons'), { recursive: true });
+  fs.mkdirSync(path.join(assetsDir, 'Images', 'Firemodes'), { recursive: true });
+  fs.mkdirSync(path.join(assetsDir, 'Images', 'Ammo'), { recursive: true });
 
   console.log(`[PROJECT] Created: ${id}`);
   return { status: 'ok', id, name: id };
@@ -299,7 +305,7 @@ function getProjectTree(id) {
   }
 
   // Look up English names from localization files for weapons
-  const locDir = path.join(assetsDir, 'Localization');
+  const locDir = path.join(assetsDir, 'Localization', 'Weapons');
   if (tree['Weapons'] && fs.existsSync(locDir)) {
     for (const w of tree['Weapons']) {
       const locFile = path.join(locDir, `${w.dataId}_localization.json`);
@@ -308,6 +314,21 @@ function getProjectTree(id) {
           const loc = readJson(locFile);
           const nameKey = `item.${w.dataId}.name`;
           w.englishName = loc.Data?.Keys?.[nameKey]?.EnglishUS || '';
+        } catch {}
+      }
+    }
+  }
+
+  // Look up English names from localization files for ammo
+  const ammoLocDir = path.join(assetsDir, 'Localization', 'Ammo');
+  if (tree['Ammo'] && fs.existsSync(ammoLocDir)) {
+    for (const a of tree['Ammo']) {
+      const locFile = path.join(ammoLocDir, `${a.dataId}_localization.json`);
+      if (fs.existsSync(locFile)) {
+        try {
+          const loc = readJson(locFile);
+          const nameKey = `item.${a.dataId}.name`;
+          a.englishName = loc.Data?.Keys?.[nameKey]?.EnglishUS || '';
         } catch {}
       }
     }
@@ -389,12 +410,16 @@ function deleteAsset(projectId, category, assetId) {
 
   fs.unlinkSync(filePath);
 
-  // Clean up all associated images (root + subfolders)
+  // Clean up all associated images (reserved folders + Weapons subfolders)
   const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-  const foldersToCheck = [''];
-  if (fs.existsSync(imagesDir)) {
-    fs.readdirSync(imagesDir, { withFileTypes: true })
-      .filter(d => d.isDirectory()).forEach(d => foldersToCheck.push(d.name));
+  const foldersToCheck = [];
+  for (const reserved of RESERVED_IMAGE_FOLDERS) {
+    const resDir = path.join(imagesDir, reserved);
+    if (fs.existsSync(resDir)) {
+      foldersToCheck.push(reserved);
+      fs.readdirSync(resDir, { withFileTypes: true })
+        .filter(d => d.isDirectory()).forEach(d => foldersToCheck.push(reserved + '/' + d.name));
+    }
   }
   for (const folder of foldersToCheck) {
     const dir = resolveImagesDir(projectId, folder);
@@ -424,17 +449,20 @@ function validateSuffix(suffix) {
 function resolveImagesDir(projectId, folder) {
   const base = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
   if (!folder) return base;
-  const clean = folder.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\.\./g, '');
+  const clean = folder.trim().replace(/[<>:"\\|?*]/g, '').replace(/\.\./g, '');
   if (!clean) return base;
   return path.join(base, clean);
 }
 
+const RESERVED_IMAGE_FOLDERS = ['Ammo', 'Firemodes', 'Weapons'];
+
 function listImageFolders(projectId) {
   projectId = sanitizeProjectId(projectId);
-  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-  if (!fs.existsSync(imagesDir)) return { folders: [] };
-  const folders = fs.readdirSync(imagesDir, { withFileTypes: true })
-    .filter(d => d.isDirectory()).map(d => d.name).sort();
+  const weaponsDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images', 'Weapons');
+  if (!fs.existsSync(weaponsDir)) return { folders: [] };
+  const folders = fs.readdirSync(weaponsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name).sort();
   return { folders };
 }
 
@@ -442,15 +470,15 @@ function saveImageFolders(input) {
   const projectId = sanitizeProjectId(input.project);
   if (!projectId) throw httpErr(400, 'Missing project');
   const desired = (input.folders || []).map(f => f.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\.\./g, '')).filter(Boolean);
-  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-  if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
-  const current = fs.readdirSync(imagesDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
+  const weaponsDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images', 'Weapons');
+  if (!fs.existsSync(weaponsDir)) fs.mkdirSync(weaponsDir, { recursive: true });
+  const current = fs.readdirSync(weaponsDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name);
 
   // Check for non-empty folders being removed
   const blocked = [];
   for (const f of current) {
     if (!desired.includes(f)) {
-      const dir = path.join(imagesDir, f);
+      const dir = path.join(weaponsDir, f);
       const contents = fs.readdirSync(dir);
       if (contents.length > 0) blocked.push(f);
     }
@@ -461,14 +489,14 @@ function saveImageFolders(input) {
 
   // Create new folders
   for (const f of desired) {
-    const dir = path.join(imagesDir, f);
-    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); console.log(`[IMAGE] Created folder: Images/${f}`); }
+    const dir = path.join(weaponsDir, f);
+    if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); console.log(`[IMAGE] Created folder: Images/Weapons/${f}`); }
   }
   // Remove empty folders no longer in list
   for (const f of current) {
     if (!desired.includes(f)) {
-      fs.rmdirSync(path.join(imagesDir, f));
-      console.log(`[IMAGE] Removed empty folder: Images/${f}`);
+      fs.rmdirSync(path.join(weaponsDir, f));
+      console.log(`[IMAGE] Removed empty folder: Images/Weapons/${f}`);
     }
   }
   return { status: 'ok', folders: desired };
@@ -477,7 +505,7 @@ function saveImageFolders(input) {
 function checkImageFolder(projectId, folder) {
   projectId = sanitizeProjectId(projectId);
   if (!folder) return { empty: true };
-  const dir = resolveImagesDir(projectId, folder);
+  const dir = path.join(DATA_ROOT, projectId, 'Assets', 'Images', 'Weapons', folder);
   if (!fs.existsSync(dir)) return { empty: true };
   const contents = fs.readdirSync(dir);
   return { empty: contents.length === 0, count: contents.length };
@@ -486,13 +514,14 @@ function checkImageFolder(projectId, folder) {
 function findImageFolder(projectId, imageId) {
   projectId = sanitizeProjectId(projectId);
   imageId = sanitizeAssetId(imageId);
-  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-  if (!fs.existsSync(imagesDir)) return { folder: '' };
-  const rootFile = path.join(imagesDir, `${imageId}_sprite_icon.png`);
-  if (fs.existsSync(rootFile)) return { folder: '' };
-  for (const d of fs.readdirSync(imagesDir, { withFileTypes: true })) {
+  const weaponsDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images', 'Weapons');
+  if (!fs.existsSync(weaponsDir)) return { folder: '' };
+  // Check Weapons root
+  if (fs.existsSync(path.join(weaponsDir, `${imageId}_sprite_icon.png`))) return { folder: '' };
+  // Check subfolders
+  for (const d of fs.readdirSync(weaponsDir, { withFileTypes: true })) {
     if (d.isDirectory()) {
-      if (fs.existsSync(path.join(imagesDir, d.name, `${imageId}_sprite_icon.png`))) return { folder: d.name };
+      if (fs.existsSync(path.join(weaponsDir, d.name, `${imageId}_sprite_icon.png`))) return { folder: d.name };
     }
   }
   return { folder: '' };
@@ -566,16 +595,22 @@ function serveImage(res, projectId, imageId, suffix, folder) {
   const dir = resolveImagesDir(projectId, folder || '');
   let filePath = path.join(dir, fileName);
 
-  // If not found and no explicit folder, scan subfolders
+  // If not found and no explicit folder, scan known locations
   if (!fs.existsSync(filePath) && !folder) {
     const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-    if (fs.existsSync(imagesDir)) {
-      for (const d of fs.readdirSync(imagesDir, { withFileTypes: true })) {
-        if (d.isDirectory()) {
-          const subPath = path.join(imagesDir, d.name, fileName);
-          if (fs.existsSync(subPath)) { filePath = subPath; break; }
-        }
+    const searchDirs = [];
+    for (const reserved of RESERVED_IMAGE_FOLDERS) {
+      const resDir = path.join(imagesDir, reserved);
+      if (fs.existsSync(resDir)) {
+        searchDirs.push(resDir);
+        fs.readdirSync(resDir, { withFileTypes: true })
+          .filter(d => d.isDirectory()).forEach(d => searchDirs.push(path.join(resDir, d.name)));
       }
+    }
+
+    for (const searchDir of searchDirs) {
+      const candidate = path.join(searchDir, fileName);
+      if (fs.existsSync(candidate)) { filePath = candidate; break; }
     }
   }
 

@@ -2,21 +2,21 @@
 
 ## Navigation
 
-The header contains three mode buttons: **Weapons**, **Ammo**, and **Firemodes**. The active mode determines which assets are shown in the sidebar list and what editor is available. Ammo and Firemodes are currently stubs — they list and create assets but do not yet have full editors.
+The header contains three mode buttons: **Weapons**, **Ammo**, and **Firemodes**. The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name.
 
 ---
 
 ## Projects
 
 ### Creating a Project
-Click **+ New** in the Projects sidebar. Type a name and press Enter. This creates a project folder with all asset category subfolders pre-built.
+Click **+ New** in the Projects sidebar. Type a name and press Enter. This creates a project folder with all asset category subfolders pre-built, including `Images/Weapons/`, `Images/Firemodes/`, and `Images/Ammo/`.
 
 ### Project Settings
 Click the **✎** pencil icon on any project card to open Project Settings:
 
 - **Project Name** — rename the project (renames the folder on disk). Cannot be empty. Cannot duplicate an existing project name (case-insensitive). Invalid names highlight red with a tooltip.
 - **Bundle Path** — the default asset bundle path used when creating new weapon descriptors (e.g., `Bundles/efa_assets`). Defaults to `Bundles/`. Changing this does **not** update existing descriptors — only new weapons pick up the value.
-- **Image Folders** — manage subfolders under `Images/` for organizing sprites by faction or category (e.g., `chu`, `cor`, `civ`). Folders with images inside cannot be removed. Duplicate folder names are highlighted red with a tooltip and block saving.
+- **Weapon Image Folders** — manage subfolders under `Images/Weapons/` for organizing weapon sprites by faction or category (e.g., `chu`, `cor`, `civ`). Folders with images inside cannot be removed. Duplicate folder names are highlighted red with a tooltip and block saving.
 
 The **Save** button is disabled whenever the project name or folder names have validation errors.
 
@@ -28,15 +28,15 @@ Click the **🗑** trash icon. A confirmation dialog warns that all assets withi
 ## Weapons
 
 ### Creating a Weapon
-Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `tempId1` (auto-increments if taken). This also creates blank localization, descriptor, and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
+Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `tempId1` (auto-increments if taken). This also creates blank localization (in `Localization/Weapons/`), descriptor (in `Descriptors/Weapons/`), and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
 
 ### Weapon ID
 The **Id** field in the editor is the weapon's filename and the key used across all linked files. IDs must contain only letters, numbers, underscores, and hyphens. Empty IDs and duplicate IDs are blocked on save with specific error messages.
 
 Changing the ID and saving will:
 - Rename the weapon JSON file
-- Rename all linked files (localization, descriptor, recipe)
-- Rename sprite images in the current folder
+- Rename all linked files (localization in `Localization/Weapons/`, descriptor in `Descriptors/Weapons/`, recipe)
+- Rename sprite images in the current `Images/Weapons/` subfolder
 - Update the ID in any datadisk and faction reward files that reference it
 - Update descriptor image paths, texture ID, and prefab ID
 
@@ -53,7 +53,7 @@ The **Save** button appears on every tab but always saves all tabs at once. Conc
 
 The main weapon editor with these sections:
 
-**Sprite** — Upload inventory icon (50×50 or 100×50 PNG), floor sprite (max 30×30), and shadow sprite (max 30×30). All displayed at 2× scale. A folder dropdown lets you choose which `Images/` subfolder to store sprites in — changing this moves existing sprites automatically. Descriptor image paths update to match.
+**Sprite** — Upload inventory icon (50×50 or 100×50 PNG), floor sprite (max 30×30), and shadow sprite (max 30×30). All displayed at 2× scale. A folder dropdown lets you choose which `Images/Weapons/` subfolder to store sprites in — changing this moves existing sprites automatically. Descriptor image paths update to match.
 
 **Identity** — Id, IsImplicit toggle, TechLevel (1–10), Price, Weight, inventory sort/width.
 
@@ -71,9 +71,11 @@ The main weapon editor with these sections:
 - Firemode 1 → Override Ammo 1
 - Firemode 2 → Override Ammo 2
 
-Firemode 2 is **disabled until Firemode 1 is set**. Clearing Firemode 1 cascades: clears and disables Firemode 2, Override Ammo 1, and Override Ammo 2. Override ammo fields are disabled until their paired firemode is selected. Override ammo shows only `implicted_*` entries from the ammo TSV.
+Firemode 2 is **disabled until Firemode 1 is set**. Clearing Firemode 1 cascades: clears and disables Firemode 2, Override Ammo 1, and Override Ammo 2. Override ammo fields are disabled until their paired firemode is selected. Override ammo shows `implicted_*` entries from the base ammo TSV plus any project-created ammo.
 
-Also: RequiredAmmo (enum dropdown), DefaultAmmoId (from base ammo), OverrideProjectileId (from projectileIds enum).
+Project-created firemodes and ammo appear in their respective dropdowns with a " - *Custom*" label (display only — the saved value is the plain ID). If a referenced firemode or ammo no longer exists, it shows as "(missing)" with a red border and blocks saving.
+
+Also: RequiredAmmo (enum dropdown), DefaultAmmoId (base + project ammo), OverrideProjectileId (from projectiles enum).
 
 **Traits** — Multi-select dropdown, filtered to WeaponTrait entries from itemTraits TSV.
 
@@ -95,7 +97,7 @@ When the English name is filled in, it appears under the weapon ID in the sideba
 
 **Grip & HFG** — Grip (dropdown from handGrips enum), HasHFGOverlay toggle.
 
-**Image Properties** — Auto-filled paths in the format `Images/{folder}/{id}_sprite_icon.png` (and floor/shadow). Updated automatically on sprite upload, folder change, or ID rename. Cleared if the weapon is deleted.
+**Image Properties** — Auto-filled paths in the format `Images/Weapons/{folder}/{id}_sprite_icon.png` (and floor/shadow). Updated automatically on sprite upload, folder change, or ID rename.
 
 **Audio Properties** — ShootSound, ReloadSound, DryShotSound, FailedAttackSound (free text fields).
 
@@ -123,7 +125,74 @@ Entry list for assigning the weapon to faction reward pools. Each entry has:
 - **Weight** — positive number (default 15)
 - **Points** — positive integer (default 150)
 
-Like datadisks, faction reward files (`{factionId}_factionData.json`) are **shared**. Each weapon's entries are added/removed independently. Empty files are cleaned up.
+Like datadisks, faction reward files (`{factionId}_factionData.json`) are **shared**. Each faction has a single entry in `FactionRewardList` with multiple `contentRecords` — one per weapon. Entries are added/removed independently. Empty files are cleaned up.
+
+---
+
+## Firemodes
+
+### Creating a Firemode
+Switch to **Firemodes** mode and click **+ New**. A firemode is created with ID `tempId1` (auto-increments). This also creates a blank descriptor file.
+
+### Firemode ID
+IDs must be unique across both the project and the base game firemodes (`ref/base/firemodes.txt`). Same character rules as weapons.
+
+Changing the ID and saving will rename the firemode JSON, descriptor file, and sprite image. The descriptor's `ItemId` and `SpriteIdOrPath` update automatically.
+
+### Firemode Editor
+Single-panel layout with two sections:
+
+**Firemode Config** — Id, Require All Ammo To Shoot (toggle), AmmoPerShot (integer ≥ 0), WeaponCastsCount (integer > 0), Accuracy, ScatterAngle, DamageMult (positive), DelayBetweenShots (≥ 0).
+
+**Descriptor** — PNG sprite upload stored in `Images/Firemodes/`. Sprite Path/ID text field auto-fills on upload as `Images/Firemodes/{id}_sprite.png`.
+
+### Copying a Firemode
+Click the copy icon on a firemode card. Creates `{sourceId}_copy{n}` with all config values. Descriptor is copied with sprite path cleared.
+
+---
+
+## Ammo
+
+### Creating an Ammo Record
+Switch to **Ammo** mode and click **+ New**. An ammo record is created with ID `tempId1` (auto-increments). This also creates blank descriptor and localization files.
+
+### Ammo ID
+IDs must be unique across both the project and the base game ammo (`ref/base/ammo.txt`). Same character rules as weapons.
+
+Changing the ID and saving will rename the ammo JSON, descriptor, localization, and sprite images. Internal references (descriptor `ItemId`, localization keys) update automatically.
+
+### Ammo Editor Tabs
+
+#### Ammo Config
+
+**Sprite** — Upload inventory icon (50×50 or 100×50 PNG), floor sprite (max 30×30), and shadow sprite (max 30×30). Stored in `Images/Ammo/`. Uploading auto-fills the corresponding descriptor image path. Sidebar thumbnails show the inventory icon.
+
+**Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
+
+**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+
+**Categories** — Searchable multi-select checkbox dropdown from categories enum.
+
+**Statistics** — DamageMult (no validation), CritChance (≥ 0), RangeBonus (integer, negatives allowed), AccuracyMult (≥ 0), ScatterMult (≥ 0), BulletCastsPerShot (integer > 0).
+
+**Status Effects** — StatusEffectId (free text), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
+
+**Traits** — Multi-select dropdown, filtered to AmmoTrait entries from itemTraits TSV.
+
+**Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false), BallisticType ("Ballistic"). Always saved but not editable.
+
+#### Descriptor
+
+**Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
+
+**Gibs** — BulletSpritesId, BulletShadowsId (free text). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (true).
+
+#### Localization
+
+Identical to weapon localization — 11 languages, Name + Short Desc per row. English name appears on ammo sidebar cards.
+
+### Copying an Ammo Record
+Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID.
 
 ---
 
@@ -133,17 +202,20 @@ All validated fields show a **red border** when invalid and are checked live on 
 
 When saving, if any fields are invalid, a **validation error popup** appears listing every issue grouped by tab and section — making it easy to find and fix problems across tabs. The popup replaces the generic error toast with specific, actionable messages.
 
-### Weapon ID Validation
+### ID Validation (All Asset Types)
 - Cannot be empty
 - Must match `[a-zA-Z0-9_-]+` (letters, numbers, underscores, hyphens only)
-- Cannot duplicate an existing weapon ID (checked on save when the ID has changed)
+- Cannot duplicate an existing project ID of the same type
+- Firemode IDs also checked against base game firemodes
+- Ammo IDs also checked against base game ammo
 
-### Field Rules
+### Weapon Field Rules
 
 | Field | Rule |
 |-------|------|
 | TechLevel | Integer, 1–10 |
 | Price | Integer, ≥ 0 |
+| InventorySortOrder, InventoryWidthSize | Integer, ≥ 0 |
 | Min/Max Damage | Integer, ≥ 0, max ≥ min |
 | Range, Reload, MagazineCap, MinRandAmmo | Integer, ≥ 0 |
 | ThrowRange, DurabilityLossOnThrow | Integer, ≥ 0 |
@@ -158,6 +230,33 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | Faction Tech Level | Integer, 1–10 |
 | Faction Weight | Positive number |
 | Faction Points | Positive integer |
+| Firemodes 1/2 | Orphan check — must exist in base or project |
+| DefaultAmmoId, OverrideAmmo 1/2 | Orphan check — must exist in base or project |
+
+### Firemode Field Rules
+
+| Field | Rule |
+|-------|------|
+| AmmoPerShot | Integer, ≥ 0 |
+| WeaponCastsCount | Integer, > 0 |
+| DamageMult | Positive number |
+| DelayBetweenShots | ≥ 0 |
+
+### Ammo Field Rules
+
+| Field | Rule |
+|-------|------|
+| TechLevel | Integer, 1–10 |
+| Price | Integer, ≥ 0 |
+| Weight | ≥ 0 |
+| InventorySortOrder, InventoryWidthSize | Integer, ≥ 0 |
+| MaxStack | Integer, > 0 |
+| MinAmmoAmount, MaxAmmoAmount | Integer, ≥ 0, max ≥ min |
+| CritChance | ≥ 0 |
+| RangeBonus | Integer (negatives allowed) |
+| AccuracyMult, ScatterMult | ≥ 0 |
+| BulletCastsPerShot | Integer, > 0 |
+| ChanceToApply | ≥ 0 |
 
 ### Entry List Limits
 - Required Items: max 5
@@ -167,7 +266,7 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 
 ## Multi-Select Dropdowns
 
-Used for Categories, Traits, RepairItemIds, AllowedGrenadeIds, Datadisks. Features:
+Used for Categories, Traits, RepairItemIds, AllowedGrenadeIds, Datadisks (weapons), and Traits/Categories (ammo). Features:
 - Click to open, click outside to close
 - **Search bar** at top — filters the list as you type
 - **Clear button** — unchecks all selections
@@ -190,6 +289,7 @@ Used for Disassembly ItemId, Recipe Required Items, and Modify Items. Features:
 ## Info Icons
 
 Some fields have a **?** icon to the right of the input. Hover over it to see a tooltip with guidance on suggested or expected values. Currently used on:
+- Ammo Id — "Add implicted_ to the front of this id to make this ammo an implicit ammo"
 - Prefab Scale — "Suggested values between 0.04 and 0.065"
 - Modify Start Cost — "Starts cost formula as though at a later step when not 1."
 - Modify Step — "Scales cost per step."
@@ -200,9 +300,11 @@ Some fields have a **?** icon to the right of the input. Hover over it to see a 
 ## Tips
 
 - **Double-click** any text or number field to select all contents for quick editing.
-- **Sidebar thumbnails** show the weapon's inventory sprite and update on upload.
-- **English name** from localization appears under the weapon ID in the sidebar once filled in.
+- **Sidebar thumbnails** show the asset's inventory sprite (weapons and ammo) and update on upload.
+- **English name** from localization appears under the asset ID in the sidebar once filled in (weapons and ammo).
+- **Sidebar filter** searches by ID, English name, and record type.
 - **The Save button** on any tab saves everything across all tabs at once. Concurrent saves are prevented.
+- **Unsaved changes** — switching between assets, modes, or projects prompts a confirmation if you have unsaved edits.
 - **Price, Weight, and Points** fields are always saved with a `.0` decimal suffix in JSON (e.g., `150.0`) for game parser compatibility.
-- Sprite images auto-detect their folder on weapon load — you can move files manually and the tool picks them up.
+- Weapon sprite images auto-detect their subfolder on load — you can move files manually and the tool picks them up.
 - The startup screen appears if you open `index.html` directly — use the Node.js server instead.
