@@ -28,7 +28,7 @@ Click the **🗑** trash icon. A confirmation dialog warns that all assets withi
 ## Weapons
 
 ### Creating a Weapon
-Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `tempId1` (auto-increments if taken). This also creates blank localization (in `Localization/Weapons/`), descriptor (in `Descriptors/Weapons/`), and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
+Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `weapon_tempid_1` (auto-increments if taken). This also creates blank localization (in `Localization/Weapons/`), descriptor (in `Descriptors/Weapons/`), and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
 
 ### Weapon ID
 The **Id** field in the editor is the weapon's filename and the key used across all linked files. IDs must contain only letters, numbers, underscores, and hyphens. Empty IDs and duplicate IDs are blocked on save with specific error messages.
@@ -132,7 +132,7 @@ Like datadisks, faction reward files (`{factionId}_factionData.json`) are **shar
 ## Firemodes
 
 ### Creating a Firemode
-Switch to **Firemodes** mode and click **+ New**. A firemode is created with ID `tempId1` (auto-increments). This also creates a blank descriptor file.
+Switch to **Firemodes** mode and click **+ New**. A firemode is created with ID `firemode_tempid_1` (auto-increments). This also creates a blank descriptor file.
 
 ### Firemode ID
 IDs must be unique across both the project and the base game firemodes (`ref/base/firemodes.txt`). Same character rules as weapons.
@@ -154,12 +154,12 @@ Click the copy icon on a firemode card. Creates `{sourceId}_copy{n}` with all co
 ## Ammo
 
 ### Creating an Ammo Record
-Switch to **Ammo** mode and click **+ New**. An ammo record is created with ID `tempId1` (auto-increments). This also creates blank descriptor and localization files.
+Switch to **Ammo** mode and click **+ New**. An ammo record is created with ID `ammo_tempid_1` (auto-increments). This also creates blank descriptor and localization files.
 
 ### Ammo ID
 IDs must be unique across both the project and the base game ammo (`ref/base/ammo.txt`). Same character rules as weapons.
 
-Changing the ID and saving will rename the ammo JSON, descriptor, localization, and sprite images. Internal references (descriptor `ItemId`, localization keys) update automatically.
+Changing the ID and saving will rename the ammo JSON, descriptor, localization, and sprite images. Internal references (descriptor `ItemId`, localization keys, datadisk UnlockIds, faction reward ContentIds) update automatically.
 
 ### Ammo Editor Tabs
 
@@ -191,8 +191,16 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 Identical to weapon localization — 11 languages, Name + Short Desc per row. English name appears on ammo sidebar cards.
 
+#### Datadisk Assignment
+
+Identical to weapon datadisk assignment. Multi-select dropdown of all datadisk IDs from the reference TSV. Ammo and weapons share the same datadisk files — checking a disk adds this ammo's ID to the disk's UnlockIds array. Empty datadisk files are cleaned up automatically.
+
+#### Faction Rewards
+
+Identical to weapon faction rewards. Entry list with Faction, Tech Level (1–10), Weight (positive), Points (positive integer). Ammo and weapons share the same faction reward files. Validated on save with error modal.
+
 ### Copying an Ammo Record
-Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID.
+Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID. Datadisk and faction reward assignments copied.
 
 ---
 
@@ -257,6 +265,9 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | AccuracyMult, ScatterMult | ≥ 0 |
 | BulletCastsPerShot | Integer, > 0 |
 | ChanceToApply | ≥ 0 |
+| Faction Tech Level | Integer, 1–10 |
+| Faction Weight | Positive number |
+| Faction Points | Positive integer |
 
 ### Entry List Limits
 - Required Items: max 5
