@@ -2359,8 +2359,8 @@ async function saveAmmo() {
         if (el.value && el.value.includes(oldId)) el.value = el.value.replace(oldId, newId);
       });
       // Rename in shared files
-      await renameWeaponInAllDisks(oldId, newId);
-      await renameWeaponInAllFactions(oldId, newId);
+      await renameItemInAllDisks(oldId, newId);
+      await renameItemInAllFactions(oldId, newId);
     }
     await api('asset', {
       body: { project: selProject.id, category: 'Ammo', id: newId, recordType: 'MGSC.AmmoRecord', data }
@@ -2385,8 +2385,8 @@ async function deleteAmmo(id) {
     await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id } });
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: id + '_localization' } }); } catch {}
-    await removeWeaponFromAllDisks(id);
-    await removeWeaponFromAllFactions(id);
+    await removeItemFromAllDisks(id);
+    await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
     selAmmo = null;
     _formSnapshot = null;
@@ -3058,8 +3058,8 @@ async function deleteWeapon(id) {
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: id + '_localization' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
-    await removeWeaponFromAllDisks(id);
-    await removeWeaponFromAllFactions(id);
+    await removeItemFromAllDisks(id);
+    await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
     selWeapon = null;
     _formSnapshot = null;
@@ -3725,9 +3725,9 @@ async function saveWeapon() {
       // Delete old recipe file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
       // Rename weapon in datadisks
-      await renameWeaponInAllDisks(oldId, newId);
+      await renameItemInAllDisks(oldId, newId);
       // Rename weapon in faction rewards
-      await renameWeaponInAllFactions(oldId, newId);
+      await renameItemInAllFactions(oldId, newId);
     }
     await api('asset', {
       body: { project: selProject.id, category: 'Weapons', id: newId, recordType: 'MGSC.WeaponRecord', data }
@@ -4038,7 +4038,7 @@ async function saveFactionRewards(weaponId) {
   _prevFactionRewards = [...current];
 }
 
-async function removeWeaponFromAllFactions(weaponId) {
+async function removeItemFromAllFactions(itemId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
     for (const asset of data.assets) {
@@ -4049,7 +4049,7 @@ async function removeWeaponFromAllFactions(weaponId) {
       for (const reward of rewardList) {
         const before = (reward.contentRecords || []).length;
         reward.contentRecords = (reward.contentRecords || []).filter(cr =>
-          !(cr.ContentIds || []).includes(weaponId)
+          !(cr.ContentIds || []).includes(itemId)
         );
         if (reward.contentRecords.length !== before) changed = true;
       }
@@ -4069,7 +4069,7 @@ async function removeWeaponFromAllFactions(weaponId) {
   } catch {}
 }
 
-async function renameWeaponInAllFactions(oldId, newId) {
+async function renameItemInAllFactions(oldId, newId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
     for (const asset of data.assets) {
@@ -4196,12 +4196,12 @@ async function saveDatadisks(weaponId) {
   _prevDatdiskAssignments = [...checked];
 }
 
-async function removeWeaponFromAllDisks(weaponId) {
+async function removeItemFromAllDisks(itemId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
       const assetData = asset.data || {};
-      const unlockIds = (assetData.UnlockIds || []).filter(id => id !== weaponId);
+      const unlockIds = (assetData.UnlockIds || []).filter(id => id !== itemId);
       if (unlockIds.length === 0) {
         await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: asset.id } });
       } else if (unlockIds.length !== (assetData.UnlockIds || []).length) {
@@ -4216,7 +4216,7 @@ async function removeWeaponFromAllDisks(weaponId) {
   } catch {}
 }
 
-async function renameWeaponInAllDisks(oldId, newId) {
+async function renameItemInAllDisks(oldId, newId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
