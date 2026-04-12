@@ -23,7 +23,8 @@ const ASSET_CATEGORIES = [
   'Explosions',
   'FactionRewards',
   'Firemodes',
-  'Localization',
+  'Localization/Ammo',
+  'Localization/Weapons',
   'Weapons',
 ];
 
@@ -304,7 +305,7 @@ function getProjectTree(id) {
   }
 
   // Look up English names from localization files for weapons
-  const locDir = path.join(assetsDir, 'Localization');
+  const locDir = path.join(assetsDir, 'Localization', 'Weapons');
   if (tree['Weapons'] && fs.existsSync(locDir)) {
     for (const w of tree['Weapons']) {
       const locFile = path.join(locDir, `${w.dataId}_localization.json`);
@@ -313,6 +314,21 @@ function getProjectTree(id) {
           const loc = readJson(locFile);
           const nameKey = `item.${w.dataId}.name`;
           w.englishName = loc.Data?.Keys?.[nameKey]?.EnglishUS || '';
+        } catch {}
+      }
+    }
+  }
+
+  // Look up English names from localization files for ammo
+  const ammoLocDir = path.join(assetsDir, 'Localization', 'Ammo');
+  if (tree['Ammo'] && fs.existsSync(ammoLocDir)) {
+    for (const a of tree['Ammo']) {
+      const locFile = path.join(ammoLocDir, `${a.dataId}_localization.json`);
+      if (fs.existsSync(locFile)) {
+        try {
+          const loc = readJson(locFile);
+          const nameKey = `item.${a.dataId}.name`;
+          a.englishName = loc.Data?.Keys?.[nameKey]?.EnglishUS || '';
         } catch {}
       }
     }
@@ -433,7 +449,7 @@ function validateSuffix(suffix) {
 function resolveImagesDir(projectId, folder) {
   const base = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
   if (!folder) return base;
-  const clean = folder.trim().replace(/[<>:"/\\|?*]/g, '').replace(/\.\./g, '');
+  const clean = folder.trim().replace(/[<>:"\\|?*]/g, '').replace(/\.\./g, '');
   if (!clean) return base;
   return path.join(base, clean);
 }
