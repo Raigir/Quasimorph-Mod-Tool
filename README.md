@@ -1,5 +1,7 @@
 # Quasimorph Mod Tool
 
+[![Author: Raigir](https://img.shields.io/badge/Author-Raigir-2f6f91)](https://github.com/Raigir)
+
 A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, sprites, localization, descriptors, crafting recipes, datadisks, and faction rewards.
 
 ## Requirements
