@@ -1240,10 +1240,10 @@
       <div class="img-upload-area" style="margin-bottom:10px;">
         <div class="img-upload-slot">
           <span class="slot-label">Sprite</span>
-          <div class="img-preview" id="fmSpritePreview"><span class="placeholder-text">No image</span></div>
+          <div class="img-preview" id="fmSpritePreview" style="min-width:72px; width:72px; min-height:52px; height:52px;"><span class="placeholder-text">No image</span></div>
           <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
           <input type="file" id="fmSpriteFile" accept=".png,image/png" style="display:none" onchange="handleFmSpriteUpload(this)">
-          <span class="img-hint">PNG only</span>
+          <span class="img-hint">PNG only — 36x26</span>
         </div>
       </div>
       <div class="ed-row">
@@ -1260,6 +1260,8 @@
     <button class="tab-btn active" onclick="switchAmmoTab('ammoConfig')">Ammo Config</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoDescriptor')">Descriptor</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoLocalization')">Localization</button>
+    <button class="tab-btn" onclick="switchAmmoTab('ammoDatadisk')">Datadisk</button>
+    <button class="tab-btn" onclick="switchAmmoTab('ammoFactionRewards')">Faction Rewards</button>
   </div>
 
   <!-- Ammo Config Tab -->
@@ -1326,7 +1328,7 @@
       </div>
       <div class="ed-row">
         <div class="ed-field" style="flex:1 1 0;"><label>Projectile Id</label><select id="ammo-ProjectileId"></select></div>
-        <div class="ed-field" style="flex:1 1 0;"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Ballistic Type</label><select id="ammo-BallisticType"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Max Stack</label><input type="number" id="ammo-MaxStack" step="1" oninput="validateAmmoField(this, 'int_gt0')"></div>
@@ -1369,7 +1371,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Status Effects</div>
       <div class="ed-row">
-        <div class="ed-field id-field"><label>Status Effect Id</label><input type="text" id="ammo-StatusEffectId"></div>
+        <div class="ed-field id-field"><label>Status Effect Id</label><select id="ammo-StatusEffectId"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Chance To Apply</label><input type="number" id="ammo-ChanceToApply" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
@@ -1413,8 +1415,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Gibs</div>
       <div class="ed-row">
-        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Sprites ID</label><input type="text" id="ad-BulletSpritesId"></div>
-        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Shadows ID</label><input type="text" id="ad-BulletShadowsId"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Sprites ID</label><select id="ad-BulletSpritesId"></select></div>
       </div>
     </div>
     <div class="ed-actions">
@@ -1432,6 +1433,37 @@
         <span class="loc-desc-col">Short Desc</span>
       </div>
       <div id="ammoLocRows"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Datadisk Tab -->
+  <div class="editor-wrap" id="ammoDatadiskWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Datadisk Assignment</div>
+      <div class="ed-field">
+        <label>Assign item to datadisks</label>
+        <div class="multi-select" id="ammo-Datadisks">
+          <div class="multi-select-display" onclick="toggleMultiSelect(this)"><span class="placeholder">Select datadisks…</span></div>
+          <div class="multi-select-dropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Faction Rewards Tab -->
+  <div class="editor-wrap" id="ammoFactionRewardsWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Faction Reward Entries</div>
+      <div class="ed-row" style="margin-bottom:8px;">
+        <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
+      </div>
+      <div class="entry-list" id="ammoFactionRewardList" style="max-width:100%;"></div>
     </div>
     <div class="ed-actions">
       <button class="btn primary" onclick="saveAmmo()">Save</button>
@@ -1849,7 +1881,7 @@ function newAmmoRecord(id) {
   return {
     RecordType: 'MGSC.AmmoRecord',
     Data: {
-      Id: id || 'tempId',
+      Id: id || 'ammo_tempid_1',
       InventorySortOrder: 8,
       InventoryWidthSize: 1,
       ItemClass: 'Ammo',
@@ -1893,6 +1925,7 @@ function populateAmmoEditor(d) {
   val('ammo-AmmoType', d.AmmoType || '');
   val('ammo-DmgType', d.DmgType || '');
   val('ammo-ProjectileId', d.ProjectileId || '');
+  val('ammo-BallisticType', d.BallisticType || 'Ballistic');
   val('ammo-DamageMult', d.DamageMult ?? 1.0);
   val('ammo-DmgCritChance', d.DmgCritChance ?? 0.12);
   val('ammo-RangeBonus', d.RangeBonus ?? 0);
@@ -1952,13 +1985,13 @@ function collectAmmoEditor() {
     CanPutInVest: bool('ammo-CanPutInVest'),
     IsImplictedAmmo: false,
     IsChargeOnly: false,
-    BallisticType: 'Ballistic',
+    BallisticType: str('ammo-BallisticType').trim() || 'Ballistic',
   };
 }
 
 function captureAmmoSnapshot() {
   const parts = [];
-  document.querySelectorAll('#ammoConfigWrap input, #ammoConfigWrap select, #ammoDescriptorWrap input, #ammoDescriptorWrap select, #ammoLocalizationWrap input').forEach(el => {
+  document.querySelectorAll('#ammoConfigWrap input, #ammoConfigWrap select, #ammoDescriptorWrap input, #ammoDescriptorWrap select, #ammoLocalizationWrap input, #ammoDatadiskWrap input, #ammoFactionRewardsWrap input, #ammoFactionRewardsWrap select').forEach(el => {
     if (el.type === 'file') return;
     if (el.closest('.multi-select-search')) return;
     if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
@@ -1979,8 +2012,8 @@ async function createNewAmmo() {
     const existing = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
     const ids = existing.assets.map(a => a.id);
     let n = 1;
-    while (ids.includes(`tempId${n}`)) n++;
-    const newId = `tempId${n}`;
+    while (ids.includes(`ammo_tempid_${n}`)) n++;
+    const newId = `ammo_tempid_${n}`;
     const record = newAmmoRecord(newId);
     await api('asset', {
       body: { project: selProject.id, category: 'Ammo', id: newId, recordType: record.RecordType, data: record.Data }
@@ -2010,7 +2043,7 @@ function newAmmoDescriptorRecord(id) {
     RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
     Data: {
       ItemId: id,
-      MeleeMakeBlood: true,
+      MeleeMakeBlood: false,
       ImageProperties: {
         IconSpriteIdOrPath: '',
         SmallIconSpriteIdOrPath: '',
@@ -2019,8 +2052,8 @@ function newAmmoDescriptorRecord(id) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: '',
-        BulletShadowsId: '',
+        BulletSpritesId: 'pistol',
+        BulletShadowsId: 'pistol',
         AnimationFramerate: 10,
       }
     }
@@ -2033,8 +2066,7 @@ function populateAmmoDescriptor(data) {
   val('ad-SmallIconSpriteIdOrPath', ip.SmallIconSpriteIdOrPath || '');
   val('ad-ShadowOnFloorSpriteIdOrPath', ip.ShadowOnFloorSpriteIdOrPath || '');
   const g = data?.Gibs || {};
-  val('ad-BulletSpritesId', g.BulletSpritesId || '');
-  val('ad-BulletShadowsId', g.BulletShadowsId || '');
+  val('ad-BulletSpritesId', g.BulletSpritesId || 'pistol');
 }
 
 function collectAmmoDescriptor(ammoId) {
@@ -2045,7 +2077,7 @@ function collectAmmoDescriptor(ammoId) {
     RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
     Data: {
       ItemId: ammoId,
-      MeleeMakeBlood: true,
+      MeleeMakeBlood: false,
       ImageProperties: {
         IconSpriteIdOrPath: str('ad-IconSpriteIdOrPath'),
         SmallIconSpriteIdOrPath: str('ad-SmallIconSpriteIdOrPath'),
@@ -2054,8 +2086,8 @@ function collectAmmoDescriptor(ammoId) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: str('ad-BulletSpritesId'),
-        BulletShadowsId: str('ad-BulletShadowsId'),
+        BulletSpritesId: str('ad-BulletSpritesId') || 'pistol',
+        BulletShadowsId: str('ad-BulletSpritesId') || 'pistol',
         AnimationFramerate: 10,
       }
     }
@@ -2151,6 +2183,8 @@ async function selectAmmo(id) {
     populateAmmoEditor(record.Data);
     await loadAmmoDescriptor(id);
     await loadAmmoLocalization(id);
+    await loadAmmoDatadisks(id);
+    await loadAmmoFactionRewards(id);
     loadAmmoSprite(id);
     document.getElementById('tabBar').classList.remove('visible');
     document.getElementById('editorWrap').classList.remove('visible');
@@ -2220,6 +2254,18 @@ function validateAllAmmo() {
     document.getElementById('ammo-MaxAmmoAmount').classList.add('invalid');
     allValid = false;
   }
+  // Faction reward validation
+  document.querySelectorAll('#ammoFactionRewardList .entry-item').forEach(el => {
+    const tech = el.querySelector('.fr-tech'); const tv = parseFloat(tech.value);
+    const techOk = !isNaN(tv) && Number.isInteger(tv) && tv >= 1 && tv <= 10;
+    tech.classList.toggle('invalid', !techOk); if (!techOk) allValid = false;
+    const wInp = el.querySelector('.fr-weight'); const wv = parseFloat(wInp.value);
+    const wOk = !isNaN(wv) && wv > 0;
+    wInp.classList.toggle('invalid', !wOk); if (!wOk) allValid = false;
+    const pts = el.querySelector('.fr-points'); const pv = parseFloat(pts.value);
+    const ptsOk = !isNaN(pv) && Number.isInteger(pv) && pv > 0;
+    pts.classList.toggle('invalid', !ptsOk); if (!ptsOk) allValid = false;
+  });
   return allValid;
 }
 
@@ -2249,6 +2295,18 @@ function collectAmmoValidationErrors() {
   const minA = parseInt(document.getElementById('ammo-MinAmmoAmount').value) || 0;
   const maxA = parseInt(document.getElementById('ammo-MaxAmmoAmount').value) || 0;
   if (maxA < minA) add('Ammo Properties', 'Max Ammo Amount must be ≥ Min Ammo Amount');
+  // Faction Rewards
+  let frIdx = 0;
+  document.querySelectorAll('#ammoFactionRewardList .entry-item').forEach(el => {
+    frIdx++;
+    const faction = el.querySelector('.fr-faction').value || `Entry ${frIdx}`;
+    const tv = parseFloat(el.querySelector('.fr-tech').value);
+    if (isNaN(tv) || !Number.isInteger(tv) || tv < 1 || tv > 10) add('Faction Rewards', faction + ' — Tech Level — integer 1–10');
+    const wv = parseFloat(el.querySelector('.fr-weight').value);
+    if (isNaN(wv) || wv <= 0) add('Faction Rewards', faction + ' — Weight — must be positive');
+    const pv = parseFloat(el.querySelector('.fr-points').value);
+    if (isNaN(pv) || !Number.isInteger(pv) || pv <= 0) add('Faction Rewards', faction + ' — Points — positive integer');
+  });
   return errors;
 }
 
@@ -2299,12 +2357,17 @@ async function saveAmmo() {
         const el = document.getElementById(fid);
         if (el.value && el.value.includes(oldId)) el.value = el.value.replace(oldId, newId);
       });
+      // Rename in shared files
+      await renameItemInAllDisks(oldId, newId);
+      await renameItemInAllFactions(oldId, newId);
     }
     await api('asset', {
       body: { project: selProject.id, category: 'Ammo', id: newId, recordType: 'MGSC.AmmoRecord', data }
     });
     await saveAmmoDescriptor(newId);
     await saveAmmoLocalization(newId);
+    await saveAmmoDatadisks(newId);
+    await saveAmmoFactionRewards(newId);
     selAmmo.id = newId;
     toast('Saved');
     _formSnapshot = captureAmmoSnapshot();
@@ -2321,6 +2384,8 @@ async function deleteAmmo(id) {
     await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id } });
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: id + '_localization' } }); } catch {}
+    await removeItemFromAllDisks(id);
+    await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
     selAmmo = null;
     _formSnapshot = null;
@@ -2393,6 +2458,53 @@ async function copyAmmo(sourceId) {
       });
     }
 
+    // Copy datadisk assignments
+    try {
+      const diskAssets = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+      for (const asset of diskAssets.assets) {
+        const assetData = asset.data || {};
+        const unlockIds = assetData.UnlockIds || [];
+        if (unlockIds.includes(sourceId) && !unlockIds.includes(newId)) {
+          unlockIds.push(newId);
+          assetData.UnlockIds = unlockIds;
+          const diskId = assetData.Id || asset.id.replace('_diskData', '');
+          const canonical = canonicalizeDiskData(assetData, diskId);
+          await api('asset', {
+            body: { project: selProject.id, category: 'Datadisks', id: asset.id, recordType: 'MGSC.DatadiskRecord', data: canonical }
+          });
+        }
+      }
+    } catch {}
+
+    // Copy faction reward assignments
+    try {
+      const frAssets = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+      for (const asset of frAssets.assets) {
+        const assetData = asset.data || {};
+        let changed = false;
+        for (const reward of (assetData.FactionRewardList || [])) {
+          const newCrs = [];
+          for (const cr of (reward.contentRecords || [])) {
+            if ((cr.ContentIds || []).includes(sourceId)) {
+              newCrs.push({
+                TechLevel: cr.TechLevel,
+                ContentIds: [newId],
+                Weight: cr.Weight,
+                Points: cr.Points,
+              });
+              changed = true;
+            }
+          }
+          reward.contentRecords = [...(reward.contentRecords || []), ...newCrs];
+        }
+        if (changed) {
+          await api('asset', {
+            body: { project: selProject.id, category: 'FactionRewards', id: asset.id, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data: assetData }
+          });
+        }
+      }
+    } catch {}
+
     toast(`Copied "${sourceId}" → "${newId}"`);
     await selectProject(selProject.id, true);
     selectAmmo(newId);
@@ -2416,7 +2528,7 @@ function newFiremodeRecord(id) {
   return {
     RecordType: 'MGSC.FireModeRecord',
     Data: {
-      Id: id || 'tempId',
+      Id: id || 'firemode_tempid_1',
       AmmoPerShot: 1,
       WeaponCastsCount: 1,
       RequiredAllAmmoToShot: false,
@@ -2463,8 +2575,8 @@ async function createNewFiremode() {
     const existing = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
     const ids = existing.assets.map(a => a.id);
     let n = 1;
-    while (ids.includes(`tempId${n}`)) n++;
-    const newId = `tempId${n}`;
+    while (ids.includes(`firemode_tempid_${n}`)) n++;
+    const newId = `firemode_tempid_${n}`;
     const record = newFiremodeRecord(newId);
     await api('asset', {
       body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: record.RecordType, data: record.Data }
@@ -2527,16 +2639,22 @@ function loadFmSprite(firemodeId) {
 async function handleFmSpriteUpload(input) {
   if (!input.files.length || !selFiremode || !selProject) return;
   const file = input.files[0];
+  if (file.type !== 'image/png') { toast('Only PNG files are allowed', 1); input.value = ''; return; }
   const reader = new FileReader();
-  reader.onload = async () => {
-    const base64 = reader.result;
-    try {
-      await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
-      toast('Sprite uploaded');
-      loadFmSprite(selFiremode.id);
-      val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
-    } catch (e) { toast(e.message, 1); }
-    input.value = '';
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const img = new Image();
+    img.onload = async () => {
+      if (img.width !== 36 || img.height !== 26) { toast(`Icon must be 36x26 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      try {
+        await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
+        toast('Sprite uploaded');
+        loadFmSprite(selFiremode.id);
+        val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
+      } catch (err) { toast(err.message, 1); }
+      input.value = '';
+    };
+    img.src = base64;
   };
   reader.readAsDataURL(file);
 }
@@ -2945,8 +3063,8 @@ async function deleteWeapon(id) {
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: id + '_localization' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
-    await removeWeaponFromAllDisks(id);
-    await removeWeaponFromAllFactions(id);
+    await removeItemFromAllDisks(id);
+    await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
     selWeapon = null;
     _formSnapshot = null;
@@ -2998,7 +3116,7 @@ function newWeaponRecord(id) {
   return {
     RecordType: "MGSC.WeaponRecord",
     Data: {
-      Id: id || "tempId",
+      Id: id || 'weapon_tempid_1',
       ItemClass: "Weapon",
       TechLevel: 1,
       Price: 100,
@@ -3066,8 +3184,8 @@ async function createNewWeapon() {
     const existing = await api('assets', { params: { project: selProject.id, category: 'Weapons' } });
     const ids = existing.assets.map(a => a.id);
     let n = 1;
-    while (ids.includes(`tempId${n}`)) n++;
-    const newId = `tempId${n}`;
+    while (ids.includes(`weapon_tempid_${n}`)) n++;
+    const newId = `weapon_tempid_${n}`;
     const record = newWeaponRecord(newId);
     await api('asset', {
       body: { project: selProject.id, category: 'Weapons', id: newId, recordType: record.RecordType, data: record.Data }
@@ -3612,9 +3730,9 @@ async function saveWeapon() {
       // Delete old recipe file
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
       // Rename weapon in datadisks
-      await renameWeaponInAllDisks(oldId, newId);
+      await renameItemInAllDisks(oldId, newId);
       // Rename weapon in faction rewards
-      await renameWeaponInAllFactions(oldId, newId);
+      await renameItemInAllFactions(oldId, newId);
     }
     await api('asset', {
       body: { project: selProject.id, category: 'Weapons', id: newId, recordType: 'MGSC.WeaponRecord', data }
@@ -3818,7 +3936,7 @@ function validateFRField(input, mustBeInt, capAt10) {
   input.classList.toggle('invalid', !valid);
 }
 
-async function loadFactionRewards(weaponId) {
+async function loadFactionRewards(itemId) {
   _prevFactionRewards = [];
   const list = document.getElementById('factionRewardList');
   list.innerHTML = '';
@@ -3830,7 +3948,7 @@ async function loadFactionRewards(weaponId) {
       for (const reward of rewardList) {
         const factionId = reward.FactionName || '';
         for (const cr of (reward.contentRecords || [])) {
-          if ((cr.ContentIds || []).includes(weaponId)) {
+          if ((cr.ContentIds || []).includes(itemId)) {
             addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
             _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
           }
@@ -3852,7 +3970,7 @@ function collectFactionRewards() {
   return entries;
 }
 
-async function saveFactionRewards(weaponId) {
+async function saveFactionRewards(itemId) {
   const current = collectFactionRewards();
 
   // Group current entries by faction
@@ -3896,14 +4014,14 @@ async function saveFactionRewards(weaponId) {
 
     // Remove this weapon's contentRecords from the faction entry
     factionEntry.contentRecords = (factionEntry.contentRecords || []).filter(cr =>
-      !(cr.ContentIds || []).includes(weaponId)
+      !(cr.ContentIds || []).includes(itemId)
     );
 
     // Add new contentRecords for this weapon
     for (const e of newEntries) {
       factionEntry.contentRecords.push({
         TechLevel: e.techLevel,
-        ContentIds: [weaponId],
+        ContentIds: [itemId],
         Weight: e.weight,
         Points: e.points
       });
@@ -3925,7 +4043,7 @@ async function saveFactionRewards(weaponId) {
   _prevFactionRewards = [...current];
 }
 
-async function removeWeaponFromAllFactions(weaponId) {
+async function removeItemFromAllFactions(itemId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
     for (const asset of data.assets) {
@@ -3936,7 +4054,7 @@ async function removeWeaponFromAllFactions(weaponId) {
       for (const reward of rewardList) {
         const before = (reward.contentRecords || []).length;
         reward.contentRecords = (reward.contentRecords || []).filter(cr =>
-          !(cr.ContentIds || []).includes(weaponId)
+          !(cr.ContentIds || []).includes(itemId)
         );
         if (reward.contentRecords.length !== before) changed = true;
       }
@@ -3956,7 +4074,7 @@ async function removeWeaponFromAllFactions(weaponId) {
   } catch {}
 }
 
-async function renameWeaponInAllFactions(oldId, newId) {
+async function renameItemInAllFactions(oldId, newId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
     for (const asset of data.assets) {
@@ -3982,13 +4100,13 @@ async function renameWeaponInAllFactions(oldId, newId) {
 // ═══════════════════════════════════════════════════════════════════
 let _prevDatdiskAssignments = [];
 
-async function loadDatadisks(weaponId) {
+async function loadDatadisks(itemId) {
   _prevDatdiskAssignments = [];
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
       const ids = asset.data?.UnlockIds || [];
-      if (ids.includes(weaponId)) {
+      if (ids.includes(itemId)) {
         _prevDatdiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
       }
     }
@@ -4039,7 +4157,7 @@ function canonicalizeDiskData(data, diskId) {
   };
 }
 
-async function saveDatadisks(weaponId) {
+async function saveDatadisks(itemId) {
   const checked = Array.from(document.querySelectorAll('#ed-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
   const added = checked.filter(d => !_prevDatdiskAssignments.includes(d));
   const removed = _prevDatdiskAssignments.filter(d => !checked.includes(d));
@@ -4054,7 +4172,7 @@ async function saveDatadisks(weaponId) {
     }
     const src = raw.Data || raw.data || {};
     const unlockIds = src.UnlockIds || [];
-    if (!unlockIds.includes(weaponId)) unlockIds.push(weaponId);
+    if (!unlockIds.includes(itemId)) unlockIds.push(itemId);
     src.UnlockIds = unlockIds;
     const data = canonicalizeDiskData(src, diskId);
     await api('asset', {
@@ -4067,7 +4185,7 @@ async function saveDatadisks(weaponId) {
     try {
       const raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
       const src = raw.Data || raw.data || {};
-      const unlockIds = (src.UnlockIds || []).filter(id => id !== weaponId);
+      const unlockIds = (src.UnlockIds || []).filter(id => id !== itemId);
       if (unlockIds.length === 0) {
         await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
       } else {
@@ -4083,12 +4201,12 @@ async function saveDatadisks(weaponId) {
   _prevDatdiskAssignments = [...checked];
 }
 
-async function removeWeaponFromAllDisks(weaponId) {
+async function removeItemFromAllDisks(itemId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
       const assetData = asset.data || {};
-      const unlockIds = (assetData.UnlockIds || []).filter(id => id !== weaponId);
+      const unlockIds = (assetData.UnlockIds || []).filter(id => id !== itemId);
       if (unlockIds.length === 0) {
         await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: asset.id } });
       } else if (unlockIds.length !== (assetData.UnlockIds || []).length) {
@@ -4103,7 +4221,7 @@ async function removeWeaponFromAllDisks(weaponId) {
   } catch {}
 }
 
-async function renameWeaponInAllDisks(oldId, newId) {
+async function renameItemInAllDisks(oldId, newId) {
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
@@ -4508,6 +4626,232 @@ async function saveAmmoLocalization(ammoId) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  AMMO DATADISKS
+// ═══════════════════════════════════════════════════════════════════
+let _prevAmmoDatadiskAssignments = [];
+
+async function loadAmmoDatadisks(ammoId) {
+  _prevAmmoDatadiskAssignments = [];
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
+    for (const asset of data.assets) {
+      const ids = asset.data?.UnlockIds || [];
+      if (ids.includes(ammoId)) {
+        _prevAmmoDatadiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
+      }
+    }
+  } catch {}
+
+  const container = document.getElementById('ammo-Datadisks');
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = _prevAmmoDatadiskAssignments.includes(cb.value);
+  });
+  const display = container.querySelector('.multi-select-display');
+  if (_prevAmmoDatadiskAssignments.length) {
+    display.textContent = _prevAmmoDatadiskAssignments.join(', ');
+  } else {
+    display.innerHTML = '<span class="placeholder">Select datadisks…</span>';
+  }
+}
+
+async function saveAmmoDatadisks(ammoId) {
+  const checked = Array.from(document.querySelectorAll('#ammo-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
+  const added = checked.filter(d => !_prevAmmoDatadiskAssignments.includes(d));
+  const removed = _prevAmmoDatadiskAssignments.filter(d => !checked.includes(d));
+
+  for (const diskId of added) {
+    let raw;
+    try {
+      raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+    } catch {
+      raw = newDiskDataRecord(diskId);
+    }
+    const src = raw.Data || raw.data || {};
+    const unlockIds = src.UnlockIds || [];
+    if (!unlockIds.includes(ammoId)) unlockIds.push(ammoId);
+    src.UnlockIds = unlockIds;
+    const data = canonicalizeDiskData(src, diskId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData', recordType: 'MGSC.DatadiskRecord', data }
+    });
+  }
+
+  for (const diskId of removed) {
+    try {
+      const raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+      const src = raw.Data || raw.data || {};
+      const unlockIds = (src.UnlockIds || []).filter(id => id !== ammoId);
+      if (unlockIds.length === 0) {
+        await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
+      } else {
+        src.UnlockIds = unlockIds;
+        const data = canonicalizeDiskData(src, diskId);
+        await api('asset', {
+          body: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData', recordType: 'MGSC.DatadiskRecord', data }
+        });
+      }
+    } catch {}
+  }
+
+  _prevAmmoDatadiskAssignments = [...checked];
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AMMO FACTION REWARDS
+// ═══════════════════════════════════════════════════════════════════
+let _prevAmmoFactionRewards = [];
+
+function addAmmoFactionRewardEntry(factionId, techLevel, weight, points) {
+  const list = document.getElementById('ammoFactionRewardList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.style.flexWrap = 'wrap';
+  entry.innerHTML = `
+    <div class="entry-field" style="flex:1 1 160px;">
+      <label>Faction</label>
+      <select class="fr-faction" onchange="refreshAmmoFactionOptions()"></select>
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Tech Level</label>
+      <input type="number" class="fr-tech" value="${techLevel ?? 1}" min="1" max="10" step="1" oninput="validateFRField(this, true, true)">
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Weight</label>
+      <input type="number" class="fr-weight" value="${weight ?? 15}" step="0.1" oninput="validateFRField(this, false, false)">
+    </div>
+    <div class="entry-field" style="flex:0 0 120px;">
+      <label>Points</label>
+      <input type="number" class="fr-points" value="${points ?? 150}" step="1" oninput="validateFRField(this, true, false)">
+    </div>
+    <button class="entry-rm" onclick="this.parentElement.remove(); refreshAmmoFactionOptions()">&times;</button>
+  `;
+  list.appendChild(entry);
+
+  const sel = entry.querySelector('.fr-faction');
+  const rows = REF?.base?.factions?.rows || [];
+  sel.innerHTML = rows.map(r => {
+    const v = (r.Id || '').trim();
+    if (!v) return '';
+    return `<option value="${esc(v)}">${esc(v)}</option>`;
+  }).filter(Boolean).join('');
+  if (factionId) sel.value = factionId;
+  refreshAmmoFactionOptions();
+}
+
+function refreshAmmoFactionOptions() {
+  const selects = Array.from(document.querySelectorAll('#ammoFactionRewardList .fr-faction'));
+  const taken = selects.map(s => s.value).filter(Boolean);
+  const allFactions = (REF?.base?.factions?.rows || []).map(r => (r.Id || '').trim()).filter(Boolean);
+
+  for (const sel of selects) {
+    const current = sel.value;
+    sel.innerHTML = allFactions
+      .filter(f => f === current || !taken.includes(f))
+      .map(f => `<option value="${esc(f)}"${f === current ? ' selected' : ''}>${esc(f)}</option>`)
+      .join('');
+  }
+}
+
+function collectAmmoFactionRewards() {
+  const entries = [];
+  document.querySelectorAll('#ammoFactionRewardList .entry-item').forEach(el => {
+    const factionId = el.querySelector('.fr-faction').value;
+    const techLevel = parseInt(el.querySelector('.fr-tech').value) || 1;
+    const weight = parseFloat(el.querySelector('.fr-weight').value) || 15;
+    const points = parseFloat(el.querySelector('.fr-points').value) || 150;
+    if (factionId) entries.push({ factionId, techLevel, weight, points });
+  });
+  return entries;
+}
+
+async function loadAmmoFactionRewards(ammoId) {
+  _prevAmmoFactionRewards = [];
+  const list = document.getElementById('ammoFactionRewardList');
+  list.innerHTML = '';
+
+  try {
+    const data = await api('assets', { params: { project: selProject.id, category: 'FactionRewards' } });
+    for (const asset of data.assets) {
+      const rewardList = asset.data?.FactionRewardList || [];
+      for (const reward of rewardList) {
+        const factionId = reward.FactionName || '';
+        for (const cr of (reward.contentRecords || [])) {
+          if ((cr.ContentIds || []).includes(ammoId)) {
+            addAmmoFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
+            _prevAmmoFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
+          }
+        }
+      }
+    }
+  } catch {}
+}
+
+async function saveAmmoFactionRewards(ammoId) {
+  const current = collectAmmoFactionRewards();
+
+  const byFaction = {};
+  for (const e of current) {
+    if (!byFaction[e.factionId]) byFaction[e.factionId] = [];
+    byFaction[e.factionId].push(e);
+  }
+
+  const prevByFaction = {};
+  for (const e of _prevAmmoFactionRewards) {
+    if (!prevByFaction[e.factionId]) prevByFaction[e.factionId] = [];
+    prevByFaction[e.factionId].push(e);
+  }
+
+  const allFactions = new Set([...Object.keys(byFaction), ...Object.keys(prevByFaction)]);
+
+  for (const factionId of allFactions) {
+    const fileId = factionId + '_factionData';
+    const newEntries = byFaction[factionId] || [];
+
+    let record;
+    try {
+      record = await api('asset', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } });
+    } catch {
+      record = { Data: { FactionRewardList: [] } };
+    }
+
+    const data = record.Data || record.data || {};
+    let rewardList = data.FactionRewardList || [];
+
+    let factionEntry = rewardList.find(r => r.FactionName === factionId);
+    if (!factionEntry) {
+      factionEntry = { FactionName: factionId, RewardType: 'rewardEquipment', contentRecords: [] };
+      rewardList.push(factionEntry);
+    }
+
+    factionEntry.contentRecords = (factionEntry.contentRecords || []).filter(cr =>
+      !(cr.ContentIds || []).includes(ammoId)
+    );
+
+    for (const e of newEntries) {
+      factionEntry.contentRecords.push({
+        TechLevel: e.techLevel,
+        ContentIds: [ammoId],
+        Weight: e.weight,
+        Points: e.points
+      });
+    }
+
+    rewardList = rewardList.filter(r => (r.contentRecords || []).length > 0);
+
+    if (rewardList.length === 0) {
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'FactionRewards', id: fileId } }); } catch {}
+    } else {
+      data.FactionRewardList = rewardList;
+      await api('asset', {
+        body: { project: selProject.id, category: 'FactionRewards', id: fileId, recordType: 'QM_ImporterAPI.Templates.FactionTemplate', data }
+      });
+    }
+  }
+
+  _prevAmmoFactionRewards = [...current];
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  DISASSEMBLY ENTRIES
 // ═══════════════════════════════════════════════════════════════════
 function addDisassemblyEntry(itemId, count) {
@@ -4716,6 +5060,8 @@ const AMMO_TAB_PANES = {
   ammoConfig: 'ammoConfigWrap',
   ammoDescriptor: 'ammoDescriptorWrap',
   ammoLocalization: 'ammoLocalizationWrap',
+  ammoDatadisk: 'ammoDatadiskWrap',
+  ammoFactionRewards: 'ammoFactionRewardsWrap',
 };
 
 function switchAmmoTab(tabId) {
@@ -5024,6 +5370,7 @@ function populateRefSelects() {
   fillMultiSelect('ed-RepairItemIds', repairParts, 'Id');
   fillMultiSelect('ed-Categories', REF.enums?.categories, 'Name');
   fillMultiSelect('ed-Datadisks', REF.base?.datadisks, 'Id');
+  fillMultiSelect('ammo-Datadisks', REF.base?.datadisks, 'Id');
   refreshFiremodeSelects();
   refreshAmmoSelects();
 
@@ -5055,11 +5402,18 @@ function populateRefSelects() {
   fillSelectWithEmpty('ammo-AmmoType', REF.enums?.ammoTypes, 'name');
   fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
   fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
+  fillSelect('ad-BulletSpritesId', REF.enums?.projectiles, 'Id');
   const ammoTraits = {
     rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
   };
   fillMultiSelect('ammo-Traits', ammoTraits, 'Id');
   fillMultiSelect('ammo-Categories', REF.enums?.categories, 'Name');
+
+  const damageEffects = {
+    rows: (REF.base?.statusEffects?.rows || []).filter(r => r.RenewalType === 'Damage')
+  };
+  fillSelectWithEmpty('ammo-StatusEffectId', damageEffects, 'Id');
 }
 
 async function init() {

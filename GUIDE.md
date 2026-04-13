@@ -28,7 +28,7 @@ Click the **🗑** trash icon. A confirmation dialog warns that all assets withi
 ## Weapons
 
 ### Creating a Weapon
-Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `tempId1` (auto-increments if taken). This also creates blank localization (in `Localization/Weapons/`), descriptor (in `Descriptors/Weapons/`), and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
+Select a project, then click **+ New** in the asset list sidebar. A weapon is created with the ID `weapon_tempid_1` (auto-increments if taken). This also creates blank localization (in `Localization/Weapons/`), descriptor (in `Descriptors/Weapons/`), and crafting recipe files. Rapid clicks are blocked — only one creation runs at a time.
 
 ### Weapon ID
 The **Id** field in the editor is the weapon's filename and the key used across all linked files. IDs must contain only letters, numbers, underscores, and hyphens. Empty IDs and duplicate IDs are blocked on save with specific error messages.
@@ -132,7 +132,7 @@ Like datadisks, faction reward files (`{factionId}_factionData.json`) are **shar
 ## Firemodes
 
 ### Creating a Firemode
-Switch to **Firemodes** mode and click **+ New**. A firemode is created with ID `tempId1` (auto-increments). This also creates a blank descriptor file.
+Switch to **Firemodes** mode and click **+ New**. A firemode is created with ID `firemode_tempid_1` (auto-increments). This also creates a blank descriptor file.
 
 ### Firemode ID
 IDs must be unique across both the project and the base game firemodes (`ref/base/firemodes.txt`). Same character rules as weapons.
@@ -144,7 +144,7 @@ Single-panel layout with two sections:
 
 **Firemode Config** — Id, Require All Ammo To Shoot (toggle), AmmoPerShot (integer ≥ 0), WeaponCastsCount (integer > 0), Accuracy, ScatterAngle, DamageMult (positive), DelayBetweenShots (≥ 0).
 
-**Descriptor** — PNG sprite upload stored in `Images/Firemodes/`. Sprite Path/ID text field auto-fills on upload as `Images/Firemodes/{id}_sprite.png`.
+**Descriptor** — PNG sprite upload (36×26 only) stored in `Images/Firemodes/`, displayed at 2× in a 72×52 preview. Sprite Path/ID text field auto-fills on upload as `Images/Firemodes/{id}_sprite.png`.
 
 ### Copying a Firemode
 Click the copy icon on a firemode card. Creates `{sourceId}_copy{n}` with all config values. Descriptor is copied with sprite path cleared.
@@ -154,12 +154,12 @@ Click the copy icon on a firemode card. Creates `{sourceId}_copy{n}` with all co
 ## Ammo
 
 ### Creating an Ammo Record
-Switch to **Ammo** mode and click **+ New**. An ammo record is created with ID `tempId1` (auto-increments). This also creates blank descriptor and localization files.
+Switch to **Ammo** mode and click **+ New**. An ammo record is created with ID `ammo_tempid_1` (auto-increments). This also creates blank descriptor and localization files.
 
 ### Ammo ID
 IDs must be unique across both the project and the base game ammo (`ref/base/ammo.txt`). Same character rules as weapons.
 
-Changing the ID and saving will rename the ammo JSON, descriptor, localization, and sprite images. Internal references (descriptor `ItemId`, localization keys) update automatically.
+Changing the ID and saving will rename the ammo JSON, descriptor, localization, and sprite images. Internal references (descriptor `ItemId`, localization keys, datadisk UnlockIds, faction reward ContentIds) update automatically.
 
 ### Ammo Editor Tabs
 
@@ -169,30 +169,38 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 
 **Statistics** — DamageMult (no validation), CritChance (≥ 0), RangeBonus (integer, negatives allowed), AccuracyMult (≥ 0), ScatterMult (≥ 0), BulletCastsPerShot (integer > 0).
 
-**Status Effects** — StatusEffectId (free text), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
+**Status Effects** — StatusEffectId (dropdown from base game status effects, filtered to Damage renewal types), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
 
 **Traits** — Multi-select dropdown, filtered to AmmoTrait entries from itemTraits TSV.
 
-**Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false), BallisticType ("Ballistic"). Always saved but not editable.
+**Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false). Always saved but not editable.
 
 #### Descriptor
 
 **Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
 
-**Gibs** — BulletSpritesId, BulletShadowsId (free text). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (true).
+**Gibs** — Bullet Sprites ID (dropdown from projectiles enum, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
 
 #### Localization
 
 Identical to weapon localization — 11 languages, Name + Short Desc per row. English name appears on ammo sidebar cards.
 
+#### Datadisk Assignment
+
+Identical to weapon datadisk assignment. Multi-select dropdown of all datadisk IDs from the reference TSV. Ammo and weapons share the same datadisk files — checking a disk adds this ammo's ID to the disk's UnlockIds array. Empty datadisk files are cleaned up automatically.
+
+#### Faction Rewards
+
+Identical to weapon faction rewards. Entry list with Faction, Tech Level (1–10), Weight (positive), Points (positive integer). Ammo and weapons share the same faction reward files. Validated on save with error modal.
+
 ### Copying an Ammo Record
-Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID.
+Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID. Datadisk and faction reward assignments copied.
 
 ---
 
@@ -257,6 +265,9 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | AccuracyMult, ScatterMult | ≥ 0 |
 | BulletCastsPerShot | Integer, > 0 |
 | ChanceToApply | ≥ 0 |
+| Faction Tech Level | Integer, 1–10 |
+| Faction Weight | Positive number |
+| Faction Points | Positive integer |
 
 ### Entry List Limits
 - Required Items: max 5

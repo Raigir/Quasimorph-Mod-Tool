@@ -79,7 +79,8 @@ mod-workflow/
     │   ├── datadisks.txt
     │   ├── explosions.txt
     │   ├── factions.txt
-    │   └── pactcomponents.txt
+    │   ├── pactcomponents.txt
+    │   └── statusEffects.txt
     └── enums/                         # Enum value lists
         ├── weaponClass.txt
         ├── weaponSubClass.txt
@@ -87,7 +88,7 @@ mod-workflow/
         ├── ammoTypes.txt
         ├── projectileIds.txt
         ├── projectiles.txt
-        ├── ballisticType.txt
+        ├── ballisticTypes.txt
         ├── damageTypes.txt
         ├── factionIdCodes.txt
         ├── handGrips.txt
