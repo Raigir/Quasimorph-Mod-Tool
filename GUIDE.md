@@ -144,7 +144,7 @@ Single-panel layout with two sections:
 
 **Firemode Config** — Id, Require All Ammo To Shoot (toggle), AmmoPerShot (integer ≥ 0), WeaponCastsCount (integer > 0), Accuracy, ScatterAngle, DamageMult (positive), DelayBetweenShots (≥ 0).
 
-**Descriptor** — PNG sprite upload stored in `Images/Firemodes/`. Sprite Path/ID text field auto-fills on upload as `Images/Firemodes/{id}_sprite.png`.
+**Descriptor** — PNG sprite upload (36×26 only) stored in `Images/Firemodes/`, displayed at 2× in a 72×52 preview. Sprite Path/ID text field auto-fills on upload as `Images/Firemodes/{id}_sprite.png`.
 
 ### Copying a Firemode
 Click the copy icon on a firemode card. Creates `{sourceId}_copy{n}` with all config values. Descriptor is copied with sprite path cleared.
@@ -169,23 +169,23 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 
 **Statistics** — DamageMult (no validation), CritChance (≥ 0), RangeBonus (integer, negatives allowed), AccuracyMult (≥ 0), ScatterMult (≥ 0), BulletCastsPerShot (integer > 0).
 
-**Status Effects** — StatusEffectId (free text), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
+**Status Effects** — StatusEffectId (dropdown from base game status effects, filtered to Damage renewal types), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
 
 **Traits** — Multi-select dropdown, filtered to AmmoTrait entries from itemTraits TSV.
 
-**Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false), BallisticType ("Ballistic"). Always saved but not editable.
+**Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false). Always saved but not editable.
 
 #### Descriptor
 
 **Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
 
-**Gibs** — BulletSpritesId, BulletShadowsId (free text). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (true).
+**Gibs** — Bullet Sprites ID (dropdown from projectiles enum, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
 
 #### Localization
 

@@ -1240,10 +1240,10 @@
       <div class="img-upload-area" style="margin-bottom:10px;">
         <div class="img-upload-slot">
           <span class="slot-label">Sprite</span>
-          <div class="img-preview" id="fmSpritePreview"><span class="placeholder-text">No image</span></div>
+          <div class="img-preview" id="fmSpritePreview" style="min-width:72px; width:72px; min-height:52px; height:52px;"><span class="placeholder-text">No image</span></div>
           <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
           <input type="file" id="fmSpriteFile" accept=".png,image/png" style="display:none" onchange="handleFmSpriteUpload(this)">
-          <span class="img-hint">PNG only</span>
+          <span class="img-hint">PNG only — 36x26</span>
         </div>
       </div>
       <div class="ed-row">
@@ -1328,7 +1328,7 @@
       </div>
       <div class="ed-row">
         <div class="ed-field" style="flex:1 1 0;"><label>Projectile Id</label><select id="ammo-ProjectileId"></select></div>
-        <div class="ed-field" style="flex:1 1 0;"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Ballistic Type</label><select id="ammo-BallisticType"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Max Stack</label><input type="number" id="ammo-MaxStack" step="1" oninput="validateAmmoField(this, 'int_gt0')"></div>
@@ -1371,7 +1371,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Status Effects</div>
       <div class="ed-row">
-        <div class="ed-field id-field"><label>Status Effect Id</label><input type="text" id="ammo-StatusEffectId"></div>
+        <div class="ed-field id-field"><label>Status Effect Id</label><select id="ammo-StatusEffectId"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Chance To Apply</label><input type="number" id="ammo-ChanceToApply" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
@@ -1415,8 +1415,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Gibs</div>
       <div class="ed-row">
-        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Sprites ID</label><input type="text" id="ad-BulletSpritesId"></div>
-        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Shadows ID</label><input type="text" id="ad-BulletShadowsId"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Bullet Sprites ID</label><select id="ad-BulletSpritesId"></select></div>
       </div>
     </div>
     <div class="ed-actions">
@@ -1926,6 +1925,7 @@ function populateAmmoEditor(d) {
   val('ammo-AmmoType', d.AmmoType || '');
   val('ammo-DmgType', d.DmgType || '');
   val('ammo-ProjectileId', d.ProjectileId || '');
+  val('ammo-BallisticType', d.BallisticType || 'Ballistic');
   val('ammo-DamageMult', d.DamageMult ?? 1.0);
   val('ammo-DmgCritChance', d.DmgCritChance ?? 0.12);
   val('ammo-RangeBonus', d.RangeBonus ?? 0);
@@ -1985,7 +1985,7 @@ function collectAmmoEditor() {
     CanPutInVest: bool('ammo-CanPutInVest'),
     IsImplictedAmmo: false,
     IsChargeOnly: false,
-    BallisticType: 'Ballistic',
+    BallisticType: str('ammo-BallisticType').trim() || 'Ballistic',
   };
 }
 
@@ -2043,7 +2043,7 @@ function newAmmoDescriptorRecord(id) {
     RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
     Data: {
       ItemId: id,
-      MeleeMakeBlood: true,
+      MeleeMakeBlood: false,
       ImageProperties: {
         IconSpriteIdOrPath: '',
         SmallIconSpriteIdOrPath: '',
@@ -2052,8 +2052,8 @@ function newAmmoDescriptorRecord(id) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: '',
-        BulletShadowsId: '',
+        BulletSpritesId: 'pistol',
+        BulletShadowsId: 'pistol',
         AnimationFramerate: 10,
       }
     }
@@ -2066,8 +2066,7 @@ function populateAmmoDescriptor(data) {
   val('ad-SmallIconSpriteIdOrPath', ip.SmallIconSpriteIdOrPath || '');
   val('ad-ShadowOnFloorSpriteIdOrPath', ip.ShadowOnFloorSpriteIdOrPath || '');
   const g = data?.Gibs || {};
-  val('ad-BulletSpritesId', g.BulletSpritesId || '');
-  val('ad-BulletShadowsId', g.BulletShadowsId || '');
+  val('ad-BulletSpritesId', g.BulletSpritesId || 'pistol');
 }
 
 function collectAmmoDescriptor(ammoId) {
@@ -2078,7 +2077,7 @@ function collectAmmoDescriptor(ammoId) {
     RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor',
     Data: {
       ItemId: ammoId,
-      MeleeMakeBlood: true,
+      MeleeMakeBlood: false,
       ImageProperties: {
         IconSpriteIdOrPath: str('ad-IconSpriteIdOrPath'),
         SmallIconSpriteIdOrPath: str('ad-SmallIconSpriteIdOrPath'),
@@ -2087,8 +2086,8 @@ function collectAmmoDescriptor(ammoId) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: str('ad-BulletSpritesId'),
-        BulletShadowsId: str('ad-BulletShadowsId'),
+        BulletSpritesId: str('ad-BulletSpritesId') || 'pistol',
+        BulletShadowsId: str('ad-BulletSpritesId') || 'pistol',
         AnimationFramerate: 10,
       }
     }
@@ -2640,16 +2639,22 @@ function loadFmSprite(firemodeId) {
 async function handleFmSpriteUpload(input) {
   if (!input.files.length || !selFiremode || !selProject) return;
   const file = input.files[0];
+  if (file.type !== 'image/png') { toast('Only PNG files are allowed', 1); input.value = ''; return; }
   const reader = new FileReader();
-  reader.onload = async () => {
-    const base64 = reader.result;
-    try {
-      await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
-      toast('Sprite uploaded');
-      loadFmSprite(selFiremode.id);
-      val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
-    } catch (e) { toast(e.message, 1); }
-    input.value = '';
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const img = new Image();
+    img.onload = async () => {
+      if (img.width !== 36 || img.height !== 26) { toast(`Icon must be 36x26 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
+      try {
+        await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
+        toast('Sprite uploaded');
+        loadFmSprite(selFiremode.id);
+        val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
+      } catch (err) { toast(err.message, 1); }
+      input.value = '';
+    };
+    img.src = base64;
   };
   reader.readAsDataURL(file);
 }
@@ -3931,7 +3936,7 @@ function validateFRField(input, mustBeInt, capAt10) {
   input.classList.toggle('invalid', !valid);
 }
 
-async function loadFactionRewards(weaponId) {
+async function loadFactionRewards(itemId) {
   _prevFactionRewards = [];
   const list = document.getElementById('factionRewardList');
   list.innerHTML = '';
@@ -3943,7 +3948,7 @@ async function loadFactionRewards(weaponId) {
       for (const reward of rewardList) {
         const factionId = reward.FactionName || '';
         for (const cr of (reward.contentRecords || [])) {
-          if ((cr.ContentIds || []).includes(weaponId)) {
+          if ((cr.ContentIds || []).includes(itemId)) {
             addFactionRewardEntry(factionId, cr.TechLevel, cr.Weight, cr.Points);
             _prevFactionRewards.push({ factionId, techLevel: cr.TechLevel, weight: cr.Weight, points: cr.Points });
           }
@@ -3965,7 +3970,7 @@ function collectFactionRewards() {
   return entries;
 }
 
-async function saveFactionRewards(weaponId) {
+async function saveFactionRewards(itemId) {
   const current = collectFactionRewards();
 
   // Group current entries by faction
@@ -4009,14 +4014,14 @@ async function saveFactionRewards(weaponId) {
 
     // Remove this weapon's contentRecords from the faction entry
     factionEntry.contentRecords = (factionEntry.contentRecords || []).filter(cr =>
-      !(cr.ContentIds || []).includes(weaponId)
+      !(cr.ContentIds || []).includes(itemId)
     );
 
     // Add new contentRecords for this weapon
     for (const e of newEntries) {
       factionEntry.contentRecords.push({
         TechLevel: e.techLevel,
-        ContentIds: [weaponId],
+        ContentIds: [itemId],
         Weight: e.weight,
         Points: e.points
       });
@@ -4095,13 +4100,13 @@ async function renameItemInAllFactions(oldId, newId) {
 // ═══════════════════════════════════════════════════════════════════
 let _prevDatdiskAssignments = [];
 
-async function loadDatadisks(weaponId) {
+async function loadDatadisks(itemId) {
   _prevDatdiskAssignments = [];
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
       const ids = asset.data?.UnlockIds || [];
-      if (ids.includes(weaponId)) {
+      if (ids.includes(itemId)) {
         _prevDatdiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
       }
     }
@@ -4152,7 +4157,7 @@ function canonicalizeDiskData(data, diskId) {
   };
 }
 
-async function saveDatadisks(weaponId) {
+async function saveDatadisks(itemId) {
   const checked = Array.from(document.querySelectorAll('#ed-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
   const added = checked.filter(d => !_prevDatdiskAssignments.includes(d));
   const removed = _prevDatdiskAssignments.filter(d => !checked.includes(d));
@@ -4167,7 +4172,7 @@ async function saveDatadisks(weaponId) {
     }
     const src = raw.Data || raw.data || {};
     const unlockIds = src.UnlockIds || [];
-    if (!unlockIds.includes(weaponId)) unlockIds.push(weaponId);
+    if (!unlockIds.includes(itemId)) unlockIds.push(itemId);
     src.UnlockIds = unlockIds;
     const data = canonicalizeDiskData(src, diskId);
     await api('asset', {
@@ -4180,7 +4185,7 @@ async function saveDatadisks(weaponId) {
     try {
       const raw = await api('asset', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
       const src = raw.Data || raw.data || {};
-      const unlockIds = (src.UnlockIds || []).filter(id => id !== weaponId);
+      const unlockIds = (src.UnlockIds || []).filter(id => id !== itemId);
       if (unlockIds.length === 0) {
         await api('asset_delete', { params: { project: selProject.id, category: 'Datadisks', id: diskId + '_diskData' } });
       } else {
@@ -5397,11 +5402,18 @@ function populateRefSelects() {
   fillSelectWithEmpty('ammo-AmmoType', REF.enums?.ammoTypes, 'name');
   fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
   fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
+  fillSelect('ad-BulletSpritesId', REF.enums?.projectiles, 'Id');
   const ammoTraits = {
     rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
   };
   fillMultiSelect('ammo-Traits', ammoTraits, 'Id');
   fillMultiSelect('ammo-Categories', REF.enums?.categories, 'Name');
+
+  const damageEffects = {
+    rows: (REF.base?.statusEffects?.rows || []).filter(r => r.RenewalType === 'Damage')
+  };
+  fillSelectWithEmpty('ammo-StatusEffectId', damageEffects, 'Id');
 }
 
 async function init() {
