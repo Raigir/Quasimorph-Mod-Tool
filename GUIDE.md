@@ -75,7 +75,9 @@ Firemode 2 is **disabled until Firemode 1 is set**. Clearing Firemode 1 cascades
 
 Project-created firemodes and ammo appear in their respective dropdowns with a " - *Custom*" label (display only — the saved value is the plain ID). If a referenced firemode or ammo no longer exists, it shows as "(missing)" with a red border and blocks saving.
 
-Also: RequiredAmmo (enum dropdown), DefaultAmmoId (base + project ammo), OverrideProjectileId (from projectiles enum).
+Also: RequiredAmmo (dropdown from base ammo types + any custom ammo types discovered in project ammo records — custom entries show " - *Custom*"), DefaultAmmoId (base + project ammo), OverrideProjectileId (from projectiles enum).
+
+**RequiredAmmo and custom ammo types** — When you create an ammo record with a free-typed AmmoType that doesn't exist in the base game's ammo types enum, that type automatically appears as an option in the weapon editor's RequiredAmmo dropdown. This lets you define new ammo categories through your ammo records and immediately reference them from weapons. If all ammo records using a custom type are later deleted, any weapons still referencing that type will show it as "(missing)" with a red border and block saving until resolved.
 
 **Traits** — Multi-select dropdown, filtered to WeaponTrait entries from itemTraits TSV.
 
@@ -169,7 +171,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 
@@ -240,6 +242,7 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | Faction Points | Positive integer |
 | Firemodes 1/2 | Orphan check — must exist in base or project |
 | DefaultAmmoId, OverrideAmmo 1/2 | Orphan check — must exist in base or project |
+| RequiredAmmo | Orphan check — must exist in base ammo types or project ammo records |
 
 ### Firemode Field Rules
 
@@ -288,7 +291,7 @@ Used for Categories, Traits, RepairItemIds, AllowedGrenadeIds, Datadisks (weapon
 
 ## Combo Boxes
 
-Used for Disassembly ItemId, Recipe Required Items, and Modify Items. Features:
+Used for Disassembly ItemId, Recipe Required Items, Modify Items, and Ammo Type (ammo editor). Features:
 - Dropdown with suggestions from reference data
 - Type to filter, click to pick
 - **Allows free text** — you can type any value even if it's not in the list

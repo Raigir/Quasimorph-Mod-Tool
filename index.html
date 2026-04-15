@@ -192,6 +192,14 @@
     font-size:18px; color:var(--accent);
     cursor:pointer; padding:3px 5px; line-height:1;
   }
+  .card .card-export {
+    position:absolute; top:6px; right:38px;
+    background:none; border:none;
+    cursor:pointer; padding:3px 5px; line-height:1;
+  }
+  .card .card-export svg path,
+  .card .card-export svg line,
+  .card .card-export svg polyline { stroke:#5b9a5b; }
   .card .card-copy {
     position:absolute; top:6px; right:6px;
     background:none; border:none;
@@ -231,7 +239,7 @@
     padding-bottom:3px; border-bottom:1px solid var(--border);
   }
   .val-error-section {
-    font-size:11px; font-weight:600; color:var(--text-dim);
+    font-size:12px; font-weight:600; color:var(--text-dim);
     margin-top:6px; margin-left:6px;
   }
   .val-error-msg {
@@ -247,7 +255,7 @@
   }
   .overlay.open { opacity:1; pointer-events:all; }
   .modal {
-    width:500px; max-width:90vw; max-height:80vh;
+    width:700px; max-width:90vw; max-height:80vh;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius-lg); display:flex; flex-direction:column;
     overflow:hidden; transform:translateY(8px); transition:transform 0.2s;
@@ -497,7 +505,7 @@
   .multi-select-search input:focus { border-color:var(--accent-dim); }
   .multi-select-search input::placeholder { color:var(--text-dim); }
   .multi-select-clear {
-    font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500;
+    font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
     padding:5px 8px; white-space:nowrap;
     background:none; border:1px solid var(--border); border-radius:3px;
     color:var(--text-dim); cursor:pointer; transition:all 0.12s;
@@ -659,7 +667,7 @@
     transform:scale(2);
   }
   .img-preview .placeholder-text {
-    font-size:11px; color:var(--text-dim);
+    font-size:12px; color:var(--text-dim);
   }
   .img-upload-controls {
     display:flex; flex-direction:column; gap:6px;
@@ -858,7 +866,7 @@
           <div class="img-preview" id="imgPreview">
             <span class="placeholder-text">No image</span>
           </div>
-          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('imgFile').click()">Upload</button>
+          <button class="btn" style="min-width:82px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('imgFile').click()">Upload</button>
           <input type="file" id="imgFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_icon', 'icon')">
           <span class="img-hint">PNG only — 50x50 or 100x50</span>
         </div>
@@ -867,7 +875,7 @@
           <div class="img-slot-preview" id="floorSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
           <input type="file" id="floorFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -876,7 +884,7 @@
           <div class="img-slot-preview" id="shadowSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
           <input type="file" id="shadowFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -982,7 +990,7 @@
         <div class="ed-field"><label>Override Ammo 2</label><select id="ed-OverrideAmmo2" disabled onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo"></select></div>
+        <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo" onchange="validateAmmoSelect(this)"></select></div>
         <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId" onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
@@ -1145,7 +1153,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 5)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:11px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="recipeItemList"></div>
     </div>
@@ -1164,7 +1172,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 4)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:11px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="gradeList"></div>
     </div>
@@ -1197,7 +1205,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="factionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1238,7 +1246,7 @@
         <div class="img-upload-slot">
           <span class="slot-label">Sprite</span>
           <div class="img-preview" id="fmSpritePreview" style="min-width:72px; width:72px; min-height:52px; height:52px;"><span class="placeholder-text">No image</span></div>
-          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
+          <button class="btn" style="min-width:82px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('fmSpriteFile').click()">Upload</button>
           <input type="file" id="fmSpriteFile" accept=".png,image/png" style="display:none" onchange="handleFmSpriteUpload(this)">
           <span class="img-hint">PNG only — 36x26</span>
         </div>
@@ -1273,7 +1281,7 @@
           <div class="img-preview" id="ammoImgPreview">
             <span class="placeholder-text">No image</span>
           </div>
-          <button class="btn" style="min-width:82px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoImgFile').click()">Upload</button>
+          <button class="btn" style="min-width:82px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoImgFile').click()">Upload</button>
           <input type="file" id="ammoImgFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_icon', 'icon')">
           <span class="img-hint">PNG only — 50x50 or 100x50</span>
         </div>
@@ -1282,7 +1290,7 @@
           <div class="img-slot-preview" id="ammoFloorPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
           <input type="file" id="ammoFloorFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1291,7 +1299,7 @@
           <div class="img-slot-preview" id="ammoShadowPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:11px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
           <input type="file" id="ammoShadowFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1320,7 +1328,12 @@
     <div class="ed-section">
       <div class="ed-section-title">Ammo Properties</div>
       <div class="ed-row">
-        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Type</label><select id="ammo-AmmoType"></select></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Type</label>
+          <div class="combobox">
+            <input type="text" id="ammo-AmmoType" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+            <div class="combobox-list" id="ammoTypeComboList"></div>
+          </div>
+        </div>
         <div class="ed-field" style="flex:1 1 0;"><label>Damage Type</label><select id="ammo-DmgType"></select></div>
       </div>
       <div class="ed-row">
@@ -1458,7 +1471,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="ammoFactionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1480,9 +1493,18 @@
     <div class="modal-body">
       <div class="ed-section">
         <div class="ed-section-title">General</div>
-        <div class="ed-row">
+        <div class="ed-row" style="margin-bottom:14px;">
           <div class="ed-field"><label>Project Name</label><input type="text" id="projName" maxlength="60" oninput="validateProjectSettings()"></div>
+          <div class="ed-field" style="flex:0 0 auto;"><label>Skip Manifest on Export</label><input type="checkbox" id="projSkipManifest"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
+        <div class="ed-row" style="margin-bottom:8px;">
+          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
+        </div>
+        <div class="entry-list" id="assemblyList" style="max-width:100%; margin-bottom:6px;"></div>
+        <div class="ed-row" style="margin-top:6px; margin-bottom:8px;">
+          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
+        </div>
+        <div class="entry-list" id="steamTagList" style="max-width:100%; margin-bottom:6px;"></div>
       </div>
       <div class="ed-section">
         <div class="ed-section-title">Bundle Path</div>
@@ -1493,7 +1515,7 @@
       <div class="ed-section">
         <div class="ed-section-title">Weapon Image Folders</div>
         <div class="ed-row" style="margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:11px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
+          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
         </div>
         <div class="entry-list" id="imgFolderList" style="max-width:100%;"></div>
       </div>
@@ -1563,6 +1585,7 @@ function renderProjectList(projects) {
         <div class="c-name">${esc(p.name)}</div>
         <div class="c-sub">${p.assetCount} asset${p.assetCount !== 1 ? 's' : ''}</div>
       </div></div>
+      <button class="card-export" onclick="event.stopPropagation(); exportProject('${esc(p.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 4.5L1 13.5C1 14.3 1.7 15 2.5 15H13.5C14.3 15 15 14.3 15 13.5V6.5C15 5.7 14.3 5 13.5 5H8L6.5 3H2.5C1.7 3 1 3.7 1 4.5Z" stroke-width="1.3"/><line x1="6" y1="10" x2="12" y2="10" stroke-width="1.5" stroke-linecap="round"/><polyline points="10,7.5 12.5,10 10,12.5" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="card-edit" onclick="event.stopPropagation(); openProjectSettings('${esc(p.id)}')">&#9998;</button>
       <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteProject(this, '${esc(p.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
     </div>
@@ -1600,10 +1623,14 @@ async function openProjectSettings(id) {
   editingProjectId = id;
   document.getElementById('projName').value = id;
   // Load project settings
+  let settings = { bundlePath: 'Bundles/', assemblies: [], steamTags: [] };
   try {
-    const settings = await api('project_settings', { params: { id } });
-    document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
-  } catch { document.getElementById('projBundlePath').value = 'Bundles/'; }
+    settings = await api('project_settings', { params: { id } });
+  } catch {}
+  document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
+  chk('projSkipManifest', !!settings.skipManifestExport);
+  populateAssemblyEntries(settings.assemblies || []);
+  populateSteamTagEntries(settings.steamTags || []);
   // Load image folders
   try {
     const data = await api('image_folders', { params: { project: id } });
@@ -1611,6 +1638,40 @@ async function openProjectSettings(id) {
   } catch { populateImageFolderEntries([]); }
   validateProjectSettings();
   document.getElementById('projectOverlay').classList.add('open');
+}
+
+function addAssemblyEntry(value) {
+  const list = document.getElementById('assemblyList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field"><label>DLL File</label><input type="text" class="asm-name" value="${esc(value || '')}"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+}
+
+function populateAssemblyEntries(assemblies) {
+  const list = document.getElementById('assemblyList');
+  list.innerHTML = '';
+  (assemblies || []).forEach(v => addAssemblyEntry(v));
+}
+
+function addSteamTagEntry(value) {
+  const list = document.getElementById('steamTagList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field"><label>Tag</label><input type="text" class="steam-tag" value="${esc(value || '')}"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+}
+
+function populateSteamTagEntries(tags) {
+  const list = document.getElementById('steamTagList');
+  list.innerHTML = '';
+  (tags || []).forEach(v => addSteamTagEntry(v));
 }
 
 function populateImageFolderEntries(folders) {
@@ -1712,7 +1773,11 @@ async function saveProjectSettings() {
   try {
     // Save project settings
     const bundlePath = document.getElementById('projBundlePath').value.trim() || 'Bundles/';
-    await api('project_settings', { body: { project: editingProjectId, bundlePath } });
+    const assemblies = Array.from(document.querySelectorAll('#assemblyList .asm-name'))
+      .map(el => el.value.trim()).filter(Boolean);
+    const steamTags = Array.from(document.querySelectorAll('#steamTagList .steam-tag'))
+      .map(el => el.value.trim()).filter(Boolean);
+    await api('project_settings', { body: { project: editingProjectId, bundlePath, assemblies, steamTags, skipManifestExport: document.getElementById('projSkipManifest').checked } });
 
     // Save image folders
     const folders = Array.from(document.querySelectorAll('#imgFolderList .imgfolder-name'))
@@ -3081,6 +3146,7 @@ async function selectWeapon(id) {
     document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
     await refreshFiremodeSelects();
     await refreshAmmoSelects();
+    await refreshRequiredAmmoSelect();
     populateEditor(record.Data);
     // Detect image folder and load folders list
     await loadImageFolders();
@@ -3239,7 +3305,7 @@ function populateEditor(d) {
   const fms = d.Firemodes || [];
   setFiremodeValue('ed-Firemode1', fms[0] || '');
   setFiremodeValue('ed-Firemode2', fms[1] || '');
-  val('ed-RequiredAmmo', d.RequiredAmmo);
+  setAmmoValue('ed-RequiredAmmo', d.RequiredAmmo);
   setAmmoValue('ed-DefaultAmmoId', d.DefaultAmmoId);
   // Override Ammo
   const oa = d.OverrideAmmo || [];
@@ -3459,7 +3525,7 @@ function validateAll() {
     }
   });
   // Ammo select validation (orphaned references)
-  ['ed-DefaultAmmoId', 'ed-OverrideAmmo1', 'ed-OverrideAmmo2'].forEach(id => {
+  ['ed-DefaultAmmoId', 'ed-OverrideAmmo1', 'ed-OverrideAmmo2', 'ed-RequiredAmmo'].forEach(id => {
     const el = document.getElementById(id);
     if (el.value && el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`)) {
       el.classList.add('invalid');
@@ -3550,6 +3616,10 @@ function collectValidationErrors() {
   const oa2El = document.getElementById('ed-OverrideAmmo2');
   if (oa2El.value && oa2El.querySelector(`.orphan-opt[value="${CSS.escape(oa2El.value)}"]`)) {
     add('Weapon Config', 'Firemodes & Ammo', `Override Ammo 2 "${oa2El.value}" — not found in base game or project ammo`);
+  }
+  const raEl = document.getElementById('ed-RequiredAmmo');
+  if (raEl.value && raEl.querySelector(`.orphan-opt[value="${CSS.escape(raEl.value)}"]`)) {
+    add('Weapon Config', 'Firemodes & Ammo', `Required Ammo "${raEl.value}" — not found in base ammo types or project ammo records`);
   }
 
   // Faction Rewards
@@ -4940,6 +5010,12 @@ function confirmDeleteWeapon(btn, id) {
   showConfirm(`Are you sure you want to delete ${id}?`, () => deleteWeapon(id));
 }
 
+function exportProject(id) {
+  showConfirm('Would you like to export this project?', () => {
+    window.location.href = `/api?action=export_project&id=${encodeURIComponent(id)}`;
+  }, 'Export', 'primary');
+}
+
 function confirmDeleteProject(btn, id) {
   showConfirm('You are about to delete this project and all assets contained within. Are you sure?', () => deleteProjectById(id));
 }
@@ -5104,7 +5180,7 @@ function switchMode(mode) {
 
   // Re-render list from cached tree
   if (selProject && selProject._tree) {
-    if (mode === 'weapons') { refreshFiremodeSelects(); refreshAmmoSelects(); }
+    if (mode === 'weapons') { refreshFiremodeSelects(); refreshAmmoSelects(); refreshRequiredAmmoSelect(); }
     renderModeList(selProject._tree);
   }
 }
@@ -5232,6 +5308,26 @@ async function refreshAmmoSelects() {
   if (oa2Val) document.getElementById('ed-OverrideAmmo2').value = oa2Val;
 }
 
+async function refreshRequiredAmmoSelect() {
+  const baseTypes = (REF?.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+
+  let customTypes = [];
+  if (selProject) {
+    try {
+      const data = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
+      const projectTypes = data.assets.map(a => (a.data?.AmmoType || '').trim()).filter(Boolean);
+      customTypes = [...new Set(projectTypes)].filter(t => !baseTypes.includes(t));
+    } catch {}
+  }
+
+  const curVal = document.getElementById('ed-RequiredAmmo').value;
+  let html = '<option value="" style="font-style:italic">empty</option>';
+  html += baseTypes.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  html += customTypes.sort().map(v => `<option value="${esc(v)}">${esc(v)} - *Custom*</option>`).join('');
+  document.getElementById('ed-RequiredAmmo').innerHTML = html;
+  if (curVal) document.getElementById('ed-RequiredAmmo').value = curVal;
+}
+
 function setAmmoValue(selectId, value) {
   const el = document.getElementById(selectId);
   el.querySelectorAll('.orphan-opt').forEach(o => o.remove());
@@ -5351,7 +5447,7 @@ function populateRefSelects() {
   fillSelect('ed-WeaponClass', REF.enums?.weaponClass, 'Name');
   fillSelect('ed-WeaponSubClass', REF.enums?.weaponSubClass, 'Name');
   fillSelect('desc-Grip', REF.enums?.handGrips, 'Name');
-  fillSelectWithEmpty('ed-RequiredAmmo', REF.enums?.ammoTypes, 'name');
+  refreshRequiredAmmoSelect();
   fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectiles, 'Id');
   fillSelectWithEmpty('ed-DefaultGrenadeId', REF.base?.grenades, 'Id');
   fillMultiSelect('ed-AllowedGrenadeIds', REF.base?.grenades, 'Id');
@@ -5396,7 +5492,10 @@ function populateRefSelects() {
   window._gradeItemOptions = [...new Set(gradeItems)].filter(v => !v.includes('quest_')).sort();
 
   // ── Ammo editor selects ──
-  fillSelectWithEmpty('ammo-AmmoType', REF.enums?.ammoTypes, 'name');
+  const ammoTypeIds = (REF.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+  document.getElementById('ammoTypeComboList').innerHTML = ammoTypeIds.map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
   fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
   fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
   fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
