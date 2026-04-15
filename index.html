@@ -192,6 +192,14 @@
     font-size:18px; color:var(--accent);
     cursor:pointer; padding:3px 5px; line-height:1;
   }
+  .card .card-export {
+    position:absolute; top:6px; right:38px;
+    background:none; border:none;
+    cursor:pointer; padding:3px 5px; line-height:1;
+  }
+  .card .card-export svg path,
+  .card .card-export svg line,
+  .card .card-export svg polyline { stroke:#5b9a5b; }
   .card .card-copy {
     position:absolute; top:6px; right:6px;
     background:none; border:none;
@@ -247,7 +255,7 @@
   }
   .overlay.open { opacity:1; pointer-events:all; }
   .modal {
-    width:500px; max-width:90vw; max-height:80vh;
+    width:700px; max-width:90vw; max-height:80vh;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius-lg); display:flex; flex-direction:column;
     overflow:hidden; transform:translateY(8px); transition:transform 0.2s;
@@ -1485,9 +1493,18 @@
     <div class="modal-body">
       <div class="ed-section">
         <div class="ed-section-title">General</div>
-        <div class="ed-row">
+        <div class="ed-row" style="margin-bottom:14px;">
           <div class="ed-field"><label>Project Name</label><input type="text" id="projName" maxlength="60" oninput="validateProjectSettings()"></div>
+          <div class="ed-field" style="flex:0 0 auto;"><label>Skip Manifest on Export</label><input type="checkbox" id="projSkipManifest"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
+        <div class="ed-row" style="margin-bottom:8px;">
+          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
+        </div>
+        <div class="entry-list" id="assemblyList" style="max-width:100%; margin-bottom:6px;"></div>
+        <div class="ed-row" style="margin-top:6px; margin-bottom:8px;">
+          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
+        </div>
+        <div class="entry-list" id="steamTagList" style="max-width:100%; margin-bottom:6px;"></div>
       </div>
       <div class="ed-section">
         <div class="ed-section-title">Bundle Path</div>
@@ -1568,6 +1585,7 @@ function renderProjectList(projects) {
         <div class="c-name">${esc(p.name)}</div>
         <div class="c-sub">${p.assetCount} asset${p.assetCount !== 1 ? 's' : ''}</div>
       </div></div>
+      <button class="card-export" onclick="event.stopPropagation(); exportProject('${esc(p.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 4.5L1 13.5C1 14.3 1.7 15 2.5 15H13.5C14.3 15 15 14.3 15 13.5V6.5C15 5.7 14.3 5 13.5 5H8L6.5 3H2.5C1.7 3 1 3.7 1 4.5Z" stroke-width="1.3"/><line x1="6" y1="10" x2="12" y2="10" stroke-width="1.5" stroke-linecap="round"/><polyline points="10,7.5 12.5,10 10,12.5" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="card-edit" onclick="event.stopPropagation(); openProjectSettings('${esc(p.id)}')">&#9998;</button>
       <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteProject(this, '${esc(p.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
     </div>
@@ -1605,10 +1623,14 @@ async function openProjectSettings(id) {
   editingProjectId = id;
   document.getElementById('projName').value = id;
   // Load project settings
+  let settings = { bundlePath: 'Bundles/', assemblies: [], steamTags: [] };
   try {
-    const settings = await api('project_settings', { params: { id } });
-    document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
-  } catch { document.getElementById('projBundlePath').value = 'Bundles/'; }
+    settings = await api('project_settings', { params: { id } });
+  } catch {}
+  document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
+  chk('projSkipManifest', !!settings.skipManifestExport);
+  populateAssemblyEntries(settings.assemblies || []);
+  populateSteamTagEntries(settings.steamTags || []);
   // Load image folders
   try {
     const data = await api('image_folders', { params: { project: id } });
@@ -1616,6 +1638,40 @@ async function openProjectSettings(id) {
   } catch { populateImageFolderEntries([]); }
   validateProjectSettings();
   document.getElementById('projectOverlay').classList.add('open');
+}
+
+function addAssemblyEntry(value) {
+  const list = document.getElementById('assemblyList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field"><label>DLL File</label><input type="text" class="asm-name" value="${esc(value || '')}"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+}
+
+function populateAssemblyEntries(assemblies) {
+  const list = document.getElementById('assemblyList');
+  list.innerHTML = '';
+  (assemblies || []).forEach(v => addAssemblyEntry(v));
+}
+
+function addSteamTagEntry(value) {
+  const list = document.getElementById('steamTagList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field"><label>Tag</label><input type="text" class="steam-tag" value="${esc(value || '')}"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+}
+
+function populateSteamTagEntries(tags) {
+  const list = document.getElementById('steamTagList');
+  list.innerHTML = '';
+  (tags || []).forEach(v => addSteamTagEntry(v));
 }
 
 function populateImageFolderEntries(folders) {
@@ -1717,7 +1773,11 @@ async function saveProjectSettings() {
   try {
     // Save project settings
     const bundlePath = document.getElementById('projBundlePath').value.trim() || 'Bundles/';
-    await api('project_settings', { body: { project: editingProjectId, bundlePath } });
+    const assemblies = Array.from(document.querySelectorAll('#assemblyList .asm-name'))
+      .map(el => el.value.trim()).filter(Boolean);
+    const steamTags = Array.from(document.querySelectorAll('#steamTagList .steam-tag'))
+      .map(el => el.value.trim()).filter(Boolean);
+    await api('project_settings', { body: { project: editingProjectId, bundlePath, assemblies, steamTags, skipManifestExport: document.getElementById('projSkipManifest').checked } });
 
     // Save image folders
     const folders = Array.from(document.querySelectorAll('#imgFolderList .imgfolder-name'))
@@ -4948,6 +5008,12 @@ function showConfirm(message, onYes, btnLabel, btnClass) {
 
 function confirmDeleteWeapon(btn, id) {
   showConfirm(`Are you sure you want to delete ${id}?`, () => deleteWeapon(id));
+}
+
+function exportProject(id) {
+  showConfirm('Would you like to export this project?', () => {
+    window.location.href = `/api?action=export_project&id=${encodeURIComponent(id)}`;
+  }, 'Export', 'primary');
 }
 
 function confirmDeleteProject(btn, id) {

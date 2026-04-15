@@ -161,6 +161,9 @@ async function handleApi(req, res, query) {
       case 'ref_all':
         return json(res, getAllRefData());
 
+      case 'export_project':
+        return exportProject(res, query.id);
+
       default:
         res.writeHead(404);
         return json(res, { error: `Unknown action: ${action}` });
@@ -183,9 +186,9 @@ function listProjects() {
       const assetsDir = path.join(DATA_ROOT, d.name, 'Assets');
       let assetCount = 0;
       if (fs.existsSync(assetsDir)) {
-        const weaponsDir = path.join(assetsDir, 'Weapons');
-        if (fs.existsSync(weaponsDir)) {
-          assetCount = glob(weaponsDir, '.json').length;
+        for (const cat of ['Weapons', 'Ammo', 'Firemodes']) {
+          const catDir = path.join(assetsDir, cat);
+          if (fs.existsSync(catDir)) assetCount += glob(catDir, '.json').length;
         }
       }
       return { id: d.name, name: d.name, assetCount };
@@ -266,7 +269,7 @@ function getProjectSettings(id) {
   id = sanitizeProjectId(id);
   const filePath = path.join(DATA_ROOT, id, 'settings.json');
   if (fs.existsSync(filePath)) return readJson(filePath);
-  return { bundlePath: 'Bundles/' };
+  return { bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false };
 }
 
 function saveProjectSettings(input) {
@@ -274,7 +277,12 @@ function saveProjectSettings(input) {
   if (!id) throw httpErr(400, 'Missing project');
   const dir = path.join(DATA_ROOT, id);
   if (!fs.existsSync(dir)) throw httpErr(404, 'Project not found');
-  const settings = { bundlePath: input.bundlePath || 'Bundles/' };
+  const settings = {
+    bundlePath: input.bundlePath || 'Bundles/',
+    assemblies: Array.isArray(input.assemblies) ? input.assemblies : [],
+    steamTags: Array.isArray(input.steamTags) ? input.steamTags : [],
+    skipManifestExport: !!input.skipManifestExport,
+  };
   writeJson(path.join(dir, 'settings.json'), settings);
   console.log(`[PROJECT] Settings saved: ${id}`);
   return { status: 'ok', ...settings };
@@ -687,6 +695,141 @@ function getAllRefData() {
   }
 
   return all;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PROJECT EXPORT (ZIP)
+// ═══════════════════════════════════════════════════════════════════
+const CRC32_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let crc = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) crc = CRC32_TABLE[(crc ^ buf[i]) & 0xFF] ^ (crc >>> 8);
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function buildZip(entries) {
+  const locals = [];
+  const centralDir = [];
+  let offset = 0;
+
+  for (const { name, data } of entries) {
+    const nameBuf = Buffer.from(name, 'utf8');
+    const crc = crc32(data);
+    const local = Buffer.alloc(30 + nameBuf.length);
+    local.writeUInt32LE(0x04034B50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(0, 8);
+    local.writeUInt16LE(0, 10);
+    local.writeUInt16LE(0, 12);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26);
+    local.writeUInt16LE(0, 28);
+    nameBuf.copy(local, 30);
+    locals.push(local, data);
+
+    const cd = Buffer.alloc(46 + nameBuf.length);
+    cd.writeUInt32LE(0x02014B50, 0);
+    cd.writeUInt16LE(20, 4);
+    cd.writeUInt16LE(20, 6);
+    cd.writeUInt16LE(0, 8);
+    cd.writeUInt16LE(0, 10);
+    cd.writeUInt16LE(0, 12);
+    cd.writeUInt16LE(0, 14);
+    cd.writeUInt32LE(crc, 16);
+    cd.writeUInt32LE(data.length, 20);
+    cd.writeUInt32LE(data.length, 24);
+    cd.writeUInt16LE(nameBuf.length, 28);
+    cd.writeUInt16LE(0, 30);
+    cd.writeUInt16LE(0, 32);
+    cd.writeUInt16LE(0, 34);
+    cd.writeUInt16LE(0, 36);
+    cd.writeUInt32LE(0, 38);
+    cd.writeUInt32LE(offset, 42);
+    nameBuf.copy(cd, 46);
+    centralDir.push(cd);
+
+    offset += 30 + nameBuf.length + data.length;
+  }
+
+  const cdBuf = Buffer.concat(centralDir);
+  const eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054B50, 0);
+  eocd.writeUInt16LE(0, 4);
+  eocd.writeUInt16LE(0, 6);
+  eocd.writeUInt16LE(entries.length, 8);
+  eocd.writeUInt16LE(entries.length, 10);
+  eocd.writeUInt32LE(cdBuf.length, 12);
+  eocd.writeUInt32LE(offset, 16);
+  eocd.writeUInt16LE(0, 20);
+
+  return Buffer.concat([...locals, cdBuf, eocd]);
+}
+
+function collectFiles(dir, base) {
+  const results = [];
+  if (!fs.existsSync(dir)) return results;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const rel = base ? base + '/' + entry.name : entry.name;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...collectFiles(full, rel));
+    } else {
+      results.push({ name: rel, data: fs.readFileSync(full) });
+    }
+  }
+  return results;
+}
+
+function exportProject(res, id) {
+  id = sanitizeProjectId(id);
+  if (!id) { res.writeHead(400); res.end('Missing project id'); return; }
+
+  const projDir = path.join(DATA_ROOT, id);
+  if (!fs.existsSync(projDir)) { res.writeHead(404); res.end('Project not found'); return; }
+
+  const settings = getProjectSettings(id);
+  const entries = [];
+
+  if (!settings.skipManifestExport) {
+    const manifest = {
+      UniqueModName: id,
+      Assemblies: settings.assemblies || [],
+      Dependencies: [],
+      SteamTags: settings.steamTags || [],
+    };
+    entries.push({
+      name: 'modmanifest.json',
+      data: Buffer.from(JSON.stringify(manifest, null, 4), 'utf8')
+    });
+  }
+
+  const assetsDir = path.join(projDir, 'Assets');
+  for (const file of collectFiles(assetsDir, 'Assets')) {
+    entries.push(file);
+  }
+
+  const zipBuf = buildZip(entries);
+  const filename = id + '.zip';
+
+  res.writeHead(200, {
+    'Content-Type': 'application/zip',
+    'Content-Disposition': `attachment; filename="${filename}"`,
+    'Content-Length': zipBuf.length,
+  });
+  res.end(zipBuf);
+  console.log(`[EXPORT] ${id} — ${entries.length} files, ${zipBuf.length} bytes`);
 }
 
 // ═══════════════════════════════════════════════════════════════════
