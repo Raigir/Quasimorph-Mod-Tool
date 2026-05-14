@@ -84,16 +84,16 @@ mod-workflow/
     │   ├── explosions.txt
     │   ├── factions.txt
     │   ├── pactcomponents.txt
-    │   └── statusEffects.txt
+    │   ├── projectiles.txt
+    │   ├── statusEffects.txt
+    │   └── damageTypes.txt
     └── enums/                         # Enum value lists
         ├── weaponClass.txt
         ├── weaponSubClass.txt
         ├── categories.txt
         ├── ammoTypes.txt
         ├── projectileIds.txt
-        ├── projectiles.txt
         ├── ballisticTypes.txt
-        ├── damageTypes.txt
         ├── factionIdCodes.txt
         ├── handGrips.txt
         ├── itemClass.txt

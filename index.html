@@ -5448,7 +5448,7 @@ function populateRefSelects() {
   fillSelect('ed-WeaponSubClass', REF.enums?.weaponSubClass, 'Name');
   fillSelect('desc-Grip', REF.enums?.handGrips, 'Name');
   refreshRequiredAmmoSelect();
-  fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelectWithEmpty('ed-OverrideProjectileId', REF.base?.projectiles, 'Id');
   fillSelectWithEmpty('ed-DefaultGrenadeId', REF.base?.grenades, 'Id');
   fillMultiSelect('ed-AllowedGrenadeIds', REF.base?.grenades, 'Id');
 
@@ -5496,10 +5496,10 @@ function populateRefSelects() {
   document.getElementById('ammoTypeComboList').innerHTML = ammoTypeIds.map(v =>
     `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
   ).join('');
-  fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
-  fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelectWithEmpty('ammo-DmgType', REF.base?.damageTypes, 'Id');
+  fillSelectWithEmpty('ammo-ProjectileId', REF.base?.projectiles, 'Id');
   fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
-  fillSelect('ad-BulletSpritesId', REF.enums?.projectiles, 'Id');
+  fillSelect('ad-BulletSpritesId', REF.base?.projectiles, 'Id');
   const ammoTraits = {
     rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
   };

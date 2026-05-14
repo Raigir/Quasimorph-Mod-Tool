@@ -48,4 +48,5 @@ knife	14	TRUE
 axe	14	TRUE																							
 shuriken	14	TRUE																							
 bottle	10	TRUE																							
+bomb_briefcase	10	FALSE																							
 #end																									

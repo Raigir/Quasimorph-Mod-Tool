@@ -171,7 +171,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes reference), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 

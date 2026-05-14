@@ -1,5 +1,5 @@
 #ammoTypes
-name
+Name
 Bolts
 Bullets
 Medium

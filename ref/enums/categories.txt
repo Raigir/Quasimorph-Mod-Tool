@@ -31,8 +31,8 @@ Grasshopper
 Looted 																									
 Management 																									
 Manager 																									
-Mars 																									
-MarsFeral 																									
+Ur																									
+UrFeral 																									
 Matrix 																									
 Medical 																									
 Merc 																									
@@ -49,6 +49,7 @@ RealWare
 Reserve 																									
 Ron 																									
 RonFeral 																									
+RitualItem																									
 SBN 																									
 SWAT 																									
 Science 																									

@@ -1,0 +1,14 @@
+#damagetypes																									
+Id	ResistTypes	StatusEffect	IsPhysical	ChanceToApply	StatusDamageModifier	StatusResistModifier																			
+blunt	blunt	none	true	1	1	1																			
+pierce	pierce	none	true	1	1	1																			
+lacer	lacer	none	true	1	1	1																			
+fire	fire	none	false	1	1	1																			
+cold	cold	coldEffect	false	1	2.3	0.9																			
+poison	poison	poisonEffect	false	1	3	1.2																			
+shock	shock	shockEffect	false	1	2.5	0.55																			
+beam	beam	beamEffect	false	1	0.9	1																			
+explosion	blunt pierce	none	true	1	1	1																			
+plasma	fire lacer	none	false	1	1	1																			
+chaos	cold fire	none	false	1	1	1																			
+#end																									
