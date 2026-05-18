@@ -161,6 +161,10 @@ async function handleApi(req, res, query) {
       case 'ref_all':
         return json(res, getAllRefData());
 
+      case 'ref_update':
+        if (method === 'POST') return json(res, await updateRefData(await readBody(req)));
+        return json(res, { error: 'POST required' });
+
       case 'export_project':
         return exportProject(res, query.id);
 
@@ -698,6 +702,168 @@ function getAllRefData() {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  REFERENCE DATA UPDATE
+// ═══════════════════════════════════════════════════════════════════
+const REF_REQUIRED_FILES = ['config_items.txt', 'config_items_properties.txt', 'config_spacesandbox.txt', 'config_wounds.txt'];
+
+// Section → output file mapping
+const BASE_SECTION_MAP = {
+  // config_items.txt
+  'ammo': 'ammo.txt',
+  'datadisks': 'datadisks.txt',
+  'grenades': 'grenades.txt',
+  'pactcomponents': 'pactcomponents.txt',
+  'repairs': 'repairs.txt',
+  'trash': 'trash.txt',
+  // config_items_properties.txt
+  'explosions': 'explosions.txt',
+  'firemodes': 'firemodes.txt',
+  'itemtraits': 'itemTraits.txt',
+  'projectiles': 'projectiles.txt',
+  // config_spacesandbox.txt
+  'factions': 'factions.txt',
+  // config_wounds.txt
+  'statuseffects': 'statusEffects.txt',
+  'damagetypes': 'damageTypes.txt',
+};
+
+function extractSection(content, sectionName) {
+  const lines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const result = [];
+  let inside = false;
+  for (const line of lines) {
+    const trimmed = line.replace(/\t.*/, '').trim().toLowerCase();
+    if (trimmed === '#' + sectionName.toLowerCase()) {
+      inside = true;
+      result.push(line);
+      continue;
+    }
+    if (inside) {
+      if (trimmed === '#end') {
+        result.push(line);
+        break;
+      }
+      result.push(line);
+    }
+  }
+  return result.length > 1 ? result.join('\n') + '\n' : null;
+}
+
+function deriveAmmoTypes(configItemsContent) {
+  const section = extractSection(configItemsContent, 'ammo');
+  if (!section) return null;
+  const lines = section.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return null;
+  // Column header is line[1]
+  const headers = lines[1].split('\t');
+  const colIdx = headers.findIndex(h => h.trim().toLowerCase() === 'ammotype');
+  if (colIdx < 0) return null;
+  const types = new Set();
+  for (let i = 2; i < lines.length; i++) {
+    if (lines[i].trim().toLowerCase() === '#end') break;
+    const val = (lines[i].split('\t')[colIdx] || '').trim();
+    if (val) types.add(val);
+  }
+  const sorted = [...types].filter(Boolean).sort();
+  let out = '#ammoTypes\nName\n';
+  for (const t of sorted) out += t + '\n';
+  out += '\n#end\n';
+  return out;
+}
+
+function deriveCategories(configItemsContent) {
+  const lines = configItemsContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const categories = new Set();
+  let inside = false;
+  let catColIdx = -1;
+  for (const line of lines) {
+    const trimmed = line.replace(/\t.*/, '').trim();
+    if (trimmed.startsWith('#') && trimmed !== '#end') {
+      inside = true;
+      catColIdx = -1;
+      continue;
+    }
+    if (trimmed === '#end') { inside = false; continue; }
+    if (!inside) continue;
+    const cols = line.split('\t');
+    if (catColIdx < 0) {
+      catColIdx = cols.findIndex(h => h.trim().toLowerCase() === 'categories');
+      continue;
+    }
+    if (catColIdx >= 0 && cols[catColIdx]) {
+      const vals = cols[catColIdx].trim().split(/\s+/);
+      for (const v of vals) { if (v) categories.add(v); }
+    }
+  }
+  if (!categories.size) return null;
+  const sorted = [...categories].sort();
+  let out = '#categories\nName\n';
+  for (const c of sorted) out += c + '\n';
+  out += '#end\n';
+  return out;
+}
+
+async function updateRefData(input) {
+  let configs = {};
+
+  if (input.mode === 'files') {
+    configs = input.files || {};
+  } else if (input.mode === 'path') {
+    const folderPath = input.path;
+    if (!folderPath || !fs.existsSync(folderPath)) throw httpErr(400, 'Folder not found: ' + folderPath);
+    for (const name of REF_REQUIRED_FILES) {
+      const fp = path.join(folderPath, name);
+      if (fs.existsSync(fp)) {
+        configs[name] = fs.readFileSync(fp, 'utf8');
+      }
+    }
+  } else {
+    throw httpErr(400, 'Invalid mode');
+  }
+
+  const missing = REF_REQUIRED_FILES.filter(f => !configs[f]);
+  if (missing.length) throw httpErr(400, 'Missing config files: ' + missing.join(', '));
+
+  const baseDir = path.join(REF_ROOT, 'base');
+  const enumsDir = path.join(REF_ROOT, 'enums');
+  if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
+  if (!fs.existsSync(enumsDir)) fs.mkdirSync(enumsDir, { recursive: true });
+
+  // Extract all sections to base/
+  let extracted = 0;
+  for (const [section, filename] of Object.entries(BASE_SECTION_MAP)) {
+    // Find which config file contains this section
+    let sectionData = null;
+    for (const content of Object.values(configs)) {
+      sectionData = extractSection(content, section);
+      if (sectionData) break;
+    }
+    if (sectionData) {
+      fs.writeFileSync(path.join(baseDir, filename), sectionData, 'utf8');
+      extracted++;
+    } else {
+      console.warn(`[REF_UPDATE] Section #${section} not found in any config file`);
+    }
+  }
+
+  // Derive mutable enums
+  const configItems = configs['config_items.txt'];
+  const ammoTypes = deriveAmmoTypes(configItems);
+  if (ammoTypes) {
+    fs.writeFileSync(path.join(enumsDir, 'ammoTypes.txt'), ammoTypes, 'utf8');
+    extracted++;
+  }
+  const categories = deriveCategories(configItems);
+  if (categories) {
+    fs.writeFileSync(path.join(enumsDir, 'categories.txt'), categories, 'utf8');
+    extracted++;
+  }
+
+  console.log(`[REF_UPDATE] Updated ${extracted} reference files`);
+  return { status: 'ok', filesUpdated: extracted };
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  PROJECT EXPORT (ZIP)
 // ═══════════════════════════════════════════════════════════════════
 const CRC32_TABLE = (() => {
@@ -929,8 +1095,8 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════╗');
-  console.log('  ║      Mod Workflow Tool running        ║');
-  console.log(`  ║   http://localhost:${PORT}/              ║`);
+  console.log('  ║   Mod Workflow Tool running          ║');
+  console.log(`  ║   http://localhost:${PORT}/`.padEnd(41) + '║');
   console.log('  ║   Press Ctrl+C to stop               ║');
   console.log('  ╚══════════════════════════════════════╝');
   console.log('');

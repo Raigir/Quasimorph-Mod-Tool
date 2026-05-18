@@ -1,4 +1,5 @@
 #factionIdcodes																									
+Name	Code																								
 daydream	ddr																								
 coreward	cor																								
 ancom	anc																								

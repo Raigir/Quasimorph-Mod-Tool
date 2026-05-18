@@ -83,7 +83,7 @@
     position:relative;
   }
   .sb-filter input {
-    width:100%; box-sizing:border-box;
+    width:100%; box-sizing:border-box; height:35px;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     font-family:'DM Sans',sans-serif; font-size:13px;
@@ -120,7 +120,7 @@
     font-size: 13px;
     font-weight: 500;
     padding: 0 10px;
-    height: 32px;
+    height: 35px;
     min-width: 82px;
     border: 1px solid var(--border);
     background: var(--bg-surface);
@@ -309,8 +309,54 @@
     overflow: hidden;
   }
   .c-header-title { font-size: 14px; color: var(--text-dim); }
-  .c-header-modes { display:flex; gap:4px; margin-left:10px; }
+  .c-header-modes {
+    display:flex; gap:3px; margin-left:10px;
+    background:var(--bg-deep); padding:3px; border-radius:8px;
+  }
+  .c-header-modes .btn {
+    border:none; border-radius:6px; padding:5px 16px;
+    font-size:13px; background:transparent; color:var(--text-dim);
+    min-width:auto; height:auto;
+  }
+  .c-header-modes .btn:hover {
+    background:rgba(255,255,255,0.04); color:var(--text-secondary);
+    border:none;
+  }
+  .c-header-modes .btn.active {
+    background:var(--bg-panel); color:var(--accent);
+    border:none;
+  }
   .c-header-actions { display:flex; gap:5px; flex-shrink:0; }
+  .c-body { display:flex; flex:1; min-height:0; overflow:hidden; }
+  .c-main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+  .options-panel {
+    width:0; overflow:hidden; flex-shrink:0;
+    border-left:0px solid var(--border);
+    background:var(--bg-surface);
+    display:flex; flex-direction:column;
+    transition:width 0.25s ease, border-left-width 0.25s ease;
+  }
+  .options-panel.open {
+    width:320px; border-left-width:1px;
+  }
+  .options-panel-head {
+    height:42px; box-sizing:border-box;
+    padding:0 16px; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+    flex-shrink:0; min-width:320px;
+  }
+  .options-panel-head h3 {
+    font-family:'Crimson Pro',serif; font-size:16px; font-weight:600;
+    color:var(--text-primary); margin:0;
+  }
+  .options-panel-close {
+    background:none; border:none; color:var(--text-dim); cursor:pointer;
+    font-size:20px; line-height:1; padding:2px 6px;
+  }
+  .options-panel-close:hover { color:var(--text-primary); }
+  .options-panel-body {
+    flex:1; overflow-y:auto; padding:16px; min-width:320px;
+  }
   .empty-state {
     flex:1; display:flex; flex-direction:column;
     align-items:center; justify-content:center;
@@ -322,9 +368,10 @@
   /* ── TAB BAR ─────────────────────────────────────────────── */
   .tab-bar {
     display:none; flex-shrink:0;
+    height:42px; box-sizing:border-box;
     border-bottom:1px solid var(--border);
     background:var(--bg-panel);
-    padding:0 18px; gap:0;
+    padding:0 18px; gap:0; align-items:stretch;
   }
   .tab-bar.visible { display:flex; }
   .tab-btn {
@@ -395,7 +442,7 @@
   .ed-field input[type="number"],
   .ed-field select {
     font-family:'DM Sans',sans-serif; font-size:13px;
-    padding:6px 9px;
+    padding:6px 9px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     outline:none; transition:border-color 0.12s;
@@ -474,7 +521,7 @@
   }
   .multi-select-display {
     font-family:'DM Sans',sans-serif; font-size:13px;
-    padding:6px 9px; min-height:33px;
+    padding:6px 9px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     cursor:pointer; transition:border-color 0.12s;
@@ -488,7 +535,7 @@
     z-index:50; margin-top:2px;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius);
-    width:400px;
+    min-width:100%; max-height:400px;
     box-shadow:0 4px 12px rgba(0,0,0,0.4);
     flex-direction:column;
   }
@@ -559,7 +606,7 @@
   }
   .loc-row input {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -589,7 +636,7 @@
   }
   .entry-item .entry-field input {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -597,7 +644,7 @@
   .entry-item .entry-field input:focus { border-color:var(--accent-dim); }
   .entry-item .entry-field select {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -614,7 +661,7 @@
   }
   .combobox input {
     width:100%; font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -644,7 +691,7 @@
   .entry-item .entry-rm:hover { color:var(--error); }
   .btn-add-entry {
     font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
-    width:100%; max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); height:34px; margin-top:8px;
+    width:100%; max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); height:35px; margin-top:8px;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-secondary);
     cursor:pointer; transition:all 0.12s;
@@ -835,7 +882,13 @@
         <button class="btn" id="modeFiremodes" onclick="guardSwitchMode('firemodes')">Firemodes</button>
       </div>
     </div>
+    <div class="c-header-actions">
+      <button class="btn" id="btnOptions" onclick="openOptionsPanel()">Options</button>
+    </div>
   </div>
+
+  <div class="c-body">
+    <div class="c-main">
 
   <div class="tab-bar" id="tabBar">
     <button class="tab-btn active" onclick="switchTab('weaponConfig')">Weapon Config</button>
@@ -875,7 +928,7 @@
           <div class="img-slot-preview" id="floorSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
           <input type="file" id="floorFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -884,7 +937,7 @@
           <div class="img-slot-preview" id="shadowSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
           <input type="file" id="shadowFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1132,7 +1185,7 @@
         <div class="ed-field"><label>Prefab Id</label><input type="text" id="desc-PrefabId"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
       </div>
     </div>
 
@@ -1153,7 +1206,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 5)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="recipeItemList"></div>
     </div>
@@ -1162,17 +1215,17 @@
     <div class="ed-section">
       <div class="ed-section-title">Workshop Settings</div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 4)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="gradeList"></div>
     </div>
@@ -1205,7 +1258,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="factionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1290,7 +1343,7 @@
           <div class="img-slot-preview" id="ammoFloorPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
           <input type="file" id="ammoFloorFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1299,7 +1352,7 @@
           <div class="img-slot-preview" id="ammoShadowPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
           <input type="file" id="ammoShadowFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1310,7 +1363,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Identity</div>
       <div class="ed-row">
-        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
+        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Tech Level</label><input type="number" id="ammo-TechLevel" step="1" oninput="validateAmmoField(this, 'int_1_10')"></div>
@@ -1471,7 +1524,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="ammoFactionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1479,6 +1532,55 @@
       <button class="btn primary" onclick="saveAmmo()">Save</button>
     </div>
   </div>
+
+    </div><!-- /c-main -->
+
+    <!-- Options Panel -->
+    <div class="options-panel" id="optionsPanel">
+      <div class="options-panel-head">
+        <h3>Options</h3>
+        <button class="options-panel-close" onclick="closeOptionsPanel()">&times;</button>
+      </div>
+      <div class="options-panel-body">
+
+        <div class="ed-section">
+          <div class="ed-section-title">Reference Data Update</div>
+          <div class="ed-row">
+            <div class="ed-field" style="max-width:none; flex:1;">
+              <label>Config Folder Path</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="refFolderPath" style="flex:1;" placeholder="Paste path or browse…" oninput="validateRefPath()">
+                <button class="btn" style="min-width:auto; font-size:12px; padding:0 12px; flex-shrink:0;" onclick="document.getElementById('refFolderBrowse').click()">Browse</button>
+                <input type="file" id="refFolderBrowse" webkitdirectory style="display:none" onchange="handleRefFolderSelect(this)">
+              </div>
+            </div>
+          </div>
+          <div class="ed-row" style="margin-top:8px;">
+            <button class="btn primary" id="btnRefUpdate" style="min-width:auto; font-size:12px; padding:0 14px;" onclick="runRefDataUpdate()" disabled>Update Reference Data</button>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--radius); font-size:12px; color:var(--text-dim); line-height:1.7;">
+            <div style="color:var(--text-secondary); font-weight:600; margin-bottom:6px;">Instructions</div>
+            Point to a folder containing the following game config files:
+            <div style="margin:8px 0 4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); line-height:1.8;">
+              config_items.txt<br>
+              config_items_properties.txt<br>
+              config_spacesandbox.txt<br>
+              config_wounds.txt
+            </div>
+            <div style="margin-top:8px;">
+              These files have to be extracted from the game's resources. You can paste the folder path directly or use Browse to select it.
+            </div>
+            <div style="margin-top:8px; color:var(--accent-dim);">
+              This will overwrite all files in <span style="font-family:'JetBrains Mono',monospace;">ref/base/</span> and mutable enum files in <span style="font-family:'JetBrains Mono',monospace;">ref/enums/</span>. Immutable enum files are not affected.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /c-body -->
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -1498,11 +1600,11 @@
           <div class="ed-field" style="flex:0 0 auto;"><label>Skip Manifest on Export</label><input type="checkbox" id="projSkipManifest"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
         <div class="ed-row" style="margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
         </div>
         <div class="entry-list" id="assemblyList" style="max-width:100%; margin-bottom:6px;"></div>
         <div class="ed-row" style="margin-top:6px; margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
         </div>
         <div class="entry-list" id="steamTagList" style="max-width:100%; margin-bottom:6px;"></div>
       </div>
@@ -1515,7 +1617,7 @@
       <div class="ed-section">
         <div class="ed-section-title">Weapon Image Folders</div>
         <div class="ed-row" style="margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
         </div>
         <div class="entry-list" id="imgFolderList" style="max-width:100%;"></div>
       </div>
@@ -5016,6 +5118,123 @@ function exportProject(id) {
   }, 'Export', 'primary');
 }
 
+function openOptionsPanel() {
+  document.getElementById('optionsPanel').classList.toggle('open');
+}
+
+function closeOptionsPanel() {
+  document.getElementById('optionsPanel').classList.remove('open');
+}
+
+let _refBrowsedFiles = null;
+
+function handleRefFolderSelect(input) {
+  if (!input.files.length) return;
+  // Extract folder name from first file's path
+  const firstPath = input.files[0].webkitRelativePath || '';
+  const folderName = firstPath.split('/')[0] || 'Selected folder';
+  document.getElementById('refFolderPath').value = folderName;
+  // Store files for upload
+  _refBrowsedFiles = input.files;
+  document.getElementById('btnRefUpdate').disabled = false;
+}
+
+function validateRefPath() {
+  const path = document.getElementById('refFolderPath').value.trim();
+  // If user typed/pasted, clear any browsed files
+  _refBrowsedFiles = null;
+  document.getElementById('btnRefUpdate').disabled = !path;
+}
+
+async function runRefDataUpdate() {
+  const btn = document.getElementById('btnRefUpdate');
+  btn.disabled = true;
+
+  const REQUIRED = ['config_items.txt', 'config_items_properties.txt', 'config_spacesandbox.txt', 'config_wounds.txt'];
+
+  try {
+    let files = {};
+    let missing = [];
+
+    if (_refBrowsedFiles) {
+      // Browsed: read file contents from selection
+      for (const f of _refBrowsedFiles) {
+        const parts = (f.webkitRelativePath || '').split('/');
+        if (parts.length !== 2) continue;
+        if (REQUIRED.includes(f.name)) {
+          files[f.name] = await f.text();
+        }
+      }
+      missing = REQUIRED.filter(r => !files[r]);
+    } else {
+      // Path mode: let server validate, but pre-check via a validation call
+      const folderPath = document.getElementById('refFolderPath').value.trim();
+      if (!folderPath) { btn.disabled = false; return; }
+      // Send to server — it will report missing files
+      try {
+        await api('ref_update', { body: { mode: 'path', path: folderPath } });
+        toast('Reference data updated successfully');
+        try { REF = await api('ref_all'); } catch {}
+        populateRefSelects();
+        btn.disabled = false;
+        return;
+      } catch (e) {
+        // Check if it's a missing files error
+        if (e.message && e.message.includes('Missing config files:')) {
+          missing = e.message.replace('Missing config files: ', '').split(', ').map(s => s.trim());
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    if (missing.length) {
+      let html = '<div style="margin-bottom:10px;">The following required config files could not be found:</div>';
+      html += '<div style="font-family:\'JetBrains Mono\',monospace; font-size:12px; line-height:2; padding:10px; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--radius);">';
+      for (const f of missing) {
+        html += `<div style="color:var(--error);">&#10008; ${esc(f)}</div>`;
+      }
+      html += '</div>';
+      html += '<div style="margin-top:10px; font-size:12px; color:var(--text-dim);">Update aborted. Ensure all 4 files are present in the selected location.</div>';
+      html += '<div style="text-align:right; margin-top:14px;"><button class="btn primary" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button></div>';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      const box = document.createElement('div');
+      box.className = 'confirm-box';
+      box.style.maxWidth = '420px';
+      box.innerHTML = '<div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--error);">Reference Data Update Failed</div>' + html;
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      btn.disabled = false;
+      return;
+    }
+
+    // Browse mode: all files present, send to server
+    await api('ref_update', { body: { mode: 'files', files } });
+    toast('Reference data updated successfully');
+    try { REF = await api('ref_all'); } catch {}
+    populateRefSelects();
+  } catch (e) {
+    showRefUpdateError(e.message || 'An unexpected error occurred');
+  }
+  btn.disabled = false;
+}
+
+function showRefUpdateError(message) {
+  let html = '<div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--error);">Reference Data Update Failed</div>';
+  html += '<div style="margin-bottom:10px;">' + esc(message) + '</div>';
+  html += '<div style="text-align:right; margin-top:14px;"><button class="btn primary" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button></div>';
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  const box = document.createElement('div');
+  box.className = 'confirm-box';
+  box.style.maxWidth = '420px';
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
 function confirmDeleteProject(btn, id) {
   showConfirm('You are about to delete this project and all assets contained within. Are you sure?', () => deleteProjectById(id));
 }
@@ -5309,7 +5528,7 @@ async function refreshAmmoSelects() {
 }
 
 async function refreshRequiredAmmoSelect() {
-  const baseTypes = (REF?.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+  const baseTypes = (REF?.enums?.ammoTypes?.rows || []).map(r => (r.Name || '').trim()).filter(Boolean);
 
   let customTypes = [];
   if (selProject) {
@@ -5492,7 +5711,7 @@ function populateRefSelects() {
   window._gradeItemOptions = [...new Set(gradeItems)].filter(v => !v.includes('quest_')).sort();
 
   // ── Ammo editor selects ──
-  const ammoTypeIds = (REF.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+  const ammoTypeIds = (REF.enums?.ammoTypes?.rows || []).map(r => (r.Name || '').trim()).filter(Boolean);
   document.getElementById('ammoTypeComboList').innerHTML = ammoTypeIds.map(v =>
     `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
   ).join('');

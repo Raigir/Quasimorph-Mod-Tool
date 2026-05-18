@@ -3,8 +3,7 @@
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-ff5f5f?logo=kofi&logoColor=white)](https://ko-fi.com/efateam)
 [![Author: Raigir](https://img.shields.io/badge/Author-Raigir-2f6f91)](https://github.com/Raigir)
 
-
-A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, sprites, localization, descriptors, crafting recipes, datadisks, and faction rewards.
+A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, sprites, localization, descriptors, crafting recipes, datadisks, faction rewards, project export, and reference data management.
 
 ## Requirements
 
@@ -48,7 +47,7 @@ mod-workflow/
 ├── index.html                 # Complete UI (single file)
 ├── data/
 │   └── {ProjectName}/
-│       ├── settings.json              # Project settings (bundle path)
+│       ├── settings.json              # Project settings
 │       └── Assets/
 │           ├── Weapons/               # Weapon records (.json)
 │           ├── Ammo/                  # Ammo records
@@ -102,10 +101,12 @@ mod-workflow/
 
 ## Reference Data
 
-The `ref/` folder contains TSV files extracted from the base game. These are **read-only reference data** — the tool uses them to populate dropdown selections and combo boxes. They are never modified by the application.
+The `ref/` folder contains TSV files extracted from the base game. These are used to populate dropdown selections and combo boxes throughout the editors.
 
-- **base/** — Full game records (ammo, firemodes, grenades, repairs, traits, etc.)
-- **enums/** — Simple value lists (weapon classes, categories, damage types, etc.)
+- **base/** — Full game records (ammo, firemodes, grenades, repairs, traits, damage types, projectiles, factions, status effects, etc.)
+- **enums/** — Simple value lists (weapon classes, categories, ammo types, ballistic types, etc.)
+
+Reference data can be updated from the **Options** panel using the game's config files. See `GUIDE.md` for details. A full source mapping is documented in `REF_DATA_MATRIX.md`.
 
 ## Data Format
 
