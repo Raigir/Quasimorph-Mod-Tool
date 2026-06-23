@@ -1,42 +1,42 @@
 #ammo																																
 Id		Categories	TechLevel	Price	Weight	InventoryWidthSize	ItemClass	CanPutInVest	MaxStack	MinAmmoAmount	MaxAmmoAmount	AmmoType	DmgType	DmgCritChance	RangeBonus	AccuracyMult	ScatterMult	DamageMult	BulletCastsPerShot	StatusEffectId	ChanceToApply	StatusDamageModifier	StatusResistModifier	Traits	ProjectileId	Disassembly						
 *nail_bolts_ammo		Worker PlanetBridge CoreWard	1	1	0.01	1	Ammo	TRUE	80	7	13	Bolts	pierce	0.24	0	1	1	1.00	1		0	0	0	armor_pen	nail	broken_weapon 2						
-*quasi_darts_ammo		Gannix Emeraldlight ChurchGannix	3	3	0.01	1	Ammo	TRUE	40	3	7	Bolts	poison	0.16	1	1	1	0.70	1		0	0	0		quasi_dart							
-*quasi_bolts_ammo		Duggur	3	4	0.02	1	Ammo	TRUE	40	3	7	Bolts	pierce	0.5	0	1	1	0.90	1		0	0	0	armor_pen painful	quasi_nail							
-small_basic_ammo		Common Worker Miner Military Security Medical Science	1	3	0.01	1	Ammo	TRUE	80	6	14	Bullets	blunt	0.08	0	1	1	1.00	1		0	0	0	knockback	pistol	powder 2						
-small_burst_ammo		Common Worker Miner Military Security Medical Science AnCom	3	5	0.01	1	Ammo	TRUE	80	6	14	Bullets	explosion	0.12	0	1	1.2	0.30	1		0	0	0	explosive_light_flak	thermal	powder 2						
-small_expansive_ammo		Common Worker Miner Military Security Medical Science	4	7	0.01	1	Ammo	TRUE	80	6	14	Bullets	lacer	0.16	0	1	1.4	1.35	1		0	0	0	wounding	thermal_shrapnel	powder 2						
-medium_basic_ammo		Common Worker Miner Military Security Medical Science AnCom	1	4	0.01	1	Ammo	TRUE	60	5	10	Medium	pierce	0.12	0	1	1	1.00	1		0	0	0		pistol	powder 2						
-medium_police_ammo		Common Security AnCom	2	5	0.01	1	Ammo	TRUE	60	5	10	Medium	blunt	0.06	0	1	1	1.20	1		0	0	0	knockdown	pistol	powder 2						
-medium_cold_ammo		AnCom	5	12	0.01	1	Ammo	TRUE	60	5	10	Medium	cold	0.09	0	1	1	0.85	1		0	0	0		pistol	powder 2 acid 1						
-rifle_basic_ammo		Common Worker Miner Military Security Medical Science	1	6	0.02	1	Ammo	TRUE	50	5	10	Heavy	pierce	0.08	0	1	1	1.00	1		0	0	0		pistol	powder 2						
-rifle_armorpierce_ammo		Common Military Security	3	10	0.02	1	Ammo	TRUE	50	5	10	Heavy	pierce	0.08	0	1	1	0.90	1		0	0	0	armor_pen	pistol	powder 2						
-rifle_plasma_ammo		RealWare SheduThousand	6	13	0.02	1	Ammo	TRUE	50	5	10	Heavy	plasma	0.04	-1	1	1.2	1.20	1		0	0	0	heavy_incendiary	thermal	powder 2						
-heavy_basic_ammo		Military Tianming UnchainedBelt SheduThousand	3	14	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	blunt	0.08	0	1	1	1.00	1		0	0	0		heavy	powder 3						
-heavy_flak_ammo		UnchainedBelt Tianming	6	18	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	pierce	0.16	0	1	1.05	0.45	1		0	0	0	explosive_flak	heavy	powder 3						
-heavy_incendiary_ammo		Grasshopper Looted	7	20	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	fire	0.2	0	1	1	1.10	1		0	0	0	heavy_incendiary armor_pen	heavy	powder 3 gas_ammo 1						
+*quasi_darts_ammo		Gannix Emeraldlight ChurchGannix RitualItem	3	3	0.01	1	Ammo	TRUE	40	3	7	Bolts	poison	0.16	1	1	1	0.70	1		0	0	0	wounding	quasi_dart							
+*quasi_bolts_ammo		Duggur RitualItem	3	4	0.02	1	Ammo	TRUE	40	3	7	Bolts	pierce	0.5	0	1	1	0.90	1		0	0	0	armor_pen painful	quasi_nail							
+small_basic_ammo		Common Worker Miner Military Security Medical Science	1	2	0.01	1	Ammo	TRUE	80	6	14	Bullets	blunt	0.08	0	1	1	1.00	1		0	0	0	knockback	pistol	powder 2						
+small_burst_ammo		Common Worker Miner Military Security Medical Science AnCom	3	4	0.01	1	Ammo	TRUE	80	6	14	Bullets	explosion	0.12	0	1	1.2	0.30	1		0	0	0	explosive_light_flak	thermal	powder 2						
+small_expansive_ammo		Common Worker Miner Military Security Medical Science	4	6	0.01	1	Ammo	TRUE	80	6	14	Bullets	lacer	0.16	0	1	1.4	1.35	1		0	0	0	wounding	thermal_shrapnel	powder 2						
+medium_basic_ammo		Common Worker Miner Military Security Medical Science AnCom	1	2	0.01	1	Ammo	TRUE	60	5	10	Medium	pierce	0.12	0	1	1	1.00	1		0	0	0		pistol	powder 2						
+medium_police_ammo		Common Security AnCom	2	3	0.01	1	Ammo	TRUE	60	5	10	Medium	blunt	0.06	0	1	1	1.20	1		0	0	0	knockdown	pistol	powder 2						
+medium_cold_ammo		AnCom	5	10	0.01	1	Ammo	TRUE	60	5	10	Medium	cold	0.09	0	1	1	0.85	1		0	0	0		pistol	powder 2 acid 1						
+rifle_basic_ammo		Common Worker Miner Military Security Medical Science	1	3	0.02	1	Ammo	TRUE	50	5	10	Heavy	pierce	0.08	0	1	1	1.00	1		0	0	0		pistol	powder 2						
+rifle_armorpierce_ammo		Common Military Security	3	5	0.02	1	Ammo	TRUE	50	5	10	Heavy	pierce	0.08	0	1	1	0.90	1		0	0	0	armor_pen	pistol	powder 2						
+rifle_plasma_ammo		RealWare SheduThousand	6	10	0.02	1	Ammo	TRUE	50	5	10	Heavy	plasma	0.04	-1	1	1.2	1.20	1		0	0	0	heavy_incendiary	thermal	powder 2						
+heavy_basic_ammo		Military Tianming UnchainedBelt SheduThousand	3	6	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	blunt	0.08	0	1	1	1.00	1		0	0	0		heavy	powder 3						
+heavy_flak_ammo		UnchainedBelt Tianming	6	8	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	pierce	0.16	0	1	1.1	0.45	1		0	0	0	explosive_flak	heavy	powder 3						
+heavy_incendiary_ammo		Grasshopper Looted	7	12	0.03	1	Ammo	TRUE	30	3	8	SuperHeavy	fire	0.2	0	1	1	0.80	1		0	0	0	heavy_incendiary armor_pen	heavy	powder 3 gas_ammo 1						
 shotgun_bullet_ammo		Common Worker Miner Military Security Medical Science	2	6	0.02	1	Ammo	TRUE	50	4	8	Shells	blunt	0.06	1	1	1.2	0.90	1		0	0	0	heavy_knockback knockdown	heavy	powder 2						
 shotgun_shrapnel_ammo		Common Worker Miner Military Security Medical Science	1	5	0.02	1	Ammo	TRUE	50	4	8	Shells	lacer	0.12	-1	1.3	2	1.10	5		0	0	0	knockback	shrapnel	powder 2						
-shotgun_flechette_ammo		AnCom ChurchRevelation ChurchGannix Looted	4	12	0.02	1	Ammo	TRUE	50	4	8	Shells	pierce	0.2	-1	1.5	2.2	1.20	4		0	0	0	wounding armor_pen	thermal	powder 2						
-shotgun_explosion_ammo		Tianming ChurchRevelation ChurchGannix Looted	5	14	0.02	1	Ammo	TRUE	50	4	8	Shells	explosion	0.16	1	1	1.3	0.30	1		0	0	0	explosive_shotgun	thermal_shrapnel	powder 2						
-shotgun_dragon_ammo		FrancheComte ChurchRevelation ChurchGannix Looted	7	18	0.02	1	Ammo	TRUE	50	4	8	Shells	fire	0.12	1	1	2.6	1.20	5		0	0	0	heavy_incendiary fires	plasma_shrapnel	powder 2						
-rocket_basic_ammo		Millitary RealWare SheduThousand FrancheComte UnchainedBelt Looted	5	100	0.1	1	Ammo	TRUE	5	1	2	Rocket	explosion	0.12	0	1	1	1.00	1		0	0	0	explosive	rocket	plastic 1 powder 2 gas_ammo 2						
-rocket_fire_ammo		RealWare SheduThousand Grasshopper CResistance Looted	7	120	0.12	1	Ammo	TRUE	5	1	2	Rocket	fire	0.06	0	1	1	0.85	1		0	0	0	explosive_fire	rocket	plastic 1 gas_ammo 4						
-rocket_poison_ammo		Tianming	5	120	0.1	1	Ammo	TRUE	5	1	2	Rocket	poison	0.15	0	1	1	0.90	1		0	0	0	explosive_poison	rocket	plastic 1 gas_ammo 2 acid 2						
-rocket_nuke_ammo		Sunlight Emeraldlight Looted	10	200	0.15	1	Ammo	TRUE	5	1	2	Rocket	explosion	0.12	0	1	1	1.20	1	beamEffect	0	0.2	-0.2	explosive	rocket	plastic 1 gas_ammo 4 explosives 1						
+shotgun_flechette_ammo		AnCom ChurchRevelation ChurchGannix Looted	4	8	0.02	1	Ammo	TRUE	50	4	8	Shells	pierce	0.2	-1	1.5	2.2	1.20	4		0	0	0	wounding armor_pen	thermal	powder 2						
+shotgun_explosion_ammo		Tianming ChurchRevelation ChurchGannix Looted	5	12	0.02	1	Ammo	TRUE	50	4	8	Shells	explosion	0.16	1	1	1.3	0.30	1		0	0	0	explosive_shotgun	thermal_shrapnel	powder 2						
+shotgun_dragon_ammo		FrancheComte ChurchRevelation ChurchGannix Looted	7	16	0.02	1	Ammo	TRUE	50	4	8	Shells	fire	0.12	1	1	2.6	1.20	5		0	0	0	heavy_incendiary fires	plasma_shrapnel	powder 2						
+rocket_basic_ammo		Military RealWare SheduThousand FrancheComte UnchainedBelt Looted	5	60	0.1	1	Ammo	TRUE	5	1	2	Rocket	explosion	0.12	0	1	1	1.00	1		0	0	0	explosive	rocket	plastic 1 powder 2 gas_ammo 2						
+rocket_fire_ammo		RealWare SheduThousand Grasshopper CResistance Looted	7	90	0.12	1	Ammo	TRUE	5	1	2	Rocket	fire	0.06	0	1	1	0.85	1		0	0	0	explosive_fire	rocket	plastic 1 gas_ammo 4						
+rocket_poison_ammo		Tianming	5	75	0.1	1	Ammo	TRUE	5	1	2	Rocket	poison	0.15	0	1	1	0.90	1		0	0	0	explosive_poison	rocket	plastic 1 gas_ammo 2 acid 2						
+rocket_nuke_ammo		Sunlight Emeraldlight Looted	10	150	0.15	1	Ammo	TRUE	5	1	2	Rocket	beam	0.12	0	1	1	1.20	1		0	0	0	explosive_nuke	rocket	plastic 1 gas_ammo 4 explosives 1						
 battery_basic_ammo		Common Military Medical Science SBN	2	10	0.02	1	Ammo	TRUE	40	3	7	BatteryCells	beam	0.08	0	1	1	1.00	1		0	0	0		laser	glass 2 acid 1						
-dil_battery_ammo		Dilthey	3	12	0.01	1	Ammo	TRUE	60	5	10	BatteryCells	beam	0.2	0	1.1	0.9	0.90	1		0	0	0		laser	glass 2 acid 1						
+dil_battery_ammo		Dilthey	3	12	0.01	1	Ammo	TRUE	60	5	10	BatteryCells	beam	0.24	0	1.2	0.8	0.80	1		0	0	0		laser	glass 2 acid 1						
 battery_crafted_ammo		Common Worker Medical Science CoreWard	1	3	0.02	1	Ammo	TRUE	30	3	8	BatteryCells	beam	0	0	0.9	1.5	1.15	1		0	0	0		laser	glass 1 acid 1						
 *quasi_energy_ammo		Shartamakhum	1	4	0.03	1	Ammo	TRUE	30	3	8	BatteryCells	plasma	0.35	0	1	1	1.40	1		0	0	0		continues_mercury							
 *gas_ammo		Common Miner CoreWard ChurchRevelation ChurchGannix	1	2	0.05	1	Ammo	TRUE	60	5	10	Gas	fire	0	0	1	1	1.00	1		0	0	0	heavy_incendiary heavy_fires								
-*mars_gas_ammo		Mars	1	5	0.01	1	Ammo	TRUE	60	8	15	Gas	fire	0	1	1	1	1.30	1		0	0	0	heavy_incendiary heavy_fires								
+*mars_gas_ammo		Ur	1	8	0.01	1	Ammo	TRUE	60	8	15	Gas	fire	0	1	1	1	1.30	1		0	0	0	heavy_incendiary heavy_fires								
 toxic_ammo		Common Worker Miner Medical Science	1	4	0.03	1	Ammo	TRUE	60	5	10	Toxic	poison	0.08	0	1	1	1.00	1		0	0	0	toxic corrosive	toxic	acid 2						
 flauros_ammo		none	1	5	0.01	1	Ammo	TRUE	100	5	10	QuasiCells	pierce	0.2	0	1	1	1.00	1	poisonEffect	1	1	-0.2	corrosive	flauros_fly_bullet							
-*sawblade_ammo		Common Worker Miner	2	4	0.05	1	Ammo	TRUE	20	2	6	SawBlade	lacer	0.16	0	1	1	1.00	1		0	0	0	ricochet	disk	broken_weapon 2						
-*sawblade_poison_ammo		Tianming	6	8	0.05	1	Ammo	TRUE	20	2	6	SawBlade	poison	0.12	0	1	1	1.00	1		0	0	0	ricochet wounding	disk	sawblade_ammo 1 acid 1						
+*sawblade_ammo		Common Worker Miner	2	5	0.05	1	Ammo	TRUE	20	2	6	SawBlade	lacer	0.16	0	1	1	1.00	1		0	0	0	ricochet	disk	broken_weapon 2						
+*sawblade_poison_ammo		Tianming	6	12	0.05	1	Ammo	TRUE	20	2	6	SawBlade	poison	0.12	0	1	1	1.00	1		0	0	0	ricochet corrosive	disk	sawblade_ammo 1 acid 1						
 quasi_basic_ammo		Gannix Emeraldlight ChurchGannix	1	10	0.02	1	Ammo	TRUE	40	3	7	QuasiCells	poison	0.07	0	1	1	1.00	1		0	0	0		frost							
 implicted_knife		none	1	100	1	1	Ammo	TRUE	0	0	0		pierce	0.15	0	1	1	1.00	1		0	0	0									
-implicted_toxicknife		none	1	100	1	1	Ammo	TRUE	0	0	0	Toxic	poison	0.15	0	1	1	1.00	1		0	0.2	-0.3	corrosive								
+implicted_toxicknife		none	1	100	1	1	Ammo	TRUE	0	0	0	Toxic	poison	0.15	0	1	1	1.00	1		0	0.2	-0.3	wounding								
 implicted_knife_backstab		none	1	100	1	1	Ammo	TRUE	0	0	0		pierce	0.4	0	1	1	1.00	1		0	0	0									
 implicted_combat_knife		none	1	100	1	1	Ammo	TRUE	0	0	0		pierce	0.22	0	1	1	1.00	1		0	0	0									
 implicted_club		none	1	100	1	1	Ammo	TRUE	0	0	0		blunt	0.16	0	1	1	1.00	1		0	0	0	heavy_knockdown								
@@ -61,6 +61,7 @@ implicted_body_part		none	1	100	1	1	Ammo	TRUE	0	0	0		blunt	0.03	0	1	1	1.00	1		0	
 implicted_em_ammo		none	1	100	1	1	Ammo	TRUE	0	0	0		pierce	0.08	0	1	1	1.00	1		0	0	0	armor_pen	thermal							
 implicted_em_blunt_ammo		none	1	100	1	1	Ammo	TRUE	0	0	0		blunt	0.04	0	1	1	1.00	1		0	0	0	heavy_knockback knockdown	sound							
 implicted_mars_heavy		none	1	100	1	1	Ammo	TRUE	0	0	0		blunt	0.08	0	1	1	1.00	1		0	0	0	painful	heavy							
+implicted_proton_charge		none	1	100	1	1	Ammo	TRUE	0	10	20	BatteryCells	proton	0.1	0	1	1	1.00	1		0	0	0		ion_bullet							
 implicted_disruptor_charge		none	1	100	1	1	Ammo	TRUE	0	10	20	BatteryCells	poison	0.16	0	1	1	1.00	1	poisonEffect	0	0.4	-0.5	wounding	disruptor							
 implicted_microwave_charge		none	1	100	1	1	Ammo	TRUE	0	10	20	BatteryCells	fire	0.06	0	1	1	1.00	1		0	0	0	heavy_incendiary	microwave							
 implicted_shockgun		none	1	100	1	1	Ammo	TRUE	0	10	20	BatteryCells	shock	0.06	0	1	1	1.00	1		0	0	0		lighting							
@@ -71,12 +72,14 @@ implicted_coldgun		none	1	100	1	1	Ammo	TRUE	0	10	20	BatteryCells	cold	0.08	0	1	1
 implicted_beam		none	1	100	1	1	Ammo	TRUE	40	10	20	BatteryCells	beam	0.08	0	1	1	1.00	1		0	0	0	incendiary	continues_laser							
 implicted_superbeam		none	1	100	1	1	Ammo	TRUE	40	10	20	BatteryCells	beam	0.08	1	1	1	1.00	1		0	0.1	0	incendiary	continues_ultimate_ray							
 implicted_pulse		none	1	100	1	1	Ammo	TRUE	40	10	20	BatteryCells	beam	0.12	0	1	1	1.00	1		0	0	0	incendiary	laser							
+implicted_cryo_beam		none	1	100	1	1	Ammo	TRUE	40	10	20	BatteryCells	cryo	0.05	0	1	1	1.00	1		0	0	0		continues_cryolaser							
 implicted_plasma_beam		none	1	100	1	1	Ammo	TRUE	40	10	20	Gas	plasma	0.12	0	1	1	1.00	1		0	0	0	heavy_incendiary armor_pen	melta_beam							
 implicted_plasma_charge		none	1	100	1	1	Ammo	TRUE	40	10	20	BatteryCells	plasma	0.06	0	1	1	1.00	1		0	0	0	heavy_incendiary	plasma_charge							
 implicted_toxic_shrapnel		none	1	100	1	1	Ammo	TRUE	50	10	20	Toxic	poison	0.12	0	1.3	2	1.00	5		0	0	0	wounding corrosive	toxic							
 implicted_coldgun_shrapnel		none	1	100	1	1	Ammo	TRUE	50	10	20	BatteryCells	cold	0.12	0	1.3	2	1.00	5		0	0	0		tech_frost_shrapnel							
 implicted_energy_shrapnel		none	1	100	1	1	Ammo	TRUE	50	10	20	BatteryCells	beam	0.12	0	1.3	2	1.00	5		0	0	0	incendiary	laser							
 implicted_plasma_shrapnel		none	1	100	1	1	Ammo	TRUE	50	10	20	BatteryCells	plasma	0.12	0	1.3	2	1.00	4		0	0	0	incendiary	plasma_shrapnel							
+implicted_nail_shrapnel		none	1	100	1	1	Ammo	TRUE	80	7	13	Bolts	pierce	0.24	0	1.4	2.5	1.00	4		0	0	0	knockback armor_pen	nail							
 implicted_em_shrapnel		none	1	100	1	1	Ammo	TRUE	0	0	0		pierce	0.12	0	1.2	2	1.00	3		0	0	0	knockback armor_pen	thermal							
 implicted_toxicthrower		none	1	100	1	1	Ammo	TRUE	0	0	0		poison	0	0	1	1	1.00	1		0	0	0	heavy_toxic	toxic_thrower							
 implicted_flamethrower		none	1	100	1	1	Ammo	TRUE	0	0	0	Gas	fire	0	0	1	1	1.00	1		0	0	0	heavy_incendiary heavy_fires	flame_thrower							

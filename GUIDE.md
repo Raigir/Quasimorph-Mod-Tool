@@ -2,7 +2,7 @@
 
 ## Navigation
 
-The header contains three mode buttons: **Weapons**, **Ammo**, and **Firemodes**. The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name.
+The header contains three mode tabs: **Weapons**, **Ammo**, and **Firemodes** (pill-style tab switcher). The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name. An **Options** button in the top-right opens a sliding panel for tool configuration.
 
 ---
 
@@ -16,9 +16,24 @@ Click the **✎** pencil icon on any project card to open Project Settings:
 
 - **Project Name** — rename the project (renames the folder on disk). Cannot be empty. Cannot duplicate an existing project name (case-insensitive). Invalid names highlight red with a tooltip.
 - **Bundle Path** — the default asset bundle path used when creating new weapon descriptors (e.g., `Bundles/efa_assets`). Defaults to `Bundles/`. Changing this does **not** update existing descriptors — only new weapons pick up the value.
+- **Skip Manifest on Export** — toggle. When enabled, the export ZIP will not include a `modmanifest.json` and only contains the Assets folder.
+- **Assemblies** — dynamic entry list. Each entry is a DLL filename (e.g., `QM_ImporterAPI.dll`). Used when generating `modmanifest.json` during export.
+- **Steam Tags** — dynamic entry list. Each entry is a tag string (e.g., `0.9.9`, `New Content`). Used when generating `modmanifest.json` during export.
 - **Weapon Image Folders** — manage subfolders under `Images/Weapons/` for organizing weapon sprites by faction or category (e.g., `chu`, `cor`, `civ`). Folders with images inside cannot be removed. Duplicate folder names are highlighted red with a tooltip and block saving.
 
 The **Save** button is disabled whenever the project name or folder names have validation errors.
+
+### Exporting a Project
+Click the **folder-arrow** icon on a project card. A confirmation dialog appears. The export generates a downloadable ZIP named after the project, containing:
+
+- **Assets/** — the complete folder structure with all asset files
+- **modmanifest.json** — generated from project settings:
+  - `UniqueModName` — the project name
+  - `Assemblies` — from the assemblies entry list
+  - `Dependencies` — always an empty array
+  - `SteamTags` — from the steam tags entry list
+
+If **Skip Manifest on Export** is enabled in project settings, the `modmanifest.json` is omitted and only the Assets folder is included. The `settings.json` file is never included in exports.
 
 ### Deleting a Project
 Click the **🗑** trash icon. A confirmation dialog warns that all assets within will be deleted.
@@ -171,7 +186,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes reference), Projectile Id (dropdown from projectiles reference), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 
@@ -187,7 +202,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
 
-**Gibs** — Bullet Sprites ID (dropdown from projectiles enum, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
+**Gibs** — Bullet Sprites ID (dropdown from projectiles reference, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
 
 #### Localization
 
@@ -308,6 +323,31 @@ Some fields have a **?** icon to the right of the input. Hover over it to see a 
 - Modify Start Cost — "Starts cost formula as though at a later step when not 1."
 - Modify Step — "Scales cost per step."
 - Modify Level Limit — "Max upgradable level in workshop (before magnum upgrade)."
+
+---
+
+## Options Panel
+
+Click the **Options** button in the top-right corner of the header to open the options panel. It slides in from the right, sharing space with the main content area. Click Options again or the × button to close.
+
+### Reference Data Update
+
+Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories). Immutable enum files are not affected.
+
+**Two workflows:**
+
+- **Browse** — click Browse, select the folder containing the config files. The browser reads the files and sends them to the server.
+- **Paste path** — type or paste the absolute folder path. The server reads the files directly from disk.
+
+**Required files** (exact names, top-level only):
+- `config_items.txt`
+- `config_items_properties.txt`
+- `config_spacesandbox.txt`
+- `config_wounds.txt`
+
+These must be extracted from the game's resources. If any are missing, an error modal lists the missing files and the update is aborted — no partial writes.
+
+After a successful update, all reference data is reloaded and editor dropdowns repopulate automatically.
 
 ---
 

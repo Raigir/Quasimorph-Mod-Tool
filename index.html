@@ -8,22 +8,48 @@
   @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap');
 
   :root {
-    --bg-deep: #0c0e14;
-    --bg-panel: #12151e;
-    --bg-surface: #1a1e2b;
-    --bg-hover: #232839;
-    --bg-active: #2a3045;
-    --border: #2a2f42;
-    --border-active: #4a5580;
-    --text-primary: #d4d8e8;
-    --text-secondary: #8891b0;
-    --text-dim: #555e7a;
-    --accent: #c49b5f;
-    --accent-dim: #8a6d3b;
-    --accent-glow: rgba(196,155,95,0.15);
-    --error: #c45f5f;
-    --danger: #8b3a3a;
-    --success: #5fa85f;
+    /*
+      Classic "Ash" dark theme — backgrounds use the Discord classic-gray
+      reference values verbatim (charcoal #1e2124 → dark ash #282b30 →
+      light ash #36393e → mid-gray #424549), hue ~216°.
+      Accent: sage green derived from #679161 — accent is the AA-lifted text
+      shade (>=5.5:1); accent-dim ~= the source color itself and doubles as
+      the primary-button bg (bg-deep labels >=4.5:1). Edit pencil keeps the
+      brass (--icon-edit) for separation from the export green.
+      Foreground tokens derived to WCAG targets (see palette.js):
+        text-primary   ≥7:1 vs bg-active (AAA, worst-case surface)
+        text-secondary ≥4.5:1 vs bg-active (AA)
+        accent/error/success ≥4.5:1 vs bg-surface/panel (AA as text)
+                             ≥3:1 vs bg-active (as icon strokes)
+        accent-dim / border-active / icons ≥3:1 (WCAG 1.4.11 non-text)
+        white on danger ≥4.5:1 (button label)
+        btn-label on btn-bg ≥6.5:1 (primary buttons; mid-greens cap ~5.9:1
+        under any text, so buttons use a near-black label + minimally lifted
+        green, decoupled from the thematic accent-dim)
+    */
+    --bg-deep: #1e2124;
+    --bg-panel: #282b30;
+    --bg-surface: #36393e;
+    --bg-hover: #3c3f44;
+    --bg-active: #424549;
+    --border: #45494f;
+    --border-active: #798391;
+    --text-primary: #d8dce2;
+    --text-secondary: #adb2b9;
+    --text-dim: #9da2a9;
+    --accent: #97bd93;
+    --accent-dim: #679261;
+    --accent-glow: rgba(151,189,147,0.15);
+    --error: #d78f8c;
+    --error-hover: #e3a3a0;
+    --danger: #8a3b38;
+    --success: #5fb45f;
+    --icon-export: #59a659;
+    --icon-edit: #bd9e5e;
+    --btn-bg: #6fa268;
+    --btn-label: #0c0e0b;
+    --icon-copy: #54abab;
+    --icon-copy-hover: #6bbdbd;
     --radius: 6px;
     --radius-lg: 10px;
     --field-w: 180px;
@@ -83,7 +109,7 @@
     position:relative;
   }
   .sb-filter input {
-    width:100%; box-sizing:border-box;
+    width:100%; box-sizing:border-box; height:35px;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     font-family:'DM Sans',sans-serif; font-size:13px;
@@ -120,7 +146,7 @@
     font-size: 13px;
     font-weight: 500;
     padding: 0 10px;
-    height: 32px;
+    height: 35px;
     min-width: 82px;
     border: 1px solid var(--border);
     background: var(--bg-surface);
@@ -132,7 +158,7 @@
   }
   .btn:hover { border-color:var(--border-active); color:var(--text-primary); background:var(--bg-hover); }
   .btn.active { border-color:var(--accent-dim); color:var(--accent); background:var(--accent-glow); }
-  .btn.primary { background:var(--accent-dim); color:var(--bg-deep); border-color:var(--accent-dim); }
+  .btn.primary { background:var(--btn-bg); color:var(--btn-label); border-color:var(--btn-bg); font-weight:600; }
   .btn.primary:hover { background:var(--accent); }
   .btn.danger { border-color:var(--danger); color:var(--error); }
   .btn.danger:hover { background:var(--danger); color:#fff; }
@@ -185,11 +211,11 @@
   .card .card-trash svg path,
   .card .card-trash svg line { stroke:var(--error); }
   .card .card-trash:hover svg path,
-  .card .card-trash:hover svg line { stroke:#e06060; }
+  .card .card-trash:hover svg line { stroke:var(--error-hover); }
   .card .card-edit {
     position:absolute; top:6px; right:6px;
     background:none; border:none;
-    font-size:18px; color:var(--accent);
+    font-size:18px; color:var(--icon-edit);
     cursor:pointer; padding:3px 5px; line-height:1;
   }
   .card .card-export {
@@ -199,16 +225,16 @@
   }
   .card .card-export svg path,
   .card .card-export svg line,
-  .card .card-export svg polyline { stroke:#5b9a5b; }
+  .card .card-export svg polyline { stroke:var(--icon-export); }
   .card .card-copy {
     position:absolute; top:6px; right:6px;
     background:none; border:none;
     cursor:pointer; padding:3px 5px; line-height:1;
   }
   .card .card-copy svg rect,
-  .card .card-copy svg line { stroke:#5ba3a3; }
+  .card .card-copy svg line { stroke:var(--icon-copy); }
   .card .card-copy:hover svg rect,
-  .card .card-copy:hover svg line { stroke:#7cc4c4; }
+  .card .card-copy:hover svg line { stroke:var(--icon-copy-hover); }
 
   /* ── CONFIRM POPUP ──────────────────────────────────────── */
   .confirm-overlay {
@@ -255,7 +281,7 @@
   }
   .overlay.open { opacity:1; pointer-events:all; }
   .modal {
-    width:700px; max-width:90vw; max-height:80vh;
+    width:700px; max-width:90vw; max-height:80vh; min-height:0;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius-lg); display:flex; flex-direction:column;
     overflow:hidden; transform:translateY(8px); transition:transform 0.2s;
@@ -274,13 +300,67 @@
   }
   .modal-close:hover { color:var(--text-primary); }
   .modal-body {
-    flex:1; overflow-y:auto; padding:18px;
+    flex:1 1 auto; min-height:0; overflow-y:auto; padding:18px;
+  }
+  .modal-body-inner {
     display:flex; flex-direction:column; gap:14px;
   }
   .modal-foot {
     padding:10px 18px; border-top:1px solid var(--border);
     display:flex; justify-content:flex-end; gap:8px;
   }
+  /* ── REF DIFF MODAL ───────────────────────────────────────── */
+  .refdiff-summary {
+    font-size:12px; color:var(--text-secondary); margin-bottom:4px;
+  }
+  .refdiff-file {
+    border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .refdiff-file-head {
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    padding:8px 12px; background:var(--bg-surface);
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-primary);
+    user-select:none;
+  }
+  .refdiff-file-head:hover { background:var(--bg-hover); }
+  .refdiff-file-name { flex:1; }
+  .refdiff-caret { color:var(--text-dim); font-size:10px; transition:transform 0.15s; }
+  .refdiff-file.collapsed .refdiff-caret { transform:rotate(-90deg); }
+  .refdiff-file.collapsed .refdiff-file-body { display:none; }
+  .refdiff-tag {
+    font-size:11px; font-weight:600; padding:1px 6px; border-radius:4px;
+    font-family:'DM Sans',sans-serif;
+  }
+  .refdiff-tag.add { color:var(--success); background:rgba(95,180,95,0.12); }
+  .refdiff-tag.rem { color:var(--error); background:rgba(215,143,140,0.12); }
+  .refdiff-tag.mod { color:var(--accent); background:var(--accent-glow); }
+  .refdiff-tag.col { color:var(--text-secondary); background:var(--bg-active); }
+  .refdiff-file-body { padding:8px 12px; font-size:12px; }
+  .refdiff-group { margin-bottom:8px; }
+  .refdiff-group:last-child { margin-bottom:0; }
+  .refdiff-group-label {
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.04em; color:var(--text-dim); margin-bottom:3px;
+  }
+  .refdiff-id {
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    color:var(--text-secondary); padding:1px 0;
+  }
+  .refdiff-id.add { color:var(--success); }
+  .refdiff-id.rem { color:var(--error); }
+  .refdiff-mod-entry { margin:3px 0 5px; }
+  .refdiff-mod-id {
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--accent);
+  }
+  .refdiff-field {
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    color:var(--text-dim); margin-left:14px; padding:1px 0;
+  }
+  .refdiff-field .fname { color:var(--text-secondary); }
+  .refdiff-field .fold { color:var(--error); }
+  .refdiff-field .fnew { color:var(--success); }
+  .refdiff-field .fnull { color:var(--text-dim); font-style:italic; }
 
   /* ── CENTER ──────────────────────────────────────────────── */
   .center {
@@ -309,8 +389,54 @@
     overflow: hidden;
   }
   .c-header-title { font-size: 14px; color: var(--text-dim); }
-  .c-header-modes { display:flex; gap:4px; margin-left:10px; }
+  .c-header-modes {
+    display:flex; gap:3px; margin-left:10px;
+    background:var(--bg-deep); padding:3px; border-radius:8px;
+  }
+  .c-header-modes .btn {
+    border:none; border-radius:6px; padding:5px 16px;
+    font-size:13px; background:transparent; color:var(--text-dim);
+    min-width:auto; height:auto;
+  }
+  .c-header-modes .btn:hover {
+    background:rgba(255,255,255,0.04); color:var(--text-secondary);
+    border:none;
+  }
+  .c-header-modes .btn.active {
+    background:var(--bg-panel); color:var(--accent);
+    border:none;
+  }
   .c-header-actions { display:flex; gap:5px; flex-shrink:0; }
+  .c-body { display:flex; flex:1; min-height:0; overflow:hidden; }
+  .c-main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+  .options-panel {
+    width:0; overflow:hidden; flex-shrink:0;
+    border-left:0px solid var(--border);
+    background:var(--bg-surface);
+    display:flex; flex-direction:column;
+    transition:width 0.25s ease, border-left-width 0.25s ease;
+  }
+  .options-panel.open {
+    width:320px; border-left-width:1px;
+  }
+  .options-panel-head {
+    height:42px; box-sizing:border-box;
+    padding:0 16px; border-bottom:1px solid var(--border);
+    display:flex; justify-content:space-between; align-items:center;
+    flex-shrink:0; min-width:320px;
+  }
+  .options-panel-head h3 {
+    font-family:'Crimson Pro',serif; font-size:16px; font-weight:600;
+    color:var(--text-primary); margin:0;
+  }
+  .options-panel-close {
+    background:none; border:none; color:var(--text-dim); cursor:pointer;
+    font-size:20px; line-height:1; padding:2px 6px;
+  }
+  .options-panel-close:hover { color:var(--text-primary); }
+  .options-panel-body {
+    flex:1; overflow-y:auto; padding:16px; min-width:320px;
+  }
   .empty-state {
     flex:1; display:flex; flex-direction:column;
     align-items:center; justify-content:center;
@@ -322,9 +448,10 @@
   /* ── TAB BAR ─────────────────────────────────────────────── */
   .tab-bar {
     display:none; flex-shrink:0;
+    height:42px; box-sizing:border-box;
     border-bottom:1px solid var(--border);
     background:var(--bg-panel);
-    padding:0 18px; gap:0;
+    padding:0 18px; gap:0; align-items:stretch;
   }
   .tab-bar.visible { display:flex; }
   .tab-btn {
@@ -375,6 +502,37 @@
     margin-bottom:10px; padding-bottom:6px;
     border-bottom:1px solid var(--border);
   }
+  .stats-title-row {
+    display:flex; align-items:center; justify-content:flex-start; gap:12px;
+    margin-bottom:10px; padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .stats-title-row .ed-section-title { margin-bottom:0; padding-bottom:0; border-bottom:none; }
+  .stats-fm-switch {
+    display:inline-flex; background:var(--bg-deep);
+    border-radius:6px; padding:3px; gap:3px;
+  }
+  .stats-fm-switch button {
+    border:none; background:transparent; color:var(--text-dim);
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+    height:33px; padding:0 16px; border-radius:5px; cursor:pointer;
+    max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    transition:all 0.12s;
+  }
+  .stats-fm-switch button.active { background:var(--bg-panel); color:var(--accent); }
+  .stats-grid {
+    display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px;
+  }
+  .stat-chip {
+    background:var(--bg-surface); border-radius:6px; padding:7px 9px; min-width:0;
+  }
+  .stat-chip .stat-label { font-size:11px; color:var(--text-dim); }
+  .stat-chip .stat-value {
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-primary);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .stat-chip .stat-value .stat-sub { color:var(--icon-edit); font-size:13px; }
+  .stat-chip .stat-value.stat-ammo { font-size:13px; color:var(--accent); }
   .ed-row {
     display:flex; gap:var(--ed-gap); margin-bottom:8px;
   }
@@ -395,7 +553,7 @@
   .ed-field input[type="number"],
   .ed-field select {
     font-family:'DM Sans',sans-serif; font-size:13px;
-    padding:6px 9px;
+    padding:6px 9px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     outline:none; transition:border-color 0.12s;
@@ -474,7 +632,7 @@
   }
   .multi-select-display {
     font-family:'DM Sans',sans-serif; font-size:13px;
-    padding:6px 9px; min-height:33px;
+    padding:6px 9px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-primary);
     cursor:pointer; transition:border-color 0.12s;
@@ -488,7 +646,7 @@
     z-index:50; margin-top:2px;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius);
-    width:400px;
+    min-width:100%; max-height:400px;
     box-shadow:0 4px 12px rgba(0,0,0,0.4);
     flex-direction:column;
   }
@@ -559,7 +717,7 @@
   }
   .loc-row input {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -589,7 +747,7 @@
   }
   .entry-item .entry-field input {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -597,7 +755,7 @@
   .entry-item .entry-field input:focus { border-color:var(--accent-dim); }
   .entry-item .entry-field select {
     font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -614,7 +772,7 @@
   }
   .combobox input {
     width:100%; font-family:'DM Sans',sans-serif; font-size:12px;
-    padding:5px 8px;
+    padding:5px 8px; height:35px; box-sizing:border-box;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:3px; color:var(--text-primary); outline:none;
     transition:border-color 0.12s;
@@ -644,7 +802,7 @@
   .entry-item .entry-rm:hover { color:var(--error); }
   .btn-add-entry {
     font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500;
-    width:100%; max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); height:34px; margin-top:8px;
+    width:100%; max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); height:35px; margin-top:8px;
     background:var(--bg-surface); border:1px solid var(--border);
     border-radius:var(--radius); color:var(--text-secondary);
     cursor:pointer; transition:all 0.12s;
@@ -835,7 +993,13 @@
         <button class="btn" id="modeFiremodes" onclick="guardSwitchMode('firemodes')">Firemodes</button>
       </div>
     </div>
+    <div class="c-header-actions">
+      <button class="btn" id="btnOptions" onclick="openOptionsPanel()">Options</button>
+    </div>
   </div>
+
+  <div class="c-body">
+    <div class="c-main">
 
   <div class="tab-bar" id="tabBar">
     <button class="tab-btn active" onclick="switchTab('weaponConfig')">Weapon Config</button>
@@ -853,6 +1017,29 @@
 
   <!-- Weapon Config Tab -->
   <div class="editor-wrap" id="editorWrap">
+
+    <!-- Computed Stats -->
+    <div class="ed-section">
+      <div class="stats-title-row">
+        <div class="ed-section-title">Stats</div>
+        <span class="stats-fm-switch" id="statsFmSwitch" style="display:none;">
+          <button type="button" id="statsFmBtn0" onclick="setStatsFm(0)">FM1</button>
+          <button type="button" id="statsFmBtn1" onclick="setStatsFm(1)">FM2</button>
+        </span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-chip"><div class="stat-label">Damage</div><div class="stat-value" id="stat-Damage">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Crit</div><div class="stat-value" id="stat-Crit">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Accuracy</div><div class="stat-value" id="stat-Accuracy">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Scatter</div><div class="stat-value" id="stat-Scatter">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Range</div><div class="stat-value" id="stat-Range">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Rate of fire</div><div class="stat-value" id="stat-RoF">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Reload</div><div class="stat-value" id="stat-Reload">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Magazine</div><div class="stat-value" id="stat-Magazine">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Ammo</div><div class="stat-value stat-ammo" id="stat-Ammo">&ndash;</div></div>
+        <div class="stat-chip"><div class="stat-label">Durability</div><div class="stat-value" id="stat-Durability">&ndash;</div></div>
+      </div>
+    </div>
 
     <!-- Sprite Image -->
     <div class="ed-section">
@@ -875,7 +1062,7 @@
           <div class="img-slot-preview" id="floorSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('floorFile').click()">Upload</button>
           <input type="file" id="floorFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -884,7 +1071,7 @@
           <div class="img-slot-preview" id="shadowSlotPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('shadowFile').click()">Upload</button>
           <input type="file" id="shadowFile" accept=".png,image/png" style="display:none" onchange="handleImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -990,8 +1177,8 @@
         <div class="ed-field"><label>Override Ammo 2</label><select id="ed-OverrideAmmo2" disabled onchange="validateAmmoSelect(this)"></select></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo" onchange="validateAmmoSelect(this)"></select></div>
-        <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId" onchange="validateAmmoSelect(this)"></select></div>
+        <div class="ed-field"><label>Required Ammo</label><select id="ed-RequiredAmmo" onchange="onRequiredAmmoChange(this)"></select></div>
+        <div class="ed-field"><label>Default Ammo Id</label><select id="ed-DefaultAmmoId" onchange="onDefaultAmmoChange(this)"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field"><label>Override Projectile Id</label><select id="ed-OverrideProjectileId"></select></div>
@@ -1032,7 +1219,6 @@
       <div class="ed-section-title">Disassembly</div>
       <div class="ed-row">
         <button class="btn" style="margin-top:17px;" onclick="addDisassemblyEntry()">+ Add Entry</button>
-        <div class="ed-field"><label>Can Disassemble</label><input type="checkbox" id="ed-CanDisassembly"><div class="tog" onclick="togClick(this)"></div></div>
       </div>
       <div class="entry-list" id="disassemblyList"></div>
     </div>
@@ -1132,7 +1318,7 @@
         <div class="ed-field"><label>Prefab Id</label><input type="text" id="desc-PrefabId"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
       </div>
     </div>
 
@@ -1153,7 +1339,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 5)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="recipeItemList"></div>
     </div>
@@ -1162,17 +1348,17 @@
     <div class="ed-section">
       <div class="ed-section-title">Workshop Settings</div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 4)</span>
-        <button class="btn" style="min-width:auto; height:24px; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="gradeList"></div>
     </div>
@@ -1205,7 +1391,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="factionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1224,11 +1410,11 @@
         <div class="ed-field" style="flex:1 1 0;"><label>Require All Ammo To Shoot</label><input type="checkbox" id="fm-RequiredAllAmmoToShot"><div class="tog" onclick="togClick(this)"></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field" style="flex:1 1 0;"><label>Ammo Per Shot</label><input type="number" id="fm-AmmoPerShot" step="1" oninput="validateFmField(this, 'int_gte0')"></div>
+        <div class="ed-field" style="flex:1 1 0; flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Ammo Per Shot</label><input type="number" id="fm-AmmoPerShot" step="1" oninput="validateFmField(this, 'int_gte0')"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Amount of ammo consumed in 1 shot in a turn. Usually matched with weapon casts count.</span></span></div></div>
         <div class="ed-field" style="flex:1 1 0;"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field" style="flex:1 1 0;"><label>Weapon Casts Count</label><input type="number" id="fm-WeaponCastsCount" step="1" oninput="validateFmField(this, 'int_gt0')"></div>
+        <div class="ed-field" style="flex:1 1 0; flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Weapon Casts Count</label><input type="number" id="fm-WeaponCastsCount" step="1" oninput="validateFmField(this, 'int_gt0')"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Determines number of times the weapon fires (rate of fire)</span></span></div></div>
         <div class="ed-field" style="flex:1 1 0;"></div>
       </div>
       <div class="ed-row">
@@ -1290,7 +1476,7 @@
           <div class="img-slot-preview" id="ammoFloorPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoFloorFile').click()">Upload</button>
           <input type="file" id="ammoFloorFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_floor', 'floor')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1299,7 +1485,7 @@
           <div class="img-slot-preview" id="ammoShadowPreview">
             <span class="placeholder-text" style="font-size:9px;">—</span>
           </div>
-          <button class="btn" style="min-width:auto; height:26px; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 8px; margin-top:2px;" onclick="document.getElementById('ammoShadowFile').click()">Upload</button>
           <input type="file" id="ammoShadowFile" accept=".png,image/png" style="display:none" onchange="handleAmmoImageUpload(this, 'sprite_shadow', 'shadow')">
           <span class="img-hint">PNG, max 30x30</span>
         </div>
@@ -1310,7 +1496,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Identity</div>
       <div class="ed-row">
-        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:31px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
+        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Tech Level</label><input type="number" id="ammo-TechLevel" step="1" oninput="validateAmmoField(this, 'int_1_10')"></div>
@@ -1471,7 +1657,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Faction Reward Entries</div>
       <div class="ed-row" style="margin-bottom:8px;">
-        <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAmmoFactionRewardEntry()">+ Add Entry</button>
       </div>
       <div class="entry-list" id="ammoFactionRewardList" style="max-width:100%;"></div>
     </div>
@@ -1479,6 +1665,55 @@
       <button class="btn primary" onclick="saveAmmo()">Save</button>
     </div>
   </div>
+
+    </div><!-- /c-main -->
+
+    <!-- Options Panel -->
+    <div class="options-panel" id="optionsPanel">
+      <div class="options-panel-head">
+        <h3>Options</h3>
+        <button class="options-panel-close" onclick="closeOptionsPanel()">&times;</button>
+      </div>
+      <div class="options-panel-body">
+
+        <div class="ed-section">
+          <div class="ed-section-title">Reference Data Update</div>
+          <div class="ed-row">
+            <div class="ed-field" style="max-width:none; flex:1;">
+              <label>Config Folder Path</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="refFolderPath" style="flex:1;" placeholder="Paste path or browse…" oninput="validateRefPath()">
+                <button class="btn" style="min-width:auto; font-size:12px; padding:0 12px; flex-shrink:0;" onclick="document.getElementById('refFolderBrowse').click()">Browse</button>
+                <input type="file" id="refFolderBrowse" webkitdirectory style="display:none" onchange="handleRefFolderSelect(this)">
+              </div>
+            </div>
+          </div>
+          <div class="ed-row" style="margin-top:8px;">
+            <button class="btn primary" id="btnRefUpdate" style="min-width:auto; font-size:12px; padding:0 14px;" onclick="runRefDataUpdate()" disabled>Update Reference Data</button>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--radius); font-size:12px; color:var(--text-dim); line-height:1.7;">
+            <div style="color:var(--text-secondary); font-weight:600; margin-bottom:6px;">Instructions</div>
+            Point to a folder containing the following game config files:
+            <div style="margin:8px 0 4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); line-height:1.8;">
+              config_items.txt<br>
+              config_items_properties.txt<br>
+              config_spacesandbox.txt<br>
+              config_wounds.txt
+            </div>
+            <div style="margin-top:8px;">
+              These files have to be extracted from the game's resources. You can paste the folder path directly or use Browse to select it.
+            </div>
+            <div style="margin-top:8px; color:var(--accent-dim);">
+              This will overwrite all files in <span style="font-family:'JetBrains Mono',monospace;">ref/base/</span> and mutable enum files in <span style="font-family:'JetBrains Mono',monospace;">ref/enums/</span>. Immutable enum files are not affected.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /c-body -->
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -1491,6 +1726,7 @@
       <h3>Project Settings</h3>
     </div>
     <div class="modal-body">
+      <div class="modal-body-inner">
       <div class="ed-section">
         <div class="ed-section-title">General</div>
         <div class="ed-row" style="margin-bottom:14px;">
@@ -1498,11 +1734,11 @@
           <div class="ed-field" style="flex:0 0 auto;"><label>Skip Manifest on Export</label><input type="checkbox" id="projSkipManifest"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
         <div class="ed-row" style="margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
         </div>
         <div class="entry-list" id="assemblyList" style="max-width:100%; margin-bottom:6px;"></div>
         <div class="ed-row" style="margin-top:6px; margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addSteamTagEntry()">+ Add Steam Tag</button>
         </div>
         <div class="entry-list" id="steamTagList" style="max-width:100%; margin-bottom:6px;"></div>
       </div>
@@ -1515,14 +1751,29 @@
       <div class="ed-section">
         <div class="ed-section-title">Weapon Image Folders</div>
         <div class="ed-row" style="margin-bottom:8px;">
-          <button class="btn" style="min-width:auto; height:28px; font-size:12px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
+          <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addImageFolderEntry()">+ Add Folder</button>
         </div>
         <div class="entry-list" id="imgFolderList" style="max-width:100%;"></div>
+      </div>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick="closeProjectSettings()">Cancel</button>
       <button class="btn primary" id="btnSaveProjectSettings" onclick="saveProjectSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reference Data Diff Modal -->
+<div class="overlay" id="refDiffOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Reference Data Updated</h3>
+      <button class="modal-close" onclick="closeRefDiff()">&times;</button>
+    </div>
+    <div class="modal-body" id="refDiffBody"></div>
+    <div class="modal-foot">
+      <button class="btn primary" onclick="closeRefDiff()">Done</button>
     </div>
   </div>
 </div>
@@ -1542,6 +1793,17 @@ let isSaving = false;
 let isLoading = false;
 let cachedProjects = [];
 let _formSnapshot = null;
+let statsFm = 0;
+let _projFiremodeData = {};
+let _projAmmoData = {};
+let _allAmmoForDefault = [];
+
+// Per-asset image version tokens — bumped on upload/rename/move so previews
+// and thumbnails refresh when they change, without busting the browser
+// cache on every list re-render.
+const _imgVer = {};
+function imgVer(id) { return _imgVer[id] || 0; }
+function bumpImgVer(id) { _imgVer[id] = (_imgVer[id] || 0) + 1; }
 
 // ═══════════════════════════════════════════════════════════════════
 //  API HELPER
@@ -1907,7 +2169,7 @@ function renderAmmoList(items) {
     <div class="card" onclick="guardSelectAmmo('${esc(a.id)}')">
       <div class="card-top">
         <div class="card-thumb">
-          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(a.id)}&suffix=sprite_icon&folder=Ammo&t=${Date.now()}" onerror="this.style.display='none'">
+          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(a.id)}&suffix=sprite_icon&folder=Ammo&v=${imgVer(a.id)}" onerror="this.style.display='none'">
         </div>
         <div class="card-info">
           <div class="c-name">${esc(a.dataId || a.id)}</div>
@@ -2178,19 +2440,19 @@ function loadAmmoSprite(ammoId) {
   const iconImg = new Image();
   iconImg.onload = () => { preview.innerHTML = ''; preview.appendChild(iconImg); };
   iconImg.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
-  iconImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_icon&folder=Ammo&t=${Date.now()}`;
+  iconImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_icon&folder=Ammo&v=${imgVer(ammoId)}`;
   // Floor
   const floorEl = document.getElementById('ammoFloorPreview');
   const floorImg = new Image();
   floorImg.onload = () => { floorEl.innerHTML = ''; floorEl.appendChild(floorImg); };
   floorImg.onerror = () => { floorEl.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
-  floorImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_floor&folder=Ammo&t=${Date.now()}`;
+  floorImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_floor&folder=Ammo&v=${imgVer(ammoId)}`;
   // Shadow
   const shadowEl = document.getElementById('ammoShadowPreview');
   const shadowImg = new Image();
   shadowImg.onload = () => { shadowEl.innerHTML = ''; shadowEl.appendChild(shadowImg); };
   shadowImg.onerror = () => { shadowEl.innerHTML = '<span class="placeholder-text" style="font-size:9px;">—</span>'; };
-  shadowImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_shadow&folder=Ammo&t=${Date.now()}`;
+  shadowImg.src = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(ammoId)}&suffix=sprite_shadow&folder=Ammo&v=${imgVer(ammoId)}`;
 }
 
 async function handleAmmoImageUpload(input, suffix, type) {
@@ -2211,6 +2473,7 @@ async function handleAmmoImageUpload(input, suffix, type) {
       }
       try {
         await api('image_upload', { body: { project: selProject.id, id: selAmmo.id, suffix, folder: 'Ammo', data: base64 } });
+        bumpImgVer(selAmmo.id);
         toast('Image uploaded');
         loadAmmoSprite(selAmmo.id);
         // Auto-fill descriptor path
@@ -2411,9 +2674,7 @@ async function saveAmmo() {
   try {
     if (newId !== oldId) {
       await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: 'Ammo' } });
-      await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id: oldId } });
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: oldId + '_descriptor' } }); } catch {}
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: oldId + '_localization' } }); } catch {}
+      bumpImgVer(newId);
       // Update descriptor image paths if they reference the old ID
       ['ad-IconSpriteIdOrPath', 'ad-SmallIconSpriteIdOrPath', 'ad-ShadowOnFloorSpriteIdOrPath'].forEach(fid => {
         const el = document.getElementById(fid);
@@ -2430,6 +2691,12 @@ async function saveAmmo() {
     await saveAmmoLocalization(newId);
     await saveAmmoDatadisks(newId);
     await saveAmmoFactionRewards(newId);
+    // Delete old files only after the new ones are safely written
+    if (newId !== oldId) {
+      await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: oldId + '_descriptor' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: oldId + '_localization' } }); } catch {}
+    }
     selAmmo.id = newId;
     toast('Saved');
     _formSnapshot = captureAmmoSnapshot();
@@ -2692,7 +2959,7 @@ async function loadFiremodeDescriptor(firemodeId) {
 function loadFmSprite(firemodeId) {
   const preview = document.getElementById('fmSpritePreview');
   const img = new Image();
-  const url = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(firemodeId)}&suffix=sprite&folder=Firemodes&t=${Date.now()}`;
+  const url = `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(firemodeId)}&suffix=sprite&folder=Firemodes&v=${imgVer(firemodeId)}`;
   img.onload = () => { preview.innerHTML = ''; preview.appendChild(img); };
   img.onerror = () => { preview.innerHTML = '<span class="placeholder-text">No image</span>'; };
   img.src = url;
@@ -2710,6 +2977,7 @@ async function handleFmSpriteUpload(input) {
       if (img.width !== 36 || img.height !== 26) { toast(`Icon must be 36x26 (got ${img.width}x${img.height})`, 1); input.value = ''; return; }
       try {
         await api('image_upload', { body: { project: selProject.id, id: selFiremode.id, suffix: 'sprite', folder: 'Firemodes', data: base64 } });
+        bumpImgVer(selFiremode.id);
         toast('Sprite uploaded');
         loadFmSprite(selFiremode.id);
         val('fmd-SpriteIdOrPath', `Images/Firemodes/${selFiremode.id}_sprite.png`);
@@ -2854,8 +3122,7 @@ async function saveFiremode() {
   try {
     if (newId !== oldId) {
       await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: 'Firemodes' } });
-      await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id: oldId } });
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: oldId + '_descriptor' } }); } catch {}
+      bumpImgVer(newId);
       // Update sprite path if it was set
       const curPath = document.getElementById('fmd-SpriteIdOrPath').value;
       if (curPath && curPath.includes(oldId)) {
@@ -2866,6 +3133,11 @@ async function saveFiremode() {
       body: { project: selProject.id, category: 'Firemodes', id: newId, recordType: 'MGSC.FireModeRecord', data }
     });
     await saveFiremodeDescriptor(newId);
+    // Delete old files only after the new ones are safely written
+    if (newId !== oldId) {
+      await api('asset_delete', { params: { project: selProject.id, category: 'Firemodes', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Firemodes', id: oldId + '_descriptor' } }); } catch {}
+    }
     selFiremode.id = newId;
     toast('Saved');
     _formSnapshot = captureFiremodeSnapshot();
@@ -3103,7 +3375,7 @@ function renderWeaponList(weapons) {
     <div class="card" onclick="guardSelectWeapon('${esc(w.id)}')">
       <div class="card-top">
         <div class="card-thumb">
-          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(w.id)}&suffix=sprite_icon&t=${Date.now()}" onerror="this.style.display='none'">
+          <img src="/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(w.id)}&suffix=sprite_icon&v=${imgVer(w.id)}" onerror="this.style.display='none'">
         </div>
         <div class="card-info">
           <div class="c-name">${esc(w.id)}</div>
@@ -3148,6 +3420,8 @@ async function selectWeapon(id) {
     await refreshAmmoSelects();
     await refreshRequiredAmmoSelect();
     populateEditor(record.Data);
+    statsFm = 0;
+    updateStatsReadout();
     // Detect image folder and load folders list
     await loadImageFolders();
     const found = await api('image_find', { params: { project: selProject.id, id } });
@@ -3210,7 +3484,6 @@ function newWeaponRecord(id) {
       Traits: [],
       DefaultGrenadeId: "",
       AllowedGrenadeIds: [],
-      CanDisassembly: true,
       Disassembly: [],
       DurabilityLossOnThrow: 0,
       ThrowRange: 0,
@@ -3306,7 +3579,7 @@ function populateEditor(d) {
   setFiremodeValue('ed-Firemode1', fms[0] || '');
   setFiremodeValue('ed-Firemode2', fms[1] || '');
   setAmmoValue('ed-RequiredAmmo', d.RequiredAmmo);
-  setAmmoValue('ed-DefaultAmmoId', d.DefaultAmmoId);
+  syncDefaultAmmoFilter(d.DefaultAmmoId || '');
   // Override Ammo
   const oa = d.OverrideAmmo || [];
   setAmmoValue('ed-OverrideAmmo1', oa[0] || '');
@@ -3345,7 +3618,6 @@ function populateEditor(d) {
   const agDisplay = agContainer.querySelector('.multi-select-display');
   if (agIds.length) { agDisplay.textContent = agIds.join(', '); }
   else { agDisplay.innerHTML = '<span class="placeholder">Select grenades…</span>'; }
-  chk('ed-CanDisassembly', d.CanDisassembly);
   populateDisassembly(d.Disassembly);
   val('ed-DurabilityLossOnThrow', d.DurabilityLossOnThrow);
   val('ed-ThrowRange', d.ThrowRange);
@@ -3393,7 +3665,6 @@ function collectEditor() {
     Traits: Array.from(document.querySelectorAll('#ed-Traits input[type="checkbox"]:checked')).map(cb => cb.value),
     DefaultGrenadeId: str('ed-DefaultGrenadeId').trim(),
     AllowedGrenadeIds: Array.from(document.querySelectorAll('#ed-AllowedGrenadeIds input[type="checkbox"]:checked')).map(cb => cb.value),
-    CanDisassembly: bool('ed-CanDisassembly'),
     Disassembly: collectDisassembly(),
     DurabilityLossOnThrow: int('ed-DurabilityLossOnThrow'),
     ThrowRange: int('ed-ThrowRange'),
@@ -3606,8 +3877,12 @@ function collectValidationErrors() {
 
   // Ammo select validation
   const daEl = document.getElementById('ed-DefaultAmmoId');
-  if (daEl.value && daEl.querySelector(`.orphan-opt[value="${CSS.escape(daEl.value)}"]`)) {
-    add('Weapon Config', 'Firemodes & Ammo', `Default Ammo "${daEl.value}" — not found in base game or project ammo`);
+  const daOpt = daEl.value && daEl.querySelector(`.orphan-opt[value="${CSS.escape(daEl.value)}"]`);
+  if (daOpt) {
+    const msg = daOpt.dataset.reason === 'wrongtype'
+      ? `Default Ammo "${daEl.value}" — ammo type does not match the Required Ammo type`
+      : `Default Ammo "${daEl.value}" — not found in base game or project ammo`;
+    add('Weapon Config', 'Firemodes & Ammo', msg);
   }
   const oa1El = document.getElementById('ed-OverrideAmmo1');
   if (oa1El.value && oa1El.querySelector(`.orphan-opt[value="${CSS.escape(oa1El.value)}"]`)) {
@@ -3789,13 +4064,7 @@ async function saveWeapon() {
   try {
     if (newId !== oldId) {
       await api('image_rename', { body: { project: selProject.id, oldId, newId, folder: weaponImgFolder(curImageFolder) } });
-      await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
-      // Delete old localization file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: oldId + '_localization' } }); } catch {}
-      // Delete old descriptor file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: oldId + '_descriptor' } }); } catch {}
-      // Delete old recipe file
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
+      bumpImgVer(newId);
       // Rename weapon in datadisks
       await renameItemInAllDisks(oldId, newId);
       // Rename weapon in faction rewards
@@ -3814,6 +4083,13 @@ async function saveWeapon() {
     await saveRecipe(newId);
     await saveDatadisks(newId);
     await saveFactionRewards(newId);
+    // Delete old files only after the new ones are safely written
+    if (newId !== oldId) {
+      await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: oldId + '_localization' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: oldId + '_descriptor' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
+    }
     selWeapon.id = newId;
     toast('Saved');
     _formSnapshot = captureFormSnapshot();
@@ -3842,7 +4118,7 @@ function weaponImgFolder(sub) {
 }
 
 function imgUrl(id, suffix) {
-  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(weaponImgFolder(curImageFolder))}&t=${Date.now()}`;
+  return `/api?action=image&project=${encodeURIComponent(selProject.id)}&id=${encodeURIComponent(id)}&suffix=${suffix}&folder=${encodeURIComponent(weaponImgFolder(curImageFolder))}&v=${imgVer(id)}`;
 }
 
 function loadWeaponImage(id, suffix, type) {
@@ -3885,6 +4161,7 @@ async function onImageFolderChange(newFolder) {
 
   try {
     await api('image_move', { body: { project: selProject.id, id: selWeapon.id, from: weaponImgFolder(oldFolder), to: weaponImgFolder(newFolder) } });
+    bumpImgVer(selWeapon.id);
     curImageFolder = newFolder;
     updateDescriptorImagePaths(selWeapon.id, newFolder);
     loadAllWeaponImages(selWeapon.id);
@@ -3922,6 +4199,7 @@ async function handleImageUpload(input, suffix, type) {
 
       try {
         await api('image_upload', { body: { project: selProject.id, id: selWeapon.id, suffix, folder: weaponImgFolder(curImageFolder), data: base64 } });
+        bumpImgVer(selWeapon.id);
         toast('Image uploaded');
         updateDescriptorImagePaths(selWeapon.id, curImageFolder);
         loadWeaponImage(selWeapon.id, suffix, type);
@@ -4165,27 +4443,27 @@ async function renameItemInAllFactions(oldId, newId) {
 // ═══════════════════════════════════════════════════════════════════
 //  DATADISKS
 // ═══════════════════════════════════════════════════════════════════
-let _prevDatdiskAssignments = [];
+let _prevDatadiskAssignments = [];
 
 async function loadDatadisks(itemId) {
-  _prevDatdiskAssignments = [];
+  _prevDatadiskAssignments = [];
   try {
     const data = await api('assets', { params: { project: selProject.id, category: 'Datadisks' } });
     for (const asset of data.assets) {
       const ids = asset.data?.UnlockIds || [];
       if (ids.includes(itemId)) {
-        _prevDatdiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
+        _prevDatadiskAssignments.push(asset.data?.Id || asset.id.replace('_diskData', ''));
       }
     }
   } catch {}
 
   const container = document.getElementById('ed-Datadisks');
   container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.checked = _prevDatdiskAssignments.includes(cb.value);
+    cb.checked = _prevDatadiskAssignments.includes(cb.value);
   });
   const display = container.querySelector('.multi-select-display');
-  if (_prevDatdiskAssignments.length) {
-    display.textContent = _prevDatdiskAssignments.join(', ');
+  if (_prevDatadiskAssignments.length) {
+    display.textContent = _prevDatadiskAssignments.join(', ');
   } else {
     display.innerHTML = '<span class="placeholder">Select datadisks…</span>';
   }
@@ -4226,8 +4504,8 @@ function canonicalizeDiskData(data, diskId) {
 
 async function saveDatadisks(itemId) {
   const checked = Array.from(document.querySelectorAll('#ed-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
-  const added = checked.filter(d => !_prevDatdiskAssignments.includes(d));
-  const removed = _prevDatdiskAssignments.filter(d => !checked.includes(d));
+  const added = checked.filter(d => !_prevDatadiskAssignments.includes(d));
+  const removed = _prevDatadiskAssignments.filter(d => !checked.includes(d));
 
   // Add weapon to newly checked disks
   for (const diskId of added) {
@@ -4265,7 +4543,7 @@ async function saveDatadisks(itemId) {
     } catch {}
   }
 
-  _prevDatdiskAssignments = [...checked];
+  _prevDatadiskAssignments = [...checked];
 }
 
 async function removeItemFromAllDisks(itemId) {
@@ -5016,6 +5294,191 @@ function exportProject(id) {
   }, 'Export', 'primary');
 }
 
+function openOptionsPanel() {
+  document.getElementById('optionsPanel').classList.toggle('open');
+}
+
+function closeOptionsPanel() {
+  document.getElementById('optionsPanel').classList.remove('open');
+}
+
+let _refBrowsedFiles = null;
+
+function handleRefFolderSelect(input) {
+  if (!input.files.length) return;
+  // Extract folder name from first file's path
+  const firstPath = input.files[0].webkitRelativePath || '';
+  const folderName = firstPath.split('/')[0] || 'Selected folder';
+  document.getElementById('refFolderPath').value = folderName;
+  // Store files for upload
+  _refBrowsedFiles = input.files;
+  document.getElementById('btnRefUpdate').disabled = false;
+}
+
+function validateRefPath() {
+  const path = document.getElementById('refFolderPath').value.trim();
+  // If user typed/pasted, clear any browsed files
+  _refBrowsedFiles = null;
+  document.getElementById('btnRefUpdate').disabled = !path;
+}
+
+async function runRefDataUpdate() {
+  const btn = document.getElementById('btnRefUpdate');
+  btn.disabled = true;
+
+  const REQUIRED = ['config_items.txt', 'config_items_properties.txt', 'config_spacesandbox.txt', 'config_wounds.txt'];
+
+  try {
+    let files = {};
+    let missing = [];
+
+    if (_refBrowsedFiles) {
+      // Browsed: read file contents from selection
+      for (const f of _refBrowsedFiles) {
+        const parts = (f.webkitRelativePath || '').split('/');
+        if (parts.length !== 2) continue;
+        if (REQUIRED.includes(f.name)) {
+          files[f.name] = await f.text();
+        }
+      }
+      missing = REQUIRED.filter(r => !files[r]);
+    } else {
+      // Path mode: let server validate, but pre-check via a validation call
+      const folderPath = document.getElementById('refFolderPath').value.trim();
+      if (!folderPath) { btn.disabled = false; return; }
+      // Send to server — it will report missing files
+      try {
+        const res = await api('ref_update', { body: { mode: 'path', path: folderPath } });
+        toast('Reference data updated successfully');
+        try { REF = await api('ref_all'); } catch {}
+        populateRefSelects();
+        showRefDiff(res && res.diffs, res && res.filesUpdated);
+        btn.disabled = false;
+        return;
+      } catch (e) {
+        // Check if it's a missing files error
+        if (e.message && e.message.includes('Missing config files:')) {
+          missing = e.message.replace('Missing config files: ', '').split(', ').map(s => s.trim());
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    if (missing.length) {
+      let html = '<div style="margin-bottom:10px;">The following required config files could not be found:</div>';
+      html += '<div style="font-family:\'JetBrains Mono\',monospace; font-size:12px; line-height:2; padding:10px; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--radius);">';
+      for (const f of missing) {
+        html += `<div style="color:var(--error);">&#10008; ${esc(f)}</div>`;
+      }
+      html += '</div>';
+      html += '<div style="margin-top:10px; font-size:12px; color:var(--text-dim);">Update aborted. Ensure all 4 files are present in the selected location.</div>';
+      html += '<div style="text-align:right; margin-top:14px;"><button class="btn primary" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button></div>';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      const box = document.createElement('div');
+      box.className = 'confirm-box';
+      box.style.maxWidth = '420px';
+      box.innerHTML = '<div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--error);">Reference Data Update Failed</div>' + html;
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      btn.disabled = false;
+      return;
+    }
+
+    // Browse mode: all files present, send to server
+    const res = await api('ref_update', { body: { mode: 'files', files } });
+    toast('Reference data updated successfully');
+    try { REF = await api('ref_all'); } catch {}
+    populateRefSelects();
+    showRefDiff(res && res.diffs, res && res.filesUpdated);
+  } catch (e) {
+    showRefUpdateError(e.message || 'An unexpected error occurred');
+  }
+  btn.disabled = false;
+}
+
+function renderIdList(ids, cls) {
+  let html = '';
+  for (const id of ids) html += `<div class="refdiff-id ${cls}">${esc(id)}</div>`;
+  return html;
+}
+
+function fieldVal(v) {
+  return v === null ? '<span class="fnull">(none)</span>' : esc(v);
+}
+
+function showRefDiff(diffs, filesUpdated) {
+  const body = document.getElementById('refDiffBody');
+  const names = diffs ? Object.keys(diffs).sort() : [];
+
+  if (!names.length) {
+    body.innerHTML = `<div class="modal-body-inner"><div class="refdiff-summary">${filesUpdated} reference file${filesUpdated === 1 ? '' : 's'} processed. No changes detected — your reference data already matched the source.</div></div>`;
+    document.getElementById('refDiffOverlay').classList.add('open');
+    return;
+  }
+
+  let totA = 0, totR = 0, totM = 0;
+  for (const d of Object.values(diffs)) { totA += d.added.length; totR += d.removed.length; totM += d.modified.length; }
+
+  let html = `<div class="refdiff-summary">${filesUpdated} file${filesUpdated === 1 ? '' : 's'} processed &middot; <span style="color:var(--success)">${totA} added</span>, <span style="color:var(--error)">${totR} removed</span>, <span style="color:var(--accent)">${totM} modified</span> across ${names.length} file${names.length === 1 ? '' : 's'}.</div>`;
+
+  for (const name of names) {
+    const d = diffs[name];
+    let tags = '';
+    if (d.added.length) tags += `<span class="refdiff-tag add">+${d.added.length}</span>`;
+    if (d.removed.length) tags += `<span class="refdiff-tag rem">&minus;${d.removed.length}</span>`;
+    if (d.modified.length) tags += `<span class="refdiff-tag mod">~${d.modified.length}</span>`;
+    if (d.columnsAdded.length || d.columnsRemoved.length) {
+      tags += `<span class="refdiff-tag col">cols ${d.columnsAdded.length ? '+' + d.columnsAdded.length : ''}${d.columnsRemoved.length ? ' &minus;' + d.columnsRemoved.length : ''}</span>`;
+    }
+
+    let inner = '';
+    if (d.columnsAdded.length || d.columnsRemoved.length) {
+      inner += '<div class="refdiff-group"><div class="refdiff-group-label">Columns</div>';
+      if (d.columnsAdded.length) inner += `<div class="refdiff-field"><span class="fnew">+ ${d.columnsAdded.map(esc).join(', ')}</span></div>`;
+      if (d.columnsRemoved.length) inner += `<div class="refdiff-field"><span class="fold">&minus; ${d.columnsRemoved.map(esc).join(', ')}</span></div>`;
+      inner += '</div>';
+    }
+    if (d.added.length) inner += `<div class="refdiff-group"><div class="refdiff-group-label">Added (${d.added.length})</div>${renderIdList(d.added, 'add')}</div>`;
+    if (d.removed.length) inner += `<div class="refdiff-group"><div class="refdiff-group-label">Removed (${d.removed.length})</div>${renderIdList(d.removed, 'rem')}</div>`;
+    if (d.modified.length) {
+      inner += `<div class="refdiff-group"><div class="refdiff-group-label">Modified (${d.modified.length})</div>`;
+      for (const m of d.modified) {
+        inner += `<div class="refdiff-mod-entry"><div class="refdiff-mod-id">${esc(m.id)}</div>`;
+        for (const f of m.fields) {
+          inner += `<div class="refdiff-field"><span class="fname">${esc(f.field)}</span>: <span class="fold">${fieldVal(f.old)}</span> &rarr; <span class="fnew">${fieldVal(f.new)}</span></div>`;
+        }
+        inner += '</div>';
+      }
+      inner += '</div>';
+    }
+
+    // Collapse files with no row-level detail by default; expand others
+    html += `<div class="refdiff-file"><div class="refdiff-file-head" onclick="this.parentElement.classList.toggle('collapsed')"><span class="refdiff-caret">&#9660;</span><span class="refdiff-file-name">${esc(name)}</span>${tags}</div><div class="refdiff-file-body">${inner}</div></div>`;
+  }
+
+  body.innerHTML = `<div class="modal-body-inner">${html}</div>`;
+  document.getElementById('refDiffOverlay').classList.add('open');
+}
+
+function closeRefDiff() { document.getElementById('refDiffOverlay').classList.remove('open'); }
+
+function showRefUpdateError(message) {
+  let html = '<div style="font-weight:600; font-size:14px; margin-bottom:10px; color:var(--error);">Reference Data Update Failed</div>';
+  html += '<div style="margin-bottom:10px;">' + esc(message) + '</div>';
+  html += '<div style="text-align:right; margin-top:14px;"><button class="btn primary" onclick="this.closest(\'.confirm-overlay\').remove()">OK</button></div>';
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  const box = document.createElement('div');
+  box.className = 'confirm-box';
+  box.style.maxWidth = '420px';
+  box.innerHTML = html;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
 function confirmDeleteProject(btn, id) {
   showConfirm('You are about to delete this project and all assets contained within. Are you sure?', () => deleteProjectById(id));
 }
@@ -5242,6 +5705,8 @@ async function refreshFiremodeSelects() {
     try {
       const data = await api('assets', { params: { project: selProject.id, category: 'Firemodes' } });
       projectIds = data.assets.map(a => a.dataId || a.id).filter(Boolean);
+      _projFiremodeData = {};
+      data.assets.forEach(a => { _projFiremodeData[a.dataId || a.id] = a.data || {}; });
     } catch {}
   }
 
@@ -5277,20 +5742,26 @@ async function refreshAmmoSelects() {
     try {
       const data = await api('assets', { params: { project: selProject.id, category: 'Ammo' } });
       projectIds = data.assets.map(a => a.dataId || a.id).filter(Boolean);
+      _projAmmoData = {};
+      data.assets.forEach(a => { _projAmmoData[a.dataId || a.id] = a.data || {}; });
     } catch {}
   }
 
-  // DefaultAmmoId — all base + project
-  const allAmmoIds = [...new Set([...baseIds, ...projectIds])].sort();
-  const da1Val = document.getElementById('ed-DefaultAmmoId').value;
-  let daHtml = '<option value="" style="font-style:italic">empty</option>';
-  daHtml += allAmmoIds.map(v => {
-    const isCustom = projectIds.includes(v) && !baseIds.includes(v);
-    const label = isCustom ? v + ' - *Custom*' : v;
-    return `<option value="${esc(v)}">${esc(label)}</option>`;
-  }).join('');
-  document.getElementById('ed-DefaultAmmoId').innerHTML = daHtml;
-  if (da1Val) document.getElementById('ed-DefaultAmmoId').value = da1Val;
+  // DefaultAmmoId — typed candidates (base + project); options are built by
+  // syncDefaultAmmoFilter, filtered to the selected Required Ammo type
+  _allAmmoForDefault = [];
+  for (const r of baseRows) {
+    const id = (r.Id || '').trim().replace(/^\*/, '');
+    if (!id) continue;
+    _allAmmoForDefault.push({ id, type: (r.AmmoType || '').trim(), isCustom: false });
+  }
+  for (const [id, d] of Object.entries(_projAmmoData)) {
+    if (!_allAmmoForDefault.some(a => a.id === id)) {
+      _allAmmoForDefault.push({ id, type: (d.AmmoType || '').trim(), isCustom: true });
+    }
+  }
+  _allAmmoForDefault.sort((a, b) => a.id.localeCompare(b.id));
+  syncDefaultAmmoFilter();
 
   // OverrideAmmo — base implicted_ + all project
   const overrideIds = [...new Set([...implictedIds, ...projectIds])].sort();
@@ -5309,7 +5780,7 @@ async function refreshAmmoSelects() {
 }
 
 async function refreshRequiredAmmoSelect() {
-  const baseTypes = (REF?.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+  const baseTypes = (REF?.enums?.ammoTypes?.rows || []).map(r => (r.Name || '').trim()).filter(Boolean);
 
   let customTypes = [];
   if (selProject) {
@@ -5338,7 +5809,7 @@ function setAmmoValue(selectId, value) {
       opt.value = value;
       opt.textContent = value + ' (missing)';
       opt.className = 'orphan-opt';
-      opt.style.color = '#c05050';
+      opt.style.color = 'var(--error)';
       el.appendChild(opt);
     }
   }
@@ -5352,6 +5823,55 @@ function validateAmmoSelect(el) {
   el.classList.toggle('invalid', !!isOrphan);
 }
 
+// ── Default Ammo filtering: when Required Ammo holds a valid type, the ──
+// ── list narrows to ammo (base + custom) of that type; with no required ──
+// ── type set, the full list is available (default-without-required is   ──
+// ── legal). A stored value that mismatches the selected type is kept    ──
+// ── visible as a red flagged option and blocks save.                    ──
+function syncDefaultAmmoFilter(setValue) {
+  const reqEl = document.getElementById('ed-RequiredAmmo');
+  const defEl = document.getElementById('ed-DefaultAmmoId');
+  const value = setValue !== undefined ? setValue : defEl.value;
+  const reqVal = reqEl.value.trim();
+  const reqValid = !!reqVal && !reqEl.querySelector(`.orphan-opt[value="${CSS.escape(reqVal)}"]`);
+
+  const candidates = reqValid ? _allAmmoForDefault.filter(a => a.type === reqVal) : _allAmmoForDefault;
+  let html = '<option value="" style="font-style:italic">empty</option>';
+  html += candidates
+    .map(a => `<option value="${esc(a.id)}">${esc(a.isCustom ? a.id + ' - *Custom*' : a.id)}</option>`)
+    .join('');
+  defEl.innerHTML = html;
+
+  if (value) {
+    const exists = Array.from(defEl.options).some(o => o.value === value);
+    if (!exists) {
+      const known = _allAmmoForDefault.find(a => a.id === value);
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.className = 'orphan-opt';
+      opt.style.color = 'var(--error)';
+      opt.dataset.reason = known ? 'wrongtype' : 'missing';
+      opt.textContent = value + (known ? ' (wrong type)' : ' (missing)');
+      defEl.appendChild(opt);
+    }
+  }
+  defEl.value = value;
+  validateAmmoSelect(defEl);
+}
+
+function onRequiredAmmoChange(el) {
+  validateAmmoSelect(el);
+  syncDefaultAmmoFilter();
+}
+
+function onDefaultAmmoChange(el) {
+  // Picking a real option clears any leftover flagged entry from the list
+  if (el.value && !el.querySelector(`.orphan-opt[value="${CSS.escape(el.value)}"]`)) {
+    el.querySelectorAll('.orphan-opt').forEach(o => o.remove());
+  }
+  validateAmmoSelect(el);
+}
+
 function setFiremodeValue(selectId, value) {
   const el = document.getElementById(selectId);
   // Remove any previously injected orphan option
@@ -5363,7 +5883,7 @@ function setFiremodeValue(selectId, value) {
       opt.value = value;
       opt.textContent = value + ' (missing)';
       opt.className = 'orphan-opt';
-      opt.style.color = '#c05050';
+      opt.style.color = 'var(--error)';
       el.appendChild(opt);
     }
   }
@@ -5407,6 +5927,182 @@ function syncFiremodes() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  WEAPON STATS READOUT
+// ═══════════════════════════════════════════════════════════════════
+// Numeric/string probes for base-game TSV rows (column names can vary
+// slightly between game versions, so each stat tries a candidate list).
+function _rowNum(row, keys, def) {
+  if (!row) return def;
+  const lk = {};
+  for (const k of Object.keys(row)) lk[k.toLowerCase()] = row[k];
+  for (const key of keys) {
+    const v = lk[key.toLowerCase()];
+    if (v !== undefined && String(v).trim() !== '') {
+      const n = parseFloat(v);
+      if (!isNaN(n)) return n;
+    }
+  }
+  return def;
+}
+function _rowStr(row, keys) {
+  if (!row) return '';
+  const lk = {};
+  for (const k of Object.keys(row)) lk[k.toLowerCase()] = row[k];
+  for (const key of keys) {
+    const v = lk[key.toLowerCase()];
+    if (v !== undefined && String(v).trim() !== '') return String(v).trim();
+  }
+  return '';
+}
+function _findBaseRow(refTable, id) {
+  return (refTable?.rows || []).find(r => ((r.Id || '').trim().replace(/^\*/, '')) === id) || null;
+}
+
+// Project record takes priority over base ref data for the same id.
+function resolveFiremodeStats(id) {
+  if (!id) return null;
+  const p = _projFiremodeData[id];
+  if (p) {
+    return {
+      accuracy: parseFloat(p.Accuracy) || 0,
+      scatter: parseFloat(p.ScatterAngle) || 0,
+      dmgMult: p.DamageMult != null ? parseFloat(p.DamageMult) : 1,
+      casts: p.WeaponCastsCount != null ? parseFloat(p.WeaponCastsCount) : null,
+    };
+  }
+  const r = _findBaseRow(REF?.base?.firemodes, id);
+  if (r) {
+    return {
+      accuracy: _rowNum(r, ['Accuracy'], 0),
+      scatter: _rowNum(r, ['ScatterAngle', 'Scatter'], 0),
+      dmgMult: _rowNum(r, ['DamageMult', 'DmgMult'], 1),
+      casts: _rowNum(r, ['WeaponCastsCount', 'CastsCount', 'WeaponCasts'], null),
+    };
+  }
+  return null;
+}
+
+function resolveAmmoStats(id) {
+  if (!id) return null;
+  const p = _projAmmoData[id];
+  if (p) {
+    return {
+      dmgMult: p.DamageMult != null ? parseFloat(p.DamageMult) : 1,
+      crit: p.DmgCritChance != null ? parseFloat(p.DmgCritChance) : null,
+      rangeBonus: parseFloat(p.RangeBonus) || 0,
+      accMult: p.AccuracyMult != null ? parseFloat(p.AccuracyMult) : 1,
+      scatMult: p.ScatterMult != null ? parseFloat(p.ScatterMult) : 1,
+      casts: parseFloat(p.BulletCastsPerShot) || 1,
+      dmgType: (p.DmgType || '').trim(),
+    };
+  }
+  const r = _findBaseRow(REF?.base?.ammo, id);
+  if (r) {
+    return {
+      dmgMult: _rowNum(r, ['DamageMult'], 1),
+      crit: _rowNum(r, ['DmgCritChance', 'CritChance'], null),
+      rangeBonus: _rowNum(r, ['RangeBonus'], 0),
+      accMult: _rowNum(r, ['AccuracyMult'], 1),
+      scatMult: _rowNum(r, ['ScatterMult'], 1),
+      casts: _rowNum(r, ['BulletCastsPerShot'], 1),
+      dmgType: _rowStr(r, ['DmgType', 'DamageType']),
+    };
+  }
+  return null;
+}
+
+// Game-style formatting: percentages, degrees, .5-up rounding
+function fmtPct(x) {
+  const v = Math.round(x * 1000) / 10;
+  return (v % 1 ? v.toFixed(1) : v.toFixed(0)) + '%';
+}
+function fmtDeg(x) {
+  return (Math.round(x * 10) / 10).toFixed(1) + '\u00B0';
+}
+
+function setStatsFm(i) {
+  statsFm = i;
+  updateStatsReadout();
+}
+
+function updateStatsReadout() {
+  if (!selWeapon) return;
+  const $ = id => document.getElementById(id);
+  const num = id => parseFloat($(id).value) || 0;
+  const DASH = '\u2013';
+
+  // Firemode switch: visible only when both firemodes are set
+  const fm1Id = $('ed-Firemode1').value.trim();
+  const fm2Id = $('ed-Firemode2').value.trim();
+  if (statsFm === 1 && !fm2Id) statsFm = 0;
+  const sw = $('statsFmSwitch');
+  if (fm1Id && fm2Id) {
+    sw.style.display = '';
+    $('statsFmBtn0').textContent = fm1Id;
+    $('statsFmBtn1').textContent = fm2Id;
+    $('statsFmBtn0').classList.toggle('active', statsFm === 0);
+    $('statsFmBtn1').classList.toggle('active', statsFm === 1);
+  } else {
+    sw.style.display = 'none';
+    statsFm = 0;
+  }
+
+  const fmId = statsFm === 1 ? fm2Id : fm1Id;
+  const fm = resolveFiremodeStats(fmId);
+  // Ammo resolution: this firemode's override supersedes, else default ammo
+  const ovId = $(statsFm === 1 ? 'ed-OverrideAmmo2' : 'ed-OverrideAmmo1').value.trim();
+  const defId = $('ed-DefaultAmmoId').value.trim();
+  const ammoId = ovId || defId;
+  const ammo = resolveAmmoStats(ammoId);
+  const hasAmmo = !!ammoId;
+
+  // Damage: base x (ammoMult + fmMult - 1); BulletCastsPerShot splits projectiles
+  const aMult = ammo ? ammo.dmgMult : 1;
+  const fMult = fm ? fm.dmgMult : 1;
+  const mult = aMult + fMult - 1;
+  const tMin = Math.round(num('ed-minDmg') * mult);
+  const tMax = Math.round(num('ed-maxDmg') * mult);
+  const casts = ammo ? Math.max(1, Math.round(ammo.casts || 1)) : 1;
+  const rng = (a, b) => a === b ? String(a) : `${a}${DASH}${b}`;
+  const dmgTxt = casts > 1
+    ? `${casts} \u00D7 ${rng(Math.round(tMin / casts), Math.round(tMax / casts))}`
+    : rng(tMin, tMax);
+  const dmgType = ammo?.dmgType || '';
+  $('stat-Damage').innerHTML = esc(dmgTxt) + (dmgType ? ` <span class="stat-sub">${esc(dmgType)}</span>` : '');
+
+  // Crit: chance from ammo / damage from weapon
+  const critDmgRaw = parseFloat($('ed-critDmg').value);
+  const chanceTxt = (ammo && ammo.crit != null) ? fmtPct(ammo.crit) : DASH;
+  $('stat-Crit').textContent = `${chanceTxt} / ${isNaN(critDmgRaw) ? DASH : fmtPct(critDmgRaw)}`;
+
+  // Accuracy: (weapon bonus + firemode) x ammo mult, floored at 0%; Scatter same shape
+  $('stat-Accuracy').textContent = fmtPct(Math.max(0, (num('ed-BonusAccuracy') + (fm ? fm.accuracy : 0)) * (ammo ? ammo.accMult : 1)));
+  $('stat-Scatter').textContent = fmtDeg((num('ed-BonusScatterAngle') + (fm ? fm.scatter : 0)) * (ammo ? ammo.scatMult : 1));
+
+  // Range: weapon range + ammo bonus
+  $('stat-Range').textContent = String(Math.round(num('ed-Range') + (ammo ? ammo.rangeBonus : 0)));
+
+  // Rate of fire: active firemode's weapon casts count
+  $('stat-RoF').textContent = (fm && fm.casts != null) ? String(Math.round(fm.casts)) : DASH;
+
+  // No-ammo weapons never reload and never run out
+  $('stat-Reload').textContent = hasAmmo ? String(Math.round(num('ed-ReloadDuration'))) : DASH;
+  $('stat-Magazine').textContent = hasAmmo ? String(Math.round(num('ed-MagazineCapacity'))) : DASH;
+
+  const ammoEl = $('stat-Ammo');
+  ammoEl.textContent = hasAmmo ? ammoId : DASH;
+  ammoEl.title = hasAmmo ? ammoId + (ovId ? ' (override)' : '') : '';
+
+  $('stat-Durability').textContent = String(Math.round(num('ed-MaxDurability')));
+}
+
+// Live refresh on any weapon-config edit (debounced)
+let _statsT;
+function _queueStatsUpdate() { clearTimeout(_statsT); _statsT = setTimeout(updateStatsReadout, 150); }
+document.getElementById('editorWrap').addEventListener('input', _queueStatsUpdate);
+document.getElementById('editorWrap').addEventListener('change', _queueStatsUpdate);
+
 function populateRefSelects() {
   if (!REF) return;
 
@@ -5448,7 +6144,7 @@ function populateRefSelects() {
   fillSelect('ed-WeaponSubClass', REF.enums?.weaponSubClass, 'Name');
   fillSelect('desc-Grip', REF.enums?.handGrips, 'Name');
   refreshRequiredAmmoSelect();
-  fillSelectWithEmpty('ed-OverrideProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelectWithEmpty('ed-OverrideProjectileId', REF.base?.projectiles, 'Id');
   fillSelectWithEmpty('ed-DefaultGrenadeId', REF.base?.grenades, 'Id');
   fillMultiSelect('ed-AllowedGrenadeIds', REF.base?.grenades, 'Id');
 
@@ -5492,14 +6188,14 @@ function populateRefSelects() {
   window._gradeItemOptions = [...new Set(gradeItems)].filter(v => !v.includes('quest_')).sort();
 
   // ── Ammo editor selects ──
-  const ammoTypeIds = (REF.enums?.ammoTypes?.rows || []).map(r => (r.name || '').trim()).filter(Boolean);
+  const ammoTypeIds = (REF.enums?.ammoTypes?.rows || []).map(r => (r.Name || '').trim()).filter(Boolean);
   document.getElementById('ammoTypeComboList').innerHTML = ammoTypeIds.map(v =>
     `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
   ).join('');
-  fillSelectWithEmpty('ammo-DmgType', REF.enums?.damageTypes, 'Name');
-  fillSelectWithEmpty('ammo-ProjectileId', REF.enums?.projectiles, 'Id');
+  fillSelectWithEmpty('ammo-DmgType', REF.base?.damageTypes, 'Id');
+  fillSelectWithEmpty('ammo-ProjectileId', REF.base?.projectiles, 'Id');
   fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
-  fillSelect('ad-BulletSpritesId', REF.enums?.projectiles, 'Id');
+  fillSelect('ad-BulletSpritesId', REF.base?.projectiles, 'Id');
   const ammoTraits = {
     rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
   };
