@@ -36,8 +36,11 @@ Medical
 Merc
 Military
 Miner
+Olirna
+OlirnaFeral
 PMC
 PlanetBridge
+Planetbridge
 Possessed
 Prison
 Psycho

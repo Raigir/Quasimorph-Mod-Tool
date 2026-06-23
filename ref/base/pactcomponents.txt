@@ -4,6 +4,7 @@ quasi_medical_kit_1										gavvakh	100	25
 quasi_repair_kit										siaira	100	25																				
 demonic_eye										agga	100	25																				
 ron_blood										shavva	100	25																				
+ron_moonshine										shavva	120	15																				
 precious_metals										eon	110	25																				
 human_poop		Prison Civilian Possessed Medical	1	1	0.1	1	Organ	FALSE	10	eon	50	25																				
 human_rib										shavva	50	25																				
@@ -34,6 +35,7 @@ rotten_dog_meat										siaira	95	10
 roasted_dog_meat										siaira	85	20																				
 dog_skin										siaira	70	25																				
 human_organ_1										siaira	90	12																				
+candy_1										siaira	80	10																				
 venus_guts		Gannix	1	40	0.2	1	QuasiOrgan	FALSE	20	gavvakh	130	20																				
 quasi_venus_rags										siaira	100	20																				
 quasi_venus_feather										siaira	130	15																				
@@ -71,4 +73,5 @@ jupiter_goulash										gavvakh	120	40
 jupiter_mushrooms										gavvakh	100	30																				
 jupiter_grass										shavva	130	15																				
 jupiter_guts		Flauros	1	40	0.2	1	QuasiOrgan	FALSE	20	shavva	120	25																				
+spore_mine										gavvakh	120	20																				
 #end																																

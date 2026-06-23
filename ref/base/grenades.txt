@@ -2,15 +2,19 @@
 Id		Categories	TechLevel	Price	Weight	InventoryWidthSize	ItemClass	CanPutInVest	MaxStack	TurnsToExplode	RicochetTrajectory	Range	MaxUnderthrowDistance	MaxOverthrowDistance	IgnorePenaltyChance	Explosion	Disassembly															
 frag_grenade		Military AnCom RealWare SheduThousand Grasshopper FrancheComte Tianming UnchainedBelt CResistance 	3	100	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	frag_explosion	tin 1 nail_bolts_ammo 1 explosives 1															
 highexplosion_grenade		Military AnCom RealWare SheduThousand Grasshopper FrancheComte Tianming UnchainedBelt CResistance 	3	100	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.6	he_explosion	tin 1 explosives 1															
-*quasi_grenade		none	5	150	0.1	1	Grenade	TRUE	5	1	FALSE	7	1	2	0.2	quasi_explosion																
+*quasi_grenade		RitualItem	5	150	0.1	1	Grenade	TRUE	5	1	FALSE	7	1	2	0.2	quasi_explosion																
 thermal_grenade		Military RealWare SheduThousand ChurchRevelation ChurchGannix Sunlight Emeraldlight CoreWard CResistance 	4	125	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	thermal_explosion	tin 1 gas_ammo 1 powder 1															
 stun_grenade		Security Specops AnCom SBN Dilthey RealWare Sunlight Emeraldlight FrancheComte SheduThousand	1	50	0.15	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	stun_explosion	tin 1 acid 1 human_poop 1															
+smoke_grenade		Security Specops AnCom SBN Dilthey RealWare Sunlight Emeraldlight FrancheComte SheduThousand	4	80	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	smoke_explosion	tin 1 acid 1 plastic 1															
 *throwable_heart		Medical SheduThousand	1	5	0.15	1	Grenade	TRUE	3	0	TRUE	7	1	2	0.2	heart_explosion																
-handmade_frag_grenade		Worker Miner Prison SheduThousand UnchainedBelt CResistance	1	25	0.5	1	Grenade	TRUE	3	2	TRUE	7	1	2	0.2	frag_low_explosion	tin 1 explosives 1															
-handmade_thermal_grenade		Reserve Worker Miner Prison ChurchRevelation ChurchGannix SheduThousand CoreWard Grasshopper PlanetBridge UnchainedBelt CResistance	2	25	0.75	1	Grenade	TRUE	3	0	FALSE	7	1	2	0.2	thermal_low_explosion	glass_bottle 1 rags 1															
-toxic_grenade		AnCom SBN DaydreamChems Tianming	3	150	0.15	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	toxic_explosion	glass 1 acid 1 circuit_board 1															
-frost_grenade		AnCom DaydreamChems Grasshopper PlanetBridge	5	225	0.25	1	Grenade	TRUE	3	1	FALSE	7	1	2	0.2	frost_explosion	glass 1 circuit_board 1 water_bottle_1 1															
-*urparp_grenade		SheduThousand	1	100	0.1	1	Grenade	TRUE	5	1	TRUE	7	1	2	0.2	urparp_explosion																
+handmade_frag_grenade		Worker Miner Prison SheduThousand UnchainedBelt CResistance	1	25	0.5	1	Grenade	TRUE	3	2	TRUE	6	1	2	0.2	frag_low_explosion	tin 1 explosives 1															
+handmade_smoke_grenade		Worker Miner Prison SheduThousand UnchainedBelt CResistance	2	40	0.5	1	Grenade	TRUE	3	2	TRUE	6	1	2	0.2	smoke_low_explosion	tin 1 plastic 1 gas_ammo 1															
+handmade_thermal_grenade		Reserve Worker Miner Prison ChurchRevelation ChurchGannix SheduThousand CoreWard Grasshopper PlanetBridge UnchainedBelt CResistance	2	30	0.75	1	Grenade	TRUE	3	0	FALSE	6	1	2	0.2	thermal_low_explosion	glass_bottle 1 rags 1															
+toxic_grenade		DaydreamChems Tianming	3	150	0.25	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	toxic_explosion	glass 1 acid 1 circuit_board 1															
+toxic_gas_grenade		DaydreamChems Tianming	6	200	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	smoke_toxic_explosion	tin 1 acid 1 microelectronics_parts 1															
+frost_grenade		AnCom PlanetBridge Sunlight Emeraldlight	9	300	0.25	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	frost_explosion	glass 1 circuit_board 1 water_bottle_1 1															
+frost_gas_grenade		AnCom PlanetBridge Sunlight Emeraldlight	6	250	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	smoke_frost_explosion	tin 1 microelectronics_parts 1 water_bottle_1 1															
+*urparp_grenade		SheduThousand RitualItem	1	100	0.1	1	Grenade	TRUE	5	1	TRUE	7	1	2	0.2	urparp_explosion																
 shatter_grenade		none	1	200	0.1	1	Grenade	TRUE	5	1	TRUE	7	1	2	0.6	mars_explosion																
 hellfire_grenade		ChurchRevelation ChurchGannix Grasshopper	7	300	0.25	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	thermal_big_explosion																
 nanorobot_grenade		Science SBN Dilthey RealWare DaydreamChems Sunlight Emeraldlight CoreWard CResistance	6	175	0.4	1	Grenade	TRUE	3	0	FALSE	7	1	2	0.2	nano_explosion																

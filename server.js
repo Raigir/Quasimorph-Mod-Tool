@@ -49,7 +49,16 @@ const MIME = {
 };
 
 function serveStatic(req, res) {
-  let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const urlPath = req.url === '/' ? 'index.html' : req.url.split('?')[0];
+  const filePath = path.normalize(path.join(__dirname, urlPath));
+
+  // Containment guard — never serve anything outside the app directory
+  if (!filePath.startsWith(__dirname + path.sep) && filePath !== __dirname) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
+
   const ext = path.extname(filePath);
   const mime = MIME[ext] || 'application/octet-stream';
 
@@ -134,19 +143,6 @@ async function handleApi(req, res, query) {
 
       case 'image_move':
         return json(res, moveImages(await readBody(req)));
-
-      // ── Datadisks ──────────────────────────────────────────
-      case 'datadisk_membership':
-        return json(res, getDatadiskMembership(query.project, query.id));
-
-      case 'datadisk_update':
-        return json(res, updateDatadiskMembership(await readBody(req)));
-
-      case 'datadisk_rename_weapon':
-        return json(res, renameWeaponInDatadisks(await readBody(req)));
-
-      case 'datadisk_remove_weapon':
-        return json(res, removeWeaponFromAllDatadisks(await readBody(req)));
 
       case 'health':
         return json(res, { status: 'ok', timestamp: Date.now() });
@@ -422,24 +418,34 @@ function deleteAsset(projectId, category, assetId) {
 
   fs.unlinkSync(filePath);
 
-  // Clean up all associated images (reserved folders + Weapons subfolders)
-  const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
-  const foldersToCheck = [];
-  for (const reserved of RESERVED_IMAGE_FOLDERS) {
-    const resDir = path.join(imagesDir, reserved);
-    if (fs.existsSync(resDir)) {
-      foldersToCheck.push(reserved);
-      fs.readdirSync(resDir, { withFileTypes: true })
-        .filter(d => d.isDirectory()).forEach(d => foldersToCheck.push(reserved + '/' + d.name));
+  // Clean up associated images — scoped to this category's own image folder
+  // and its own suffixes, so same-named assets of other types are untouched.
+  // Weapons may live in Images/Weapons root or a user subfolder.
+  const IMAGE_SCOPE = {
+    'Weapons':   { folder: 'Weapons',   suffixes: ['sprite_icon', 'sprite_floor', 'sprite_shadow'], subfolders: true },
+    'Ammo':      { folder: 'Ammo',      suffixes: ['sprite_icon', 'sprite_floor', 'sprite_shadow'], subfolders: false },
+    'Firemodes': { folder: 'Firemodes', suffixes: ['sprite'], subfolders: false },
+  };
+  const scope = IMAGE_SCOPE[category];
+  if (scope) {
+    const imagesDir = path.join(DATA_ROOT, projectId, 'Assets', 'Images');
+    const foldersToCheck = [];
+    const rootDir = path.join(imagesDir, scope.folder);
+    if (fs.existsSync(rootDir)) {
+      foldersToCheck.push(scope.folder);
+      if (scope.subfolders) {
+        fs.readdirSync(rootDir, { withFileTypes: true })
+          .filter(d => d.isDirectory()).forEach(d => foldersToCheck.push(scope.folder + '/' + d.name));
+      }
     }
-  }
-  for (const folder of foldersToCheck) {
-    const dir = resolveImagesDir(projectId, folder);
-    for (const suffix of IMAGE_SUFFIXES) {
-      const imgPath = path.join(dir, `${assetId}_${suffix}.png`);
-      if (fs.existsSync(imgPath)) {
-        fs.unlinkSync(imgPath);
-        console.log(`[IMAGE] Cleaned up: ${folder ? folder + '/' : ''}${assetId}_${suffix}.png`);
+    for (const folder of foldersToCheck) {
+      const dir = resolveImagesDir(projectId, folder);
+      for (const suffix of scope.suffixes) {
+        const imgPath = path.join(dir, `${assetId}_${suffix}.png`);
+        if (fs.existsSync(imgPath)) {
+          fs.unlinkSync(imgPath);
+          console.log(`[IMAGE] Cleaned up: ${folder}/${assetId}_${suffix}.png`);
+        }
       }
     }
   }
@@ -803,6 +809,72 @@ function deriveCategories(configItemsContent) {
   return out;
 }
 
+// Parse a ref TSV into { header, key, rows: Map<keyVal, {cells, raw}> }.
+// Section files: line0 = #section, line1 = column header, rows keyed by Id
+// (leading * stripped). Enum value-lists: line0 = #name, line1 = "Name",
+// rows are single values keyed by themselves.
+function parseRefTsv(content, isEnum) {
+  const out = { header: [], key: isEnum ? 'Name' : 'Id', rows: new Map(), order: [] };
+  if (!content) return out;
+  const lines = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  let headerIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const t = lines[i].replace(/\t.*/, '').trim();
+    if (t.startsWith('#') || t === '') continue;
+    headerIdx = i; break;
+  }
+  if (headerIdx < 0) return out;
+  out.header = lines[headerIdx].split('\t').map(c => c.trim());
+  // TSV rows are padded with trailing tabs → drop empty trailing column names
+  // so they don't appear in the columns list or generate phantom field diffs.
+  while (out.header.length && out.header[out.header.length - 1] === '') out.header.pop();
+  const keyCol = isEnum ? 0 : out.header.findIndex(h => h.toLowerCase() === 'id');
+  for (let i = headerIdx + 1; i < lines.length; i++) {
+    const raw = lines[i];
+    const t = raw.trim();
+    if (t === '' || t.toLowerCase() === '#end' || t.startsWith('#')) continue;
+    const cells = raw.split('\t');
+    let keyVal = (cells[keyCol < 0 ? 0 : keyCol] || '').trim().replace(/^\*/, '');
+    if (!keyVal) continue;
+    out.rows.set(keyVal, cells.map(c => c.trim()));
+    out.order.push(keyVal);
+  }
+  return out;
+}
+
+// Compare old vs new ref content; returns { added, removed, modified,
+// columnsAdded, columnsRemved } or null when there are no changes.
+function diffRefFile(oldContent, newContent, isEnum) {
+  const a = parseRefTsv(oldContent, isEnum);
+  const b = parseRefTsv(newContent, isEnum);
+  const colsA = a.header, colsB = b.header;
+  const columnsAdded = colsB.filter(c => !colsA.includes(c));
+  const columnsRemoved = colsA.filter(c => !colsB.includes(c));
+
+  const added = [], removed = [], modified = [];
+  for (const id of b.order) if (!a.rows.has(id)) added.push(id);
+  for (const id of a.order) if (!b.rows.has(id)) removed.push(id);
+
+  // Field-level comparison for entries present in both, matched by column name
+  for (const id of b.order) {
+    if (!a.rows.has(id)) continue;
+    const oldCells = a.rows.get(id), newCells = b.rows.get(id);
+    const fields = [];
+    const allCols = [...new Set([...colsA, ...colsB])];
+    for (const col of allCols) {
+      const iA = colsA.indexOf(col), iB = colsB.indexOf(col);
+      const ov = iA >= 0 ? (oldCells[iA] ?? '') : null;
+      const nv = iB >= 0 ? (newCells[iB] ?? '') : null;
+      if (ov !== nv) fields.push({ field: col, old: ov, new: nv });
+    }
+    if (fields.length) modified.push({ id, fields });
+  }
+
+  if (!added.length && !removed.length && !modified.length &&
+      !columnsAdded.length && !columnsRemoved.length) return null;
+  return { added, removed, modified, columnsAdded, columnsRemoved };
+}
+
 async function updateRefData(input) {
   let configs = {};
 
@@ -831,6 +903,7 @@ async function updateRefData(input) {
 
   // Extract all sections to base/
   let extracted = 0;
+  const diffs = {};
   for (const [section, filename] of Object.entries(BASE_SECTION_MAP)) {
     // Find which config file contains this section
     let sectionData = null;
@@ -839,7 +912,11 @@ async function updateRefData(input) {
       if (sectionData) break;
     }
     if (sectionData) {
-      fs.writeFileSync(path.join(baseDir, filename), sectionData, 'utf8');
+      const target = path.join(baseDir, filename);
+      const oldContent = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+      const d = diffRefFile(oldContent, sectionData, false);
+      if (d) diffs[filename] = d;
+      fs.writeFileSync(target, sectionData, 'utf8');
       extracted++;
     } else {
       console.warn(`[REF_UPDATE] Section #${section} not found in any config file`);
@@ -850,17 +927,25 @@ async function updateRefData(input) {
   const configItems = configs['config_items.txt'];
   const ammoTypes = deriveAmmoTypes(configItems);
   if (ammoTypes) {
-    fs.writeFileSync(path.join(enumsDir, 'ammoTypes.txt'), ammoTypes, 'utf8');
+    const target = path.join(enumsDir, 'ammoTypes.txt');
+    const oldContent = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+    const d = diffRefFile(oldContent, ammoTypes, true);
+    if (d) diffs['ammoTypes.txt'] = d;
+    fs.writeFileSync(target, ammoTypes, 'utf8');
     extracted++;
   }
   const categories = deriveCategories(configItems);
   if (categories) {
-    fs.writeFileSync(path.join(enumsDir, 'categories.txt'), categories, 'utf8');
+    const target = path.join(enumsDir, 'categories.txt');
+    const oldContent = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+    const d = diffRefFile(oldContent, categories, true);
+    if (d) diffs['categories.txt'] = d;
+    fs.writeFileSync(target, categories, 'utf8');
     extracted++;
   }
 
   console.log(`[REF_UPDATE] Updated ${extracted} reference files`);
-  return { status: 'ok', filesUpdated: extracted };
+  return { status: 'ok', filesUpdated: extracted, diffs };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1006,13 +1091,21 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
-// Fields the game expects as floats (integer values need trailing .0)
-const FLOAT_FIELDS = ['Price', 'Weight', 'Points'];
+// Float-coerced fields, scoped by RecordType. The game expects these as
+// floats (trailing .0) only within these record types — a future field that
+// happens to share a name in another record type stays untouched.
+const FLOAT_FIELDS_BY_RECORD_TYPE = {
+  'MGSC.WeaponRecord': ['Price', 'Weight'],
+  'MGSC.AmmoRecord': ['Price', 'Weight'],
+  'MGSC.DatadiskRecord': ['Price', 'Weight'],
+  'QM_ImporterAPI.Templates.FactionTemplate': ['Weight', 'Points'],
+};
 
 function writeJson(filePath, data) {
   let json = JSON.stringify(data, null, 2);
-  // Force .0 on known float fields that serialize as integers
-  for (const field of FLOAT_FIELDS) {
+  // Force .0 on known float fields (per record type) that serialize as integers
+  const floatFields = FLOAT_FIELDS_BY_RECORD_TYPE[data?.RecordType] || [];
+  for (const field of floatFields) {
     json = json.replace(new RegExp(`("${field}":\\s*)(\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) => {
       return num.includes('.') ? m : `${pre}${num}.0${post}`;
     });
@@ -1030,13 +1123,18 @@ function glob(dir, ext) {
 /** Project IDs preserve casing and allow spaces (folder names) */
 function sanitizeProjectId(str) {
   if (!str) return '';
-  return str.trim().replace(/[<>:"/\\|?*]/g, '');
+  return str.trim().replace(/\.\./g, '').replace(/[<>:"/\\|?*]/g, '');
 }
 
-/** Asset IDs are the filename stem — allow underscores, hyphens, alphanumeric */
+/**
+ * Asset IDs are the filename stem — letters, numbers, underscores, hyphens only.
+ * Mirrors the client-side /^[a-zA-Z0-9_-]+$/ validation: invalid IDs are
+ * rejected (empty return → caller 400/404s) rather than silently transformed.
+ */
 function sanitizeAssetId(str) {
   if (!str) return '';
-  return str.trim().replace(/[^a-zA-Z0-9_\-]/g, '');
+  const trimmed = str.trim();
+  return /^[a-zA-Z0-9_-]+$/.test(trimmed) ? trimmed : '';
 }
 
 /** Validate that a category is one of the known ones */
@@ -1077,8 +1175,9 @@ function httpErr(status, message) {
 const server = http.createServer(async (req, res) => {
   const parsed = new URL(req.url, 'http://localhost');
 
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS — scoped to the app's own origin (drive-by requests from other
+  // sites get no CORS grant; same-origin requests don't need one anyway)
+  res.setHeader('Access-Control-Allow-Origin', `http://localhost:${PORT}`);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }

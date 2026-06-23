@@ -1,7 +1,7 @@
 #trash																																
 Id		Categories	TechLevel	Price	Weight	InventoryWidthSize	ItemClass	CanPutInVest	MaxStack	SubType	Disassembly																					
 powder		Security Miner	1	1	0.01	1	Parts	FALSE	100	Resource																						
-glass		Common Worker	1	3	0.1	1	Parts	FALSE	50	Resource																						
+glass		Common Worker	1	3	0.05	1	Parts	FALSE	50	Resource																						
 metal_tread		Common Worker	1	3	0.2	1	Parts	FALSE	20	Resource																						
 wire		Common Worker	1	5	0.1	1	Parts	FALSE	20	Resource																						
 explosives		Miner Military	1	20	0.3	1	Parts	FALSE	20	Resource																						
@@ -10,8 +10,8 @@ tin		Common Miner	1	1	0.1	1	Parts	FALSE	10	Resource
 quest_fresco_data			1	999	0.5	1	QuestItem	FALSE	1	QuestItem																						
 quest_prison_head			1	999	0.5	1	QuestItem	FALSE	1	QuestItem																						
 venus_key			1	999	0.5	1	QuestItem	FALSE	1	QuestItem																						
-*glass_bottle		Common	1	1	0.2	1	Parts	TRUE	10	Resource	glass 2																					
-organs_box		Science Medical	1	100	0.8	1	ScienceBarter	FALSE	10	Container	syringe_bloodbag 5 human_organ_1 2 throwable_heart 2 human_eye 2 human_ear 2																					
+*glass_bottle		Common	1	1	0.2	1	Parts	TRUE	10	Resource	glass 6																					
+organs_box		Science Medical	1	100	0.8	1	ScienceBarter	FALSE	10	Container	syringe_bloodbag 6 human_organ_1 2 throwable_heart 2 human_eye 2 human_ear 2																					
 items_box			100	500	2.5	1	QuestItem	FALSE	1	Container	common_knife_1 1 military_pistol_1 1 military_light_armor_1 1 military_mask_1 1 common_pants_4 1 prison_light_boots_1 1 small_basic_ammo 1 bandage 1 splint 1 pills_antibiotics 1 ration_pack_3 1 ration_pack_4 1 small_backpack_1 1 hydrogel_bandage 1																					
 poppy_box		Common Civilian Science	1	20	0.1	1	Parts	FALSE	20	Resource																						
 quest_device			1	0	0.5	1	QuestItem	FALSE	1	QuestItem																						
@@ -29,11 +29,14 @@ quest_mask_guffaws		none	1	0	0.8	1	QuestItem	FALSE	1	QuestItem
 quest_mask_snickers		none	1	0	0.8	1	QuestItem	FALSE	1	QuestItem																						
 quest_mask_screams		none	1	0	0.8	1	QuestItem	FALSE	1	QuestItem																						
 *quest_emp_turret			1	0	0.5	2	QuestItem	FALSE	1	QuestItem																						
-regular_food_container		Common	1	100	1.1	2	IndustrialBarter	FALSE	1	Container	ration_pack_1 2 ration_pack_2 2 soda_can_1 1 soda_can_2 1 water_bottle_1 2																					
+quest_bomb_briefcase		none	1	0	0.5	1	QuestItem	TRUE	1	QuestItem																						
+quest_andreev_emitter		none	1	0	0.5	1	QuestItem	FALSE	1	QuestItem																						
+quest_hellstrom_index			1	0	0.5	1	QuestItem	FALSE	1	QuestItem																						
+regular_food_container		Common	1	100	1.1	2	IndustrialBarter	FALSE	1	Container	ration_pack_1 3 ration_pack_2 3 soda_can_1 2 soda_can_2 2 water_bottle_1 3																					
 military_food_container		Military	1	200	1.1	2	MilitaryBarter	FALSE	1	Container	chocolate_pack_1 1 canned_food_1 2 canned_food_2 2 mre_pack_1 2 water_bottle_1 2																					
-luxury_food_container		Management	1	250	0.8	1	ValuableBarter	FALSE	2	Container	candy_1 1 luxury_canned_food_1 1 luxury_ration_pack_1 1 oil_bottle_1 1 luxury_ration_pack_2 1 energy_can_1 1 armagnac_bottle_1 2																					
-water_container		Common Civilian Management	1	50	0.8	1	IndustrialBarter	FALSE	2	Container	water_bottle_1 8																					
-alcohol_container		Common Miner	1	180	0.8	1	ValuableBarter	FALSE	2	Container	vodka_bottle_1 3 wiskey_bottle_1 3																					
+luxury_food_container		Management	1	250	0.8	1	ValuableBarter	FALSE	2	Container	candy_1 2 luxury_canned_food_1 1 luxury_ration_pack_1 1 oil_bottle_1 1 luxury_ration_pack_2 1 energy_can_1 1 armagnac_bottle_1 2																					
+water_container		Common Civilian Management	1	50	0.8	1	IndustrialBarter	FALSE	2	Container	water_bottle_1 12																					
+alcohol_container		Common Miner	1	180	0.8	1	ValuableBarter	FALSE	2	Container	vodka_bottle_1 5 wiskey_bottle_1 5																					
 regular_clothing_container		Common Civilian	1	80	2.1	1	IndustrialBarter	FALSE	2	Container	common_jacket_1 1 common_hybershirt_1 1 common_shirt_2 1 common_blouse_1 1 common_gasmask_1 1 common_glasses_1 1 common_hat_1 1 common_hat_3 1 common_reinforced_pants_1 1 common_hyber_pants_1 1 common_pants_2 1 common_pants_4 1 common_boots_1 1 common_sneakers_1 1 common_sneakers_2 1 small_backpack_1 1																					
 miner_clothing_container		Miner	1	120	2.1	1	IndustrialBarter	FALSE	2	Container	miner_shirt_1 1 miner_reinforced_shirt_1 1 miner_medium_armor_1 1 miner_hard_cap_1 1 miner_hard_cap_2 1 miner_medium_helmet_1 1 miner_pants_1 1 miner_reinforced_pants_1 1 miner_medium_pants_1 1 miner_boots_1 1 miner_reinforced_boots_1 1 miner_medium_boots_1 1 servo_backpack_1 1																					
 worker_clothing_container		Worker	1	140	2.1	1	IndustrialBarter	FALSE	2	Container	laborer_shirt_3 1 laborer_warm_shirt_1 1 laborer_medium_armor_1 1 laborer_hard_cap_1 1 laborer_warm_hat_1 1 laborer_medium_helmet_1 1 laborer_pants_2 1 laborer_warm_pants_1 1 laborer_medium_pants_1 1 laborer_boots_1 1 laborer_warm_boots_1 1 laborer_medium_boots_1 1 servo_backpack_1 1																					
@@ -58,14 +61,14 @@ mining_equipment		Miner	1	175	2.2	2	IndustrialBarter	FALSE	1	BartherResource	arm
 construction_equipment		Worker	1	215	2.2	2	IndustrialBarter	FALSE	1	BartherResource	armor_plates 1 weapon_parts 1 blunt_parts 1 rusty_plates 1 coarse_parts 1 rod_parts 1 ceramite_plates 1 capacitor_parts 1 wire 1 transformer 1																					
 chemical_analyzer		Science Medical	1	120	0.7	1	ScienceBarter	FALSE	1	BartherResource	microelectronics_parts 1 circuit_board 1 lens 1 transformer 1 bulb 1																					
 hydraulic_pump		Worker Miner	1	160	0.8	1	IndustrialBarter	FALSE	1	BartherResource	rusty_plates 1 coarse_parts 1 rod_parts 1 metal_tread 1 wire 1																					
-quasiresearch_disk		Military Science	1	360	0.1	1	ScienceBarter	FALSE	5	BartherResource	microelectronics_parts 1 capacitor_parts 1 circuit_board 1 transformer 1 bulb 1 lens 1 wire 1 anulator 1 plastic 1																					
+quasiresearch_disk		Military Science	1	360	0.1	1	ScienceBarter	FALSE	5	BartherResource	microelectronics_parts 1 capacitor_parts 1 circuit_board 1 transformer 1 bulb 1 lens 1 wire 1 plastic 1																					
 research_disk		Management Science	1	220	0.1	1	ScienceBarter	FALSE	5	BartherResource	microelectronics_parts 1 capacitor_parts 1 circuit_board 1 transformer 1 bulb 1 lens 1 wire 1 plastic 2																					
 prototype_schematics		Science Worker Management	1	280	0.1	1	ScienceBarter	FALSE	10	BartherResource																						
 quasisamples		Science Medical	1	200	0.7	1	ScienceBarter	FALSE	5	BartherResource	venus_guts 1 quasi_venus_rags 1 venus_weapon_parts 1 mercury_guts 1 mercury_rags 1 mercury_glass 1 moon_guts 1 moon_weapon_parts 1 moon_armor_plates 1 quasi_ron_medicine_1 1 cattaram_mine 1 skrivnus_knife 1 urparp_grenade 1																					
-biomass_tank		Medical Science	1	60	1.3	1	ScienceBarter	FALSE	5	BartherResource	human_poop 4 human_meat 2 human_skin 1 dog_meat 1 dog_skin 1 dog_teeth 1 spider_meat 1 spider_brain 1 spider_eye 1																					
+biomass_tank		Medical Science	1	60	1.3	1	ScienceBarter	FALSE	5	BartherResource	human_poop 5 human_meat 3 human_skin 1 dog_meat 1 dog_skin 1 dog_teeth 1 spider_meat 1 spider_brain 1 spider_eye 1																					
 *precious_metals		Miner UnchainedBelt Shartamakhum Cattaram	1	400	1.2	1	ValuableBarter	FALSE	10	BartherResource																						
 ore_cargo		Miner	1	130	2.4	1	IndustrialBarter	FALSE	10	BartherResource	rusty_plates 10 armor_plates 10 ceramite_plates 10																					
-drug_cargo		Management Prison	1	250	0.5	1	ValuableBarter	FALSE	2	BartherResource	syringe_morphine 4 syringe_nanoinjection 2 syringe_adrenaline 2 syringe_naloxone 2 syringe_antidote 2																					
-medical_components		Medical Science	1	320	1.1	1	ScienceBarter	FALSE	2	BartherResource	medical_kit_1 2 pills_antibiotics 2 pills_antiradin 2 pills_fibromine 2 pills_cryopentol 2 pills_tranexam 2 pills_osteodron 2 plaster 1 medical_glue 1 mustard_patch 1 goldenstar_balm 1																					
-watermelon		Management	1	120	0.2	1	Food	FALSE	5	Container	watermelon_slice 4																					
+drug_cargo		Management Prison	1	250	0.5	1	ValuableBarter	FALSE	2	BartherResource	syringe_morphine 5 syringe_nanoinjection 2 syringe_adrenaline 2 syringe_naloxone 2 syringe_antidote 2																					
+medical_components		Medical Science	1	320	1.1	1	ScienceBarter	FALSE	2	BartherResource	medical_kit_1 3 pills_antibiotics 2 pills_antiradin 2 pills_fibromine 2 pills_cryopentol 2 pills_tranexam 2 pills_osteodron 2 plaster 2 medical_glue 2 mustard_patch 2 goldenstar_balm 2																					
+watermelon		Management	1	120	0.2	1	Food	FALSE	5	Container	watermelon_slice 6																					
 #end																																

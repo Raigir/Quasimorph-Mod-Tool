@@ -1,56 +1,57 @@
-#itemtraits																									
-Id	ItemTraitType	TraitContext	IsNegative	Parameters	TooltipIconTag																				
-perfect_throw	WeaponTrait	Passive	FALSE	BThrowAutoHit true	traits_perfect_throw																				
-piercing_throw	WeaponTrait	Passive	FALSE	BPiercingThrow true	traits_piercing_throw																				
-mutiliating	WeaponTrait	Passive	FALSE	BMutilate true	traits_mutiliating																				
-cleave	WeaponTrait	Passive	FALSE	BMeleeCleave true	traits_cleave																				
-sweep	WeaponTrait	Passive	FALSE	IMeleeSweep 2	traits_cleave																				
-offhand	WeaponTrait	Passive	FALSE	FOffHandCritBonus 0.08	traits_offhand																				
-single_load	WeaponTrait	Passive	TRUE	BSingleLoad true	traits_single_load																				
-extra_knockback	WeaponTrait	Passive	FALSE	BExtraKnockback true	traits_extra_knockback																				
-painful_crits	WeaponTrait	Passive	FALSE	FPainCritMult 3	traits_painful_crits																				
-suppressor	WeaponTrait	Passive	FALSE	BSuppressor true	traits_suppressor																				
-wounding_pierce	WeaponTrait	Passive	FALSE	FPiercingTrauma 1	traits_wounding_pierce																				
-piercing	WeaponTrait	Passive	FALSE	FPierce 0.7	traits_piercing																				
-full_piercing	WeaponTrait	Passive	FALSE	FPierce 1	traits_piercing																				
-armor_pen	AmmoTrait	Passive	FALSE	FArmorPenetration 0.35	traits_armor_pen																				
-incendiary	AmmoTrait	Passive	FALSE	FIncendiaryChance 0.15	traits_incendiary																				
-heavy_incendiary	AmmoTrait	Passive	FALSE	FIncendiaryChance 0.75	traits_incendiary																				
-fires	AmmoTrait	Passive	FALSE	FFireSpread 0.12 IStartSpreadDistance 2	traits_fires																				
-toxic	AmmoTrait	Passive	FALSE	FToxicSpread 0.2 IStartSpreadDistance 2	traits_toxic																				
-heavy_fires	AmmoTrait	Passive	FALSE	FFireSpread 0.8 IStartSpreadDistance 2	traits_fires																				
-heavy_toxic	AmmoTrait	Passive	FALSE	FToxicSpread 0.8 IStartSpreadDistance 2	traits_toxic																				
-heavy_water	AmmoTrait	Passive	FALSE	FWaterSpread 0.8 IStartSpreadDistance 0	traits_water																				
-painful	AmmoTrait	Passive	FALSE	FPainDamageMult 1.6	traits_painful																				
-knockback	AmmoTrait	Passive	FALSE	FThrowbackChance 0.26	traits_knockback																				
-heavy_knockback	AmmoTrait	Passive	FALSE	FThrowbackChance 0.70	traits_knockback																				
-knockdown	AmmoTrait	Passive	FALSE	FStunChance 0.12 IEnemyStunDuration 1	traits_knockdown																				
-heavy_knockdown	AmmoTrait	Passive	FALSE	FStunChance 0.76 IEnemyStunDuration 1	traits_knockdown																				
-ramp_up	WeaponTrait	Passive	FALSE	IRampUpProjectiles 1	traits_ramp_up																				
-unthrowable	WeaponTrait	Passive	TRUE	BUnthrowable true	traits_unthrowable																				
-selfcharging	WeaponTrait	Passive	FALSE	BSelfcharging true	traits_selfcharging																				
-critical_throw	WeaponTrait	Passive	FALSE	BThrowAutoCrit true	traits_critical_throw																				
-wounding	AmmoTrait	Passive	FALSE	FDoWoundChance 0.40	traits_wounding_pierce																				
-fragile	WeaponTrait	Passive	TRUE	IFragile 5	traits_fragile																				
-unwieldy	WeaponTrait	Passive	TRUE	FUnwieldyMult 0.8	traits_unwieldy																				
-heavy_weapon	WeaponTrait	Passive	TRUE	BHeavyWeapon true	traits_heavy_weapon																				
-overheat	WeaponTrait	Passive	TRUE	IOverheatDurability 1	traits_overheat																				
-overclock	WeaponTrait	Passive	FALSE	IOverclockDamage 15	traits_overclock																				
-bipod	WeaponTrait	Passive	FALSE	FBipodScatter -0.5 FBipodAccuracy 0.3	traits_bipod																				
-optic_sight	WeaponTrait	Passive	FALSE	IEffRangeStarts 4	traits_optic_sight																				
-explosive	AmmoTrait	Passive	FALSE	SExplosive rocket_basic_explosion	trait_inherit_damage																				
-explosive_light_flak	AmmoTrait	Passive	FALSE	SExplosive flak_low_explosion	trait_inherit_damage																				
-explosive_flak	AmmoTrait	Passive	FALSE	SExplosive flak_explosion	trait_inherit_damage																				
-explosive_shotgun	AmmoTrait	Passive	FALSE	SExplosive shotgun_explosion	trait_inherit_damage																				
-explosive_fire	AmmoTrait	Passive	FALSE	SExplosive rocket_fire_explosion	traits_incendiary																				
-explosive_poison	AmmoTrait	Passive	FALSE	SExplosive rocket_poison_explosion	traits_toxic																				
-explosive_quasi	AmmoTrait	Passive	FALSE	SExplosive rocket_quasi_explosion	trait_inherit_damage																				
-explosive_hfg	AmmoTrait	Passive	FALSE	SExplosive hfg_explosion	trait_inherit_damage																				
-ricochet	AmmoTrait	Passive	FALSE	IRicochet 5 IMaxDistance 15	traits_ricochet																				
-collimator	WeaponTrait	Passive	FALSE	FFalloffBonus -0.12	traits_collimator																				
-laser_sight	WeaponTrait	Passive	FALSE	BLaserSight true	traits_laser_sight																				
-corrosive	AmmoTrait	Passive	FALSE	FCorrosiveEffect 0.8	traits_corrosive																				
-backstab	WeaponTrait	Passive	FALSE	FBackstabCritChance 0.6 FBackstabCritDmg 1.5	traits_backstab																				
-suppressive_fire	WeaponTrait	Passive	FALSE	FSuppressedAccuracy 0.6	traits_suppressive_fire																				
-mark_target	WeaponTrait	Passive	FALSE	IMarkCritVulnerableDuration 3	traits_suppressive_fire																				
-#end																									
+#itemtraits																												
+Id	ItemTraitType	TraitContext	IsNegative	Parameters	TooltipIconTag																							
+perfect_throw	WeaponTrait	Passive	FALSE	BThrowAutoHit true	traits_perfect_throw																							
+piercing_throw	WeaponTrait	Passive	FALSE	BPiercingThrow true	traits_piercing_throw																							
+mutiliating	WeaponTrait	Passive	FALSE	BMutilate true	traits_mutiliating																							
+cleave	WeaponTrait	Passive	FALSE	BMeleeCleave true	traits_cleave																							
+sweep	WeaponTrait	Passive	FALSE	IMeleeSweep 2	traits_cleave																							
+offhand	WeaponTrait	Passive	FALSE	FOffHandCritBonus 0.08	traits_offhand																							
+single_load	WeaponTrait	Passive	TRUE	BSingleLoad true	traits_single_load																							
+extra_knockback	WeaponTrait	Passive	FALSE	BExtraKnockback true	traits_extra_knockback																							
+painful_crits	WeaponTrait	Passive	FALSE	FPainCritMult 3	traits_painful_crits																							
+suppressor	WeaponTrait	Passive	FALSE	BSuppressor true	traits_suppressor																							
+wounding_pierce	WeaponTrait	Passive	FALSE	FPiercingTrauma 1	traits_wounding_pierce																							
+piercing	WeaponTrait	Passive	FALSE	FPierce 0.7	traits_piercing																							
+full_piercing	WeaponTrait	Passive	FALSE	FPierce 1	traits_piercing																							
+armor_pen	AmmoTrait	Passive	FALSE	FArmorPenetration 0.35	traits_armor_pen																							
+incendiary	AmmoTrait	Passive	FALSE	FIncendiaryChance 0.15	traits_incendiary																							
+heavy_incendiary	AmmoTrait	Passive	FALSE	FIncendiaryChance 0.75	traits_incendiary																							
+fires	AmmoTrait	Passive	FALSE	FFireSpread 0.12 IStartSpreadDistance 2	traits_fires																							
+toxic	AmmoTrait	Passive	FALSE	FToxicSpread 0.2 IStartSpreadDistance 2	traits_toxic																							
+heavy_fires	AmmoTrait	Passive	FALSE	FFireSpread 0.8 IStartSpreadDistance 2	traits_fires																							
+heavy_toxic	AmmoTrait	Passive	FALSE	FToxicSpread 0.8 IStartSpreadDistance 2	traits_toxic																							
+heavy_water	AmmoTrait	Passive	FALSE	FWaterSpread 0.8 IStartSpreadDistance 0	traits_water																							
+painful	AmmoTrait	Passive	FALSE	FPainDamageMult 1.6	traits_painful																							
+knockback	AmmoTrait	Passive	FALSE	FThrowbackChance 0.26	traits_knockback																							
+heavy_knockback	AmmoTrait	Passive	FALSE	FThrowbackChance 0.70	traits_knockback																							
+knockdown	AmmoTrait	Passive	FALSE	FStunChance 0.12 IEnemyStunDuration 1	traits_knockdown																							
+heavy_knockdown	AmmoTrait	Passive	FALSE	FStunChance 0.76 IEnemyStunDuration 1	traits_knockdown																							
+ramp_up	WeaponTrait	Passive	FALSE	IRampUpProjectiles 1	traits_ramp_up																							
+unthrowable	WeaponTrait	Passive	TRUE	BUnthrowable true	traits_unthrowable																							
+selfcharging	WeaponTrait	Passive	FALSE	BSelfcharging true	traits_selfcharging																							
+critical_throw	WeaponTrait	Passive	FALSE	BThrowAutoCrit true	traits_critical_throw																							
+wounding	AmmoTrait	Passive	FALSE	FDoWoundChance 0.40	traits_wounding_pierce																							
+fragile	WeaponTrait	Passive	TRUE	IFragile 5	traits_fragile																							
+unwieldy	WeaponTrait	Passive	TRUE	FUnwieldyMult 0.8	traits_unwieldy																							
+heavy_weapon	WeaponTrait	Passive	TRUE	BHeavyWeapon true	traits_heavy_weapon																							
+overheat	WeaponTrait	Passive	TRUE	IOverheatDurability 1	traits_overheat																							
+overclock	WeaponTrait	Passive	FALSE	IOverclockDamage 15	traits_overclock																							
+bipod	WeaponTrait	Passive	FALSE	FBipodScatter -0.5 FBipodAccuracy 0.3	traits_bipod																							
+optic_sight	WeaponTrait	Passive	FALSE	IEffRangeStarts 4	traits_optic_sight																							
+explosive	AmmoTrait	Passive	FALSE	SExplosive rocket_basic_explosion	trait_inherit_damage																							
+explosive_light_flak	AmmoTrait	Passive	FALSE	SExplosive flak_low_explosion	trait_inherit_damage																							
+explosive_flak	AmmoTrait	Passive	FALSE	SExplosive flak_explosion	trait_inherit_damage																							
+explosive_shotgun	AmmoTrait	Passive	FALSE	SExplosive shotgun_explosion	trait_inherit_damage																							
+explosive_fire	AmmoTrait	Passive	FALSE	SExplosive rocket_fire_explosion	traits_incendiary																							
+explosive_poison	AmmoTrait	Passive	FALSE	SExplosive rocket_poison_explosion	traits_toxic																							
+explosive_nuke	AmmoTrait	Passive	FALSE	SExplosive rocket_nuke_explosion	trait_inherit_damage																							
+explosive_quasi	AmmoTrait	Passive	FALSE	SExplosive rocket_quasi_explosion	trait_inherit_damage																							
+explosive_hfg	AmmoTrait	Passive	FALSE	SExplosive hfg_explosion	trait_inherit_damage																							
+ricochet	AmmoTrait	Passive	FALSE	IRicochet 5 IMaxDistance 15	traits_ricochet																							
+collimator	WeaponTrait	Passive	FALSE	FFalloffBonus -0.12	traits_collimator																							
+laser_sight	WeaponTrait	Passive	FALSE	BLaserSight true	traits_laser_sight																							
+corrosive	AmmoTrait	Passive	FALSE	FCorrosiveEffect 0.8	traits_corrosive																							
+backstab	WeaponTrait	Passive	FALSE	FBackstabCritChance 0.6 FBackstabCritDmg 1.5	traits_backstab																							
+suppressive_fire	WeaponTrait	Passive	FALSE	FSuppressedAccuracy 0.6	traits_suppressive_fire																							
+mark_target	WeaponTrait	Passive	FALSE	IMarkCritVulnerableDuration 3	traits_suppressive_fire																							
+#end																												
