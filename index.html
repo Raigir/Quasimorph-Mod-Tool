@@ -332,8 +332,8 @@
     font-size:11px; font-weight:600; padding:1px 6px; border-radius:4px;
     font-family:'DM Sans',sans-serif;
   }
-  .refdiff-tag.add { color:var(--success); background:rgba(95,180,95,0.12); }
-  .refdiff-tag.rem { color:var(--error); background:rgba(215,143,140,0.12); }
+  .refdiff-tag.add { color:var(--success); background:color-mix(in srgb, var(--success) 12%, transparent); }
+  .refdiff-tag.rem { color:var(--error); background:color-mix(in srgb, var(--error) 12%, transparent); }
   .refdiff-tag.mod { color:var(--accent); background:var(--accent-glow); }
   .refdiff-tag.col { color:var(--text-secondary); background:var(--bg-active); }
   .refdiff-file-body { padding:8px 12px; font-size:12px; }
@@ -502,6 +502,9 @@
     margin-bottom:10px; padding-bottom:6px;
     border-bottom:1px solid var(--border);
   }
+  .ed-section-help {
+    font-size:11px; color:var(--text-dim); margin:-4px 0 10px;
+  }
   .stats-title-row {
     display:flex; align-items:center; justify-content:flex-start; gap:12px;
     margin-bottom:10px; padding-bottom:6px;
@@ -542,6 +545,10 @@
   }
   .ed-field.narrow { flex:0 0 var(--field-w); }
   .ed-field.med { flex:0 0 180px; }
+  /* Field spans: fixed widths covering N narrow (180px) columns + gaps.
+     span2 = 2 columns, span3 = 3 columns. id-field kept as a legacy alias. */
+  .ed-field.span2 { flex:0 0 calc(2 * var(--field-w) + 1 * var(--ed-gap)); }
+  .ed-field.span3,
   .ed-field.id-field { flex:0 0 calc(3 * var(--field-w) + 2 * var(--ed-gap)); }
   .ed-field:has(input[type="text"]) { max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); min-width:180px; }
   .ed-field:has(select) { max-width:calc(3 * var(--field-w) + 2 * var(--ed-gap)); min-width:180px; }
@@ -991,6 +998,7 @@
         <button class="btn active" id="modeWeapons" onclick="guardSwitchMode('weapons')">Weapons</button>
         <button class="btn" id="modeAmmo" onclick="guardSwitchMode('ammo')">Ammo</button>
         <button class="btn" id="modeFiremodes" onclick="guardSwitchMode('firemodes')">Firemodes</button>
+        <button class="btn" id="modeExplosions" onclick="guardSwitchMode('explosions')">Explosions</button>
       </div>
     </div>
     <div class="c-header-actions">
@@ -1082,7 +1090,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Identity</div>
       <div class="ed-row">
-        <div class="ed-field id-field"><label>Id</label><input type="text" id="ed-Id"></div>
+        <div class="ed-field span3"><label>Id</label><input type="text" id="ed-Id"></div>
         <div class="ed-field"><label>Is Implicit</label><input type="checkbox" id="ed-IsImplicit"><div class="tog" onclick="togClick(this)"></div></div>
       </div>
       <div class="ed-row">
@@ -1282,6 +1290,7 @@
     <!-- Image Properties -->
     <div class="ed-section">
       <div class="ed-section-title">Image Properties</div>
+      <div class="ed-section-help">Use other weapon ids to reuse from that weapon</div>
       <div class="ed-row">
         <div class="ed-field"><label>Icon Sprite Path/ID</label><input type="text" id="desc-IconSpriteIdOrPath"></div>
       </div>
@@ -1296,13 +1305,14 @@
     <!-- Audio Properties -->
     <div class="ed-section">
       <div class="ed-section-title">Audio Properties</div>
+      <div class="ed-section-help">Use other weapon ids to reuse from that weapon</div>
       <div class="ed-row">
-        <div class="ed-field"><label>Shoot Sound ID</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
-        <div class="ed-field"><label>Reload Sound ID</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
+        <div class="ed-field"><label>Shoot Sound ID/Path</label><input type="text" id="desc-ShootSoundIdOrPath"></div>
+        <div class="ed-field"><label>Reload Sound ID/Path</label><input type="text" id="desc-ReloadSoundIdOrPath"></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Dry Shot Sound ID</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
-        <div class="ed-field"><label>Failed Attack Sound ID</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
+        <div class="ed-field"><label>Dry Shot Sound ID/Path</label><input type="text" id="desc-DryShotSoundIdOrPath"></div>
+        <div class="ed-field"><label>Failed Attack Sound ID/Path</label><input type="text" id="desc-FailedAttackSoundIdOrPath"></div>
       </div>
     </div>
 
@@ -1311,11 +1321,13 @@
       <div class="ed-section-title">Model Properties</div>
       <div class="ed-row">
         <div class="ed-field"><label>Asset Bundle Path</label><input type="text" id="desc-AssetBundlePath"></div>
-        <div class="ed-field"><label>Texture ID</label><input type="text" id="desc-TextureIdOrPath"></div>
+        <div class="ed-field"><label>Muzzle Id</label><input type="text" id="desc-MuzzleId"></div>
+        <div style="flex:0 0 18px; display:flex; align-items:flex-end;"><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Use other weapon id to reuse that weapon's muzzle effect</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field"><label>Muzzle Id</label><input type="text" id="desc-MuzzleId"></div>
         <div class="ed-field"><label>Prefab Id</label><input type="text" id="desc-PrefabId"></div>
+        <div class="ed-field"><label>Texture ID</label><input type="text" id="desc-TextureIdOrPath"></div>
+        <div style="flex:0 0 18px;"></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Prefab Scale</label><input type="number" id="desc-PrefabScale" step="0.001" oninput="validatePrefabScale(this)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Suggested values between 0.04 and 0.065</span></span></div></div>
@@ -1446,6 +1458,156 @@
     </div>
   </div>
 
+  <!-- Explosion Tab Bar -->
+  <div class="tab-bar" id="expTabBar">
+    <button class="tab-btn active" onclick="switchExplosionTab('expConfig')">Explosion Config</button>
+    <button class="tab-btn" onclick="switchExplosionTab('expDescriptor')">Descriptor</button>
+  </div>
+
+  <!-- Explosion Editor -->
+  <div class="editor-wrap" id="expConfigWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Identity</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Id</label><input type="text" id="exp-Id"></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Explosion Stats</div>
+      <div class="ed-row">
+        <div class="ed-field span2"><label>Damage Type</label><select id="exp-DamageType"></select></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Visual Explosion</label><input type="checkbox" id="exp-VisualExplosion"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Damage</label><input type="number" id="exp-Damage" step="1" oninput="validateExpField(this, 'int_gte0')"></div>
+        <div class="ed-field narrow"><label>Radius</label><input type="number" id="exp-Radius" step="1" oninput="validateExpField(this, 'int_gte0')"></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Distance Damage Falloff</label><input type="number" id="exp-DistanceDamageFalloff" step="1" oninput="validateExpField(this, 'int_gte0')"></div>
+        <div class="ed-field narrow"><label>Wound Chance</label><input type="number" id="exp-WoundChance" step="0.01" oninput="validateExpField(this, 'num_gte0')"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Damage Targets</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Gain Dmg To Creature</label><input type="checkbox" id="exp-GainDmgToCreature"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Self Damaging</label><input type="checkbox" id="exp-SelfDamaging"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Gain Dmg To Location</label><input type="checkbox" id="exp-GainDmgToLocation"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Gain Dmg To Monolith</label><input type="checkbox" id="exp-GainDmgToMonolith"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Disintegrate</label><input type="checkbox" id="exp-Disintegrate"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Throwback</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Throwback</label><input type="checkbox" id="exp-Throwback"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Throwback Depend On Radius</label><input type="checkbox" id="exp-ThrowbackDependOnRadius"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Throwback Chance</label><input type="number" id="exp-ThrowbackChance" step="0.01" oninput="validateExpField(this, 'num_0to1')"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Stun</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Stun</label><input type="checkbox" id="exp-Stun"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Stun Depend On Radius</label><input type="checkbox" id="exp-StunDependOnRadius"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Stun Chance</label><input type="number" id="exp-StunChance" step="0.01" oninput="validateExpField(this, 'num_0to1')"></div>
+        <div class="ed-field narrow"><label>Stun Duration</label><input type="number" id="exp-StunDuration" step="1" oninput="validateExpField(this, 'int_gte0')"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Fire</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Propagate Fire</label><input type="checkbox" id="exp-PropagateFire"><div class="tog" onclick="togClick(this)"></div></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Fire Depend On Radius</label><input type="checkbox" id="exp-FireDependOnRadius"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Propagate Fire Chance</label><input type="number" id="exp-PropagateFireChance" step="0.01" oninput="validateExpField(this, 'num_0to1')"></div>
+        <div class="ed-field narrow" style="flex:0 0 var(--field-w); flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Large Fire Chance</label><input type="number" id="exp-LargeFireChance" step="1" oninput="validateExpField(this, 'int_0to100')"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Uses values between 0-100</span></span></div></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Liquid</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Propagate Liquid</label><input type="checkbox" id="exp-PropagateLiquid"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Liquid Type</label><select id="exp-LiquidType"></select></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Gas</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Propagate Gas</label><input type="checkbox" id="exp-PropagateGas"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Gas Type</label><select id="exp-GasType"></select></div>
+        <div class="ed-field narrow"><label>Gas Strength</label><select id="exp-GasStrength"></select></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Misc</div>
+      <div class="ed-row">
+        <div class="ed-field" style="flex:1 1 0;"><label>Ignore Mines</label><input type="checkbox" id="exp-IgnoreMines"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+    </div>
+
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveExplosion()">Save</button>
+    </div>
+  </div>
+
+  <!-- Explosion Descriptor Tab -->
+  <div class="editor-wrap" id="expDescriptorWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Descriptor Config</div>
+      <div class="ed-row">
+        <div class="ed-field span3" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Explosion Visual ID</label><input type="text" id="expd-ExplosionVisualId"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Use existing explosion id to reuse that explosion's visuals</span></span></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field span3" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Explosion Sound ID/Path</label><input type="text" id="expd-ExplosionSoundIdOrPath"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Use existing explosion id to reuse that explosion's sounds or pass a path for a custom sound</span></span></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Visual Explosion Delay</label><input type="number" id="expd-VisualExplosionDelay" step="0.01" oninput="validateExpField(this, 'num_gte0')"></div>
+        <div class="ed-field narrow"><label>Visual Reach Cell Duration</label><input type="number" id="expd-VisualReachCellDuration" step="0.01" oninput="validateExpField(this, 'num_gte0')"></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Shake Camera On Explosion</label><input type="checkbox" id="expd-ShakeCameraOnExplosion"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Clear Gibs Radius (px)</label><input type="number" id="expd-ClearGibsRadiusInPixels" step="1" oninput="validateExpField(this, 'int_gte0')"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Visual Offset</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Offset X</label><input type="number" id="expd-VisualExplosionOffsetX" step="0.01" oninput="validateExpField(this, 'num_any')"></div>
+        <div class="ed-field narrow"><label>Offset Y</label><input type="number" id="expd-VisualExplosionOffsetY" step="0.01" oninput="validateExpField(this, 'num_any')"></div>
+        <div class="ed-field narrow"><label>Offset Z</label><input type="number" id="expd-VisualExplosionOffsetZ" step="0.01" oninput="validateExpField(this, 'num_any')"></div>
+      </div>
+    </div>
+
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveExplosion()">Save</button>
+    </div>
+  </div>
+
   <!-- Ammo Tab Bar -->
   <div class="tab-bar" id="ammoTabBar">
     <button class="tab-btn active" onclick="switchAmmoTab('ammoConfig')">Ammo Config</button>
@@ -1496,7 +1658,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Identity</div>
       <div class="ed-row">
-        <div class="ed-field id-field" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
+        <div class="ed-field span3" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;flex:1;"><label>Id</label><input type="text" id="ammo-Id"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Add "implicted_" to the front of this id to make this ammo an implicit ammo</span></span></div></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Tech Level</label><input type="number" id="ammo-TechLevel" step="1" oninput="validateAmmoField(this, 'int_1_10')"></div>
@@ -1567,7 +1729,7 @@
     <div class="ed-section">
       <div class="ed-section-title">Status Effects</div>
       <div class="ed-row">
-        <div class="ed-field id-field"><label>Status Effect Id</label><select id="ammo-StatusEffectId"></select></div>
+        <div class="ed-field span3"><label>Status Effect Id</label><select id="ammo-StatusEffectId"></select></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow"><label>Chance To Apply</label><input type="number" id="ammo-ChanceToApply" step="0.01" oninput="validateAmmoField(this, 'num_gte0')"></div>
@@ -1598,6 +1760,7 @@
   <div class="editor-wrap" id="ammoDescriptorWrap">
     <div class="ed-section">
       <div class="ed-section-title">Image Properties</div>
+      <div class="ed-section-help">Use other ammo ids to reuse from that ammo</div>
       <div class="ed-row">
         <div class="ed-field"><label>Icon Sprite Path/ID</label><input type="text" id="ad-IconSpriteIdOrPath"></div>
       </div>
@@ -1773,6 +1936,7 @@
     </div>
     <div class="modal-body" id="refDiffBody"></div>
     <div class="modal-foot">
+      <button class="btn" id="refDiffExportBtn" onclick="exportRefDiff()" style="display:none;">Export</button>
       <button class="btn primary" onclick="closeRefDiff()">Done</button>
     </div>
   </div>
@@ -1786,6 +1950,7 @@ let selProject = null;
 let selWeapon = null;
 let selFiremode = null;
 let selAmmo = null;
+let selExplosion = null;
 let REF = null;
 let curImageFolder = '';
 let currentMode = 'weapons';
@@ -1863,6 +2028,9 @@ async function deleteProjectById(id) {
       selWeapon = null;
       selFiremode = null;
       selAmmo = null;
+      _projFiremodeData = {};
+      _projAmmoData = {};
+      _allAmmoForDefault = [];
       localStorage.removeItem('lastProject');
       document.querySelector('.c-header-title').textContent = '—';
       hideAllEditors();
@@ -2127,7 +2295,7 @@ async function selectProject(id, skipAutoSelect) {
 }
 
 function renderModeList(tree, skipAutoSelect) {
-  const catMap = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes' };
+  const catMap = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions' };
   const cat = catMap[currentMode] || 'Weapons';
   const items = tree[cat] || [];
   const emptyState = document.getElementById('emptyState');
@@ -2158,6 +2326,15 @@ function renderModeList(tree, skipAutoSelect) {
     } else {
       emptyState.style.display = '';
       emptyState.querySelector('div:last-child').textContent = 'No firemodes yet';
+    }
+  } else if (currentMode === 'explosions') {
+    renderExplosionList(items);
+    if (items.length) {
+      emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectExplosion(items[0].id);
+    } else {
+      emptyState.style.display = '';
+      emptyState.querySelector('div:last-child').textContent = 'No explosions yet';
     }
   }
 }
@@ -3170,6 +3347,502 @@ function confirmCopyFiremode(id) {
   showConfirm(`Copy the asset "${id}"?`, () => copyFiremode(id), 'Copy', 'primary');
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  EXPLOSIONS
+// ═══════════════════════════════════════════════════════════════════
+
+// New-record defaults (canonical key order: Id, then Parameters in config order, extras last)
+function newExplosionRecord(id) {
+  return {
+    RecordType: 'MGSC.ExplosionRecord',
+    Data: {
+      Id: id || 'explosion_tempid_1',
+      Parameters: {
+        VisualExplosion: true,
+        Radius: 1,
+        DistanceDamageFalloff: 1,
+        GainDmgToCreature: true,
+        SelfDamaging: true,
+        GainDmgToLocation: true,
+        GainDmgToMonolith: false,
+        Damage: 0,
+        DamageType: 'explosion',
+        WoundChance: 1.5,
+        Throwback: false,
+        ThrowbackChance: 0.5,
+        ThrowbackDependOnRadius: true,
+        Stun: false,
+        StunChance: 0.0,
+        StunDuration: 0,
+        StunDependOnRadius: false,
+        PropagateFire: false,
+        PropagateFireChance: 0.0,
+        LargeFireChance: 0,
+        FireDependOnRadius: false,
+        PropagateLiquid: false,
+        LiquidType: 'Red',
+        Disintegrate: false,
+        PropagateGas: false,
+        GasType: 'Smoke',
+        GasStrength: 'Weak',
+        IsPlayerFire: false,
+        IgnoreMines: false,
+      }
+    }
+  };
+}
+
+function populateExplosionEditor(d) {
+  const p = d.Parameters || {};
+  val('exp-Id', d.Id);
+  chk('exp-VisualExplosion', p.VisualExplosion);
+  val('exp-Radius', p.Radius ?? 1);
+  val('exp-DistanceDamageFalloff', p.DistanceDamageFalloff ?? 1);
+  chk('exp-GainDmgToCreature', p.GainDmgToCreature);
+  chk('exp-SelfDamaging', p.SelfDamaging);
+  chk('exp-GainDmgToLocation', p.GainDmgToLocation);
+  chk('exp-GainDmgToMonolith', p.GainDmgToMonolith);
+  val('exp-Damage', p.Damage ?? 0);
+  val('exp-DamageType', p.DamageType ?? 'explosion');
+  val('exp-WoundChance', p.WoundChance ?? 1.5);
+  chk('exp-Throwback', p.Throwback);
+  val('exp-ThrowbackChance', p.ThrowbackChance ?? 0.5);
+  chk('exp-ThrowbackDependOnRadius', p.ThrowbackDependOnRadius ?? true);
+  chk('exp-Stun', p.Stun);
+  val('exp-StunChance', p.StunChance ?? 0);
+  val('exp-StunDuration', p.StunDuration ?? 0);
+  chk('exp-StunDependOnRadius', p.StunDependOnRadius);
+  chk('exp-PropagateFire', p.PropagateFire);
+  val('exp-PropagateFireChance', p.PropagateFireChance ?? 0);
+  val('exp-LargeFireChance', p.LargeFireChance ?? 0);
+  chk('exp-FireDependOnRadius', p.FireDependOnRadius);
+  chk('exp-PropagateLiquid', p.PropagateLiquid);
+  val('exp-LiquidType', p.LiquidType ?? 'Red');
+  chk('exp-Disintegrate', p.Disintegrate);
+  chk('exp-PropagateGas', p.PropagateGas);
+  val('exp-GasType', p.GasType ?? 'Smoke');
+  val('exp-GasStrength', p.GasStrength ?? 'Weak');
+  chk('exp-IgnoreMines', p.IgnoreMines);
+}
+
+function collectExplosionEditor() {
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  const str = (id) => document.getElementById(id).value;
+  const bool = (id) => document.getElementById(id).checked;
+  // Parameters built in exact game-config column order; extras last.
+  return {
+    Id: str('exp-Id').trim(),
+    Parameters: {
+      VisualExplosion: bool('exp-VisualExplosion'),
+      Radius: int('exp-Radius'),
+      DistanceDamageFalloff: int('exp-DistanceDamageFalloff'),
+      GainDmgToCreature: bool('exp-GainDmgToCreature'),
+      SelfDamaging: bool('exp-SelfDamaging'),
+      GainDmgToLocation: bool('exp-GainDmgToLocation'),
+      GainDmgToMonolith: bool('exp-GainDmgToMonolith'),
+      Damage: int('exp-Damage'),
+      DamageType: str('exp-DamageType'),
+      WoundChance: num('exp-WoundChance'),
+      Throwback: bool('exp-Throwback'),
+      ThrowbackChance: num('exp-ThrowbackChance'),
+      ThrowbackDependOnRadius: bool('exp-ThrowbackDependOnRadius'),
+      Stun: bool('exp-Stun'),
+      StunChance: num('exp-StunChance'),
+      StunDuration: int('exp-StunDuration'),
+      StunDependOnRadius: bool('exp-StunDependOnRadius'),
+      PropagateFire: bool('exp-PropagateFire'),
+      PropagateFireChance: num('exp-PropagateFireChance'),
+      LargeFireChance: int('exp-LargeFireChance'),
+      FireDependOnRadius: bool('exp-FireDependOnRadius'),
+      PropagateLiquid: bool('exp-PropagateLiquid'),
+      LiquidType: str('exp-LiquidType'),
+      Disintegrate: bool('exp-Disintegrate'),
+      PropagateGas: bool('exp-PropagateGas'),
+      GasType: str('exp-GasType'),
+      GasStrength: str('exp-GasStrength'),
+      // IsPlayerFire has no UI: new records get false; existing files keep their stored value.
+      IsPlayerFire: selExplosion?.record?.Data?.Parameters?.IsPlayerFire ?? false,
+      IgnoreMines: bool('exp-IgnoreMines'),
+    }
+  };
+}
+
+function captureExplosionSnapshot() {
+  const parts = [];
+  document.querySelectorAll('#expConfigWrap input, #expConfigWrap select, #expDescriptorWrap input, #expDescriptorWrap select').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
+    else parts.push(el.id + ':' + el.value);
+  });
+  return parts.join('|');
+}
+
+// ── Explosion Descriptor (field order matches the game example) ──
+function newExplosionDescriptorRecord(id) {
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor',
+    Data: {
+      ExplosionVisualId: '',
+      ExplosionSoundIdOrPath: 'Sounds/',
+      VisualExplosionDelay: 0.5,
+      VisualReachCellDuration: 0.3,
+      ClearGibsRadiusInPixels: 25,
+      ShakeCameraOnExplosion: true,
+      VisualExplosionOffsetX: 0.0,
+      VisualExplosionOffsetY: 0.0,
+      VisualExplosionOffsetZ: 0.0,
+      ItemId: id,
+    }
+  };
+}
+
+function populateExplosionDescriptor(data) {
+  const d = data || {};
+  val('expd-ExplosionVisualId', d.ExplosionVisualId ?? '');
+  val('expd-ExplosionSoundIdOrPath', d.ExplosionSoundIdOrPath ?? '');
+  val('expd-VisualExplosionDelay', d.VisualExplosionDelay ?? 0.5);
+  val('expd-VisualReachCellDuration', d.VisualReachCellDuration ?? 0.3);
+  val('expd-ClearGibsRadiusInPixels', d.ClearGibsRadiusInPixels ?? 25);
+  chk('expd-ShakeCameraOnExplosion', d.ShakeCameraOnExplosion ?? true);
+  val('expd-VisualExplosionOffsetX', d.VisualExplosionOffsetX ?? 0);
+  val('expd-VisualExplosionOffsetY', d.VisualExplosionOffsetY ?? 0);
+  val('expd-VisualExplosionOffsetZ', d.VisualExplosionOffsetZ ?? 0);
+}
+
+function collectExplosionDescriptor(expId) {
+  const str = (id) => document.getElementById(id).value;
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const int = (id) => parseInt(document.getElementById(id).value) || 0;
+  // Key order matches the game example: visual/sound, timings, gibs, shake, offsets, ItemId last.
+  return {
+    RecordType: 'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor',
+    Data: {
+      ExplosionVisualId: str('expd-ExplosionVisualId').trim(),
+      ExplosionSoundIdOrPath: str('expd-ExplosionSoundIdOrPath').trim(),
+      VisualExplosionDelay: num('expd-VisualExplosionDelay'),
+      VisualReachCellDuration: num('expd-VisualReachCellDuration'),
+      ClearGibsRadiusInPixels: int('expd-ClearGibsRadiusInPixels'),
+      ShakeCameraOnExplosion: document.getElementById('expd-ShakeCameraOnExplosion').checked,
+      VisualExplosionOffsetX: num('expd-VisualExplosionOffsetX'),
+      VisualExplosionOffsetY: num('expd-VisualExplosionOffsetY'),
+      VisualExplosionOffsetZ: num('expd-VisualExplosionOffsetZ'),
+      ItemId: expId,
+    }
+  };
+}
+
+async function loadExplosionDescriptor(expId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Explosions', id: expId + '_descriptor' } });
+    populateExplosionDescriptor(data.Data);
+  } catch {
+    populateExplosionDescriptor(null);
+  }
+}
+
+async function saveExplosionDescriptor(expId) {
+  const desc = collectExplosionDescriptor(expId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Descriptors/Explosions', id: expId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+  });
+}
+
+function validateAllExplosionDescriptor() {
+  let ok = true;
+  const checks = [
+    { id: 'expd-VisualExplosionDelay', rule: 'num_gte0' },
+    { id: 'expd-VisualReachCellDuration', rule: 'num_gte0' },
+    { id: 'expd-ClearGibsRadiusInPixels', rule: 'int_gte0' },
+    { id: 'expd-VisualExplosionOffsetX', rule: 'num_any' },
+    { id: 'expd-VisualExplosionOffsetY', rule: 'num_any' },
+    { id: 'expd-VisualExplosionOffsetZ', rule: 'num_any' },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    const v = parseFloat(el.value);
+    let valid = !isNaN(v);
+    if (c.rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+    else if (c.rule === 'num_gte0') valid = valid && v >= 0;
+    else if (c.rule === 'num_any') valid = valid;
+    el.classList.toggle('invalid', !valid);
+    if (!valid) ok = false;
+  }
+  return ok;
+}
+
+function collectExpDescValidationErrors() {
+  const errors = [];
+  const add = (msg) => errors.push({ tab: 'Descriptor', section: 'Descriptor', msg });
+  const pf = (id) => parseFloat(document.getElementById(id).value);
+  const numGte0 = (id, label) => { const v = pf(id); if (isNaN(v) || v < 0) add(`${label} — number ≥ 0`); };
+  const intGte0 = (id, label) => { const v = pf(id); if (isNaN(v) || !Number.isInteger(v) || v < 0) add(`${label} — integer ≥ 0`); };
+  const numAny = (id, label) => { const v = pf(id); if (isNaN(v)) add(`${label} — must be a number`); };
+  numGte0('expd-VisualExplosionDelay', 'Visual Explosion Delay');
+  numGte0('expd-VisualReachCellDuration', 'Visual Reach Cell Duration');
+  intGte0('expd-ClearGibsRadiusInPixels', 'Clear Gibs Radius');
+  numAny('expd-VisualExplosionOffsetX', 'Offset X');
+  numAny('expd-VisualExplosionOffsetY', 'Offset Y');
+  numAny('expd-VisualExplosionOffsetZ', 'Offset Z');
+  return errors;
+}
+
+function isExplosionDirty() {
+  if (!_formSnapshot || !selExplosion) return false;
+  return captureExplosionSnapshot() !== _formSnapshot;
+}
+
+function validateExpField(input, rule) {
+  const v = parseFloat(input.value);
+  let valid = !isNaN(v);
+  if (rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+  else if (rule === 'num_gte0') valid = valid && v >= 0;
+  else if (rule === 'num_any') valid = valid; // any finite number, negatives allowed
+  else if (rule === 'num_0to1') valid = valid && v >= 0 && v <= 1;
+  else if (rule === 'int_0to100') valid = valid && Number.isInteger(v) && v >= 0 && v <= 100;
+  input.classList.toggle('invalid', !valid);
+}
+
+function validateAllExplosion() {
+  let allValid = true;
+  const checks = [
+    { id: 'exp-Radius', rule: 'int_gte0' },
+    { id: 'exp-Damage', rule: 'int_gte0' },
+    { id: 'exp-StunDuration', rule: 'int_gte0' },
+    { id: 'exp-DistanceDamageFalloff', rule: 'int_gte0' },
+    { id: 'exp-WoundChance', rule: 'num_gte0' },
+    { id: 'exp-ThrowbackChance', rule: 'num_0to1' },
+    { id: 'exp-StunChance', rule: 'num_0to1' },
+    { id: 'exp-PropagateFireChance', rule: 'num_0to1' },
+    { id: 'exp-LargeFireChance', rule: 'int_0to100' },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    const v = parseFloat(el.value);
+    let valid = !isNaN(v);
+    if (c.rule === 'int_gte0') valid = valid && Number.isInteger(v) && v >= 0;
+    else if (c.rule === 'num_gte0') valid = valid && v >= 0;
+    else if (c.rule === 'num_0to1') valid = valid && v >= 0 && v <= 1;
+    else if (c.rule === 'int_0to100') valid = valid && Number.isInteger(v) && v >= 0 && v <= 100;
+    el.classList.toggle('invalid', !valid);
+    if (!valid) allValid = false;
+  }
+  return allValid;
+}
+
+function collectExpValidationErrors() {
+  const errors = [];
+  const add = (msg) => errors.push({ tab: 'Explosion', section: 'Explosion', msg });
+  const pf = (id) => parseFloat(document.getElementById(id).value);
+  const intGte0 = (id, label) => { const v = pf(id); if (isNaN(v) || !Number.isInteger(v) || v < 0) add(`${label} — integer ≥ 0`); };
+  const numGte0 = (id, label) => { const v = pf(id); if (isNaN(v) || v < 0) add(`${label} — number ≥ 0`); };
+  const num0to1 = (id, label) => { const v = pf(id); if (isNaN(v) || v < 0 || v > 1) add(`${label} — number between 0 and 1`); };
+  const int0to100 = (id, label) => { const v = pf(id); if (isNaN(v) || !Number.isInteger(v) || v < 0 || v > 100) add(`${label} — integer between 0 and 100`); };
+  intGte0('exp-Radius', 'Radius');
+  intGte0('exp-Damage', 'Damage');
+  intGte0('exp-StunDuration', 'Stun Duration');
+  intGte0('exp-DistanceDamageFalloff', 'Distance Damage Falloff');
+  numGte0('exp-WoundChance', 'Wound Chance');
+  num0to1('exp-ThrowbackChance', 'Throwback Chance');
+  num0to1('exp-StunChance', 'Stun Chance');
+  num0to1('exp-PropagateFireChance', 'Propagate Fire Chance');
+  int0to100('exp-LargeFireChance', 'Large Fire Chance');
+  return errors;
+}
+
+async function selectExplosion(id) {
+  if (!selProject || isLoading) return;
+  isLoading = true;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Explosions', id } });
+    selExplosion = { id, record };
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateExplosionEditor(record.Data);
+    await loadExplosionDescriptor(id);
+    hideAllEditors();
+    switchExplosionTab('expConfig');
+    document.getElementById('expTabBar').classList.add('visible');
+    document.getElementById('expConfigWrap').classList.add('visible');
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    try { _formSnapshot = captureExplosionSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+  finally { isLoading = false; }
+}
+
+function guardSelectExplosion(id) {
+  if (selExplosion?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectExplosion(id), 'Yes', '');
+  } else {
+    selectExplosion(id);
+  }
+}
+
+function renderExplosionList(items) {
+  const el = document.getElementById('assetList');
+  if (!items.length) { el.innerHTML = '<div class="sb-empty">No explosions yet</div>'; return; }
+  el.innerHTML = items.map(e => {
+    return `
+    <div class="card" onclick="guardSelectExplosion('${esc(e.id)}')">
+      <div class="card-top"><div class="card-info">
+        <div class="c-name">${esc(e.dataId || e.id)}</div>
+        <div class="c-sub">${esc(e.recordType)}</div>
+      </div></div>
+      <button class="card-copy" onclick="event.stopPropagation(); confirmCopyExplosion('${esc(e.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteExplosion(this, '${esc(e.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>`;
+  }).join('');
+}
+
+async function createNewExplosion() {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Explosions' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`explosion_tempid_${n}`)) n++;
+    const newId = `explosion_tempid_${n}`;
+    const record = newExplosionRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Explosions', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    // Blank descriptor alongside
+    const desc = newExplosionDescriptorRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Descriptors/Explosions', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+    });
+    toast(`Created explosion "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectExplosion(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function saveExplosion() {
+  if (!selProject || !selExplosion || isSaving || isLoading) return;
+
+  if (!validateAllExplosion()) {
+    switchExplosionTab('expConfig');
+    showValidationErrorModal(collectExpValidationErrors());
+    return;
+  }
+  if (!validateAllExplosionDescriptor()) {
+    switchExplosionTab('expDescriptor');
+    showValidationErrorModal(collectExpDescValidationErrors());
+    return;
+  }
+
+  const data = collectExplosionEditor();
+  const newId = data.Id;
+  const oldId = selExplosion.id;
+
+  if (!newId) { toast('Explosion Id cannot be empty', 1); document.getElementById('exp-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Explosion Id contains invalid characters', 1); document.getElementById('exp-Id').classList.add('invalid'); return; }
+  document.getElementById('exp-Id').classList.remove('invalid');
+
+  // Duplicate check — project explosions
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Explosions', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('exp-Id').classList.add('invalid');
+      return;
+    } catch {}
+  }
+
+  // Duplicate check — base game explosions
+  const baseIds = (REF?.base?.explosions?.rows || []).map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  if (baseIds.includes(newId)) {
+    toast('ID conflicts with base game explosion', 1);
+    document.getElementById('exp-Id').classList.add('invalid');
+    return;
+  }
+
+  isSaving = true;
+  try {
+    // Write new record first
+    await api('asset', {
+      body: { project: selProject.id, category: 'Explosions', id: newId, recordType: 'MGSC.ExplosionRecord', data }
+    });
+    // Write descriptor alongside
+    await saveExplosionDescriptor(newId);
+    // Delete old only after new is safely written
+    if (newId !== oldId) {
+      await api('asset_delete', { params: { project: selProject.id, category: 'Explosions', id: oldId } });
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Explosions', id: oldId + '_descriptor' } }); } catch {}
+    }
+    selExplosion.id = newId;
+    toast('Saved');
+    _formSnapshot = captureExplosionSnapshot();
+    await selectProject(selProject.id, true);
+    selectExplosion(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function copyExplosion(sourceId) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Explosions' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+
+    const src = await api('asset', { params: { project: selProject.id, category: 'Explosions', id: sourceId } });
+    const data = { ...src.Data, Id: newId };
+    await api('asset', {
+      body: { project: selProject.id, category: 'Explosions', id: newId, recordType: 'MGSC.ExplosionRecord', data }
+    });
+    // Copy descriptor (fall back to a blank one if the source lacks it)
+    try {
+      const srcDesc = await api('asset', { params: { project: selProject.id, category: 'Descriptors/Explosions', id: sourceId + '_descriptor' } });
+      const descData = { ...srcDesc.Data, ItemId: newId };
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Explosions', id: newId + '_descriptor', recordType: srcDesc.RecordType, data: descData }
+      });
+    } catch {
+      const desc = newExplosionDescriptorRecord(newId);
+      await api('asset', {
+        body: { project: selProject.id, category: 'Descriptors/Explosions', id: newId + '_descriptor', recordType: desc.RecordType, data: desc.Data }
+      });
+    }
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectExplosion(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function deleteExplosion(id) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Explosions', id } });
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Explosions', id: id + '_descriptor' } }); } catch {}
+    toast(`Deleted "${id}"`);
+    selExplosion = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    await selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function confirmDeleteExplosion(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteExplosion(id));
+}
+
+function confirmCopyExplosion(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyExplosion(id), 'Copy', 'primary');
+}
+
 async function copyFiremode(sourceId) {
   if (!selProject || isSaving || isLoading) return;
   isSaving = true;
@@ -4010,6 +4683,7 @@ function guardSelectWeapon(id) {
 function isCurrentModeDirty() {
   if (currentMode === 'ammo') return isAmmoDirty();
   if (currentMode === 'firemodes') return isFiremodeDirty();
+  if (currentMode === 'explosions') return isExplosionDirty();
   return isFormDirty();
 }
 
@@ -5409,15 +6083,86 @@ function fieldVal(v) {
   return v === null ? '<span class="fnull">(none)</span>' : esc(v);
 }
 
+let _lastRefDiff = null;
+
+// Build a plain-text report of the retained diff (mirrors the modal, unstyled).
+function buildRefDiffReport() {
+  if (!_lastRefDiff || !_lastRefDiff.diffs) return '';
+  const { diffs, filesUpdated } = _lastRefDiff;
+  const names = Object.keys(diffs).sort();
+  const showVal = (v) => v === null ? '(none)' : v;
+
+  let totA = 0, totR = 0, totM = 0;
+  for (const d of Object.values(diffs)) { totA += d.added.length; totR += d.removed.length; totM += d.modified.length; }
+
+  const lines = [];
+  lines.push('Reference Data Update — Change Report');
+  lines.push(new Date().toISOString());
+  lines.push('');
+  lines.push(`${filesUpdated} file(s) processed — ${totA} added, ${totR} removed, ${totM} modified across ${names.length} file(s).`);
+  lines.push('='.repeat(60));
+
+  for (const name of names) {
+    const d = diffs[name];
+    lines.push('');
+    lines.push(name);
+    lines.push('-'.repeat(name.length));
+
+    if (d.columnsAdded.length) lines.push(`  Columns added: ${d.columnsAdded.join(', ')}`);
+    if (d.columnsRemoved.length) lines.push(`  Columns removed: ${d.columnsRemoved.join(', ')}`);
+
+    if (d.added.length) {
+      lines.push(`  Added (${d.added.length}):`);
+      for (const id of d.added) lines.push(`    + ${id}`);
+    }
+    if (d.removed.length) {
+      lines.push(`  Removed (${d.removed.length}):`);
+      for (const id of d.removed) lines.push(`    - ${id}`);
+    }
+    if (d.modified.length) {
+      lines.push(`  Modified (${d.modified.length}):`);
+      for (const m of d.modified) {
+        lines.push(`    ~ ${m.id}`);
+        for (const f of m.fields) lines.push(`        ${f.field}: ${showVal(f.old)} -> ${showVal(f.new)}`);
+      }
+    }
+  }
+  lines.push('');
+  return lines.join('\n');
+}
+
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function exportRefDiff() {
+  const report = buildRefDiffReport();
+  if (!report) { toast('No diff to export', 1); return; }
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  downloadTextFile(`ref-data-diff-${stamp}.txt`, report);
+}
+
 function showRefDiff(diffs, filesUpdated) {
   const body = document.getElementById('refDiffBody');
   const names = diffs ? Object.keys(diffs).sort() : [];
+  _lastRefDiff = { diffs, filesUpdated };
+  const exportBtn = document.getElementById('refDiffExportBtn');
 
   if (!names.length) {
+    if (exportBtn) exportBtn.style.display = 'none';
     body.innerHTML = `<div class="modal-body-inner"><div class="refdiff-summary">${filesUpdated} reference file${filesUpdated === 1 ? '' : 's'} processed. No changes detected — your reference data already matched the source.</div></div>`;
     document.getElementById('refDiffOverlay').classList.add('open');
     return;
   }
+  if (exportBtn) exportBtn.style.display = '';
 
   let totA = 0, totR = 0, totM = 0;
   for (const d of Object.values(diffs)) { totA += d.added.length; totR += d.removed.length; totM += d.modified.length; }
@@ -5455,7 +6200,6 @@ function showRefDiff(diffs, filesUpdated) {
       inner += '</div>';
     }
 
-    // Collapse files with no row-level detail by default; expand others
     html += `<div class="refdiff-file"><div class="refdiff-file-head" onclick="this.parentElement.classList.toggle('collapsed')"><span class="refdiff-caret">&#9660;</span><span class="refdiff-file-name">${esc(name)}</span>${tags}</div><div class="refdiff-file-body">${inner}</div></div>`;
   }
 
@@ -5600,6 +6344,22 @@ const AMMO_TAB_PANES = {
   ammoFactionRewards: 'ammoFactionRewardsWrap',
 };
 
+const EXP_TAB_PANES = {
+  expConfig: 'expConfigWrap',
+  expDescriptor: 'expDescriptorWrap',
+};
+
+let activeExplosionTab = 'expConfig';
+
+function switchExplosionTab(tabId) {
+  activeExplosionTab = tabId;
+  document.querySelectorAll('#expTabBar .tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelector(`#expTabBar .tab-btn[onclick*="${tabId}"]`).classList.add('active');
+  for (const [id, paneId] of Object.entries(EXP_TAB_PANES)) {
+    document.getElementById(paneId).classList.toggle('visible', id === tabId);
+  }
+}
+
 function switchAmmoTab(tabId) {
   activeAmmoTab = tabId;
   document.querySelectorAll('#ammoTabBar .tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -5614,7 +6374,12 @@ function hideAllEditors() {
   document.getElementById('editorWrap').classList.remove('visible');
   document.getElementById('tabBar')?.classList.remove('visible');
   document.getElementById('fmConfigWrap')?.classList.remove('visible');
+  document.getElementById('expConfigWrap')?.classList.remove('visible');
+  document.getElementById('expTabBar')?.classList.remove('visible');
   document.getElementById('ammoTabBar')?.classList.remove('visible');
+  for (const paneId of Object.values(EXP_TAB_PANES)) {
+    document.getElementById(paneId)?.classList.remove('visible');
+  }
   for (const paneId of Object.values(AMMO_TAB_PANES)) {
     document.getElementById(paneId)?.classList.remove('visible');
   }
@@ -5628,7 +6393,7 @@ function switchMode(mode) {
   document.querySelectorAll('.c-header-modes .btn').forEach(b => b.classList.remove('active'));
   document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
 
-  const titles = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes' };
+  const titles = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions' };
   document.getElementById('assetListTitle').textContent = titles[mode] || 'Assets';
   document.getElementById('assetFilterInput').value = '';
 
@@ -5636,6 +6401,7 @@ function switchMode(mode) {
   selWeapon = null;
   selFiremode = null;
   selAmmo = null;
+  selExplosion = null;
   _formSnapshot = null;
   hideAllEditors();
   document.getElementById('emptyState').style.display = '';
@@ -5689,6 +6455,7 @@ document.getElementById('btnNewAsset').addEventListener('click', () => {
   if (currentMode === 'weapons') createNewWeapon();
   else if (currentMode === 'ammo') createNewAmmo();
   else if (currentMode === 'firemodes') createNewFiremode();
+  else if (currentMode === 'explosions') createNewExplosion();
 });
 
 document.addEventListener('dblclick', (e) => {
@@ -6201,6 +6968,12 @@ function populateRefSelects() {
   };
   fillMultiSelect('ammo-Traits', ammoTraits, 'Id');
   fillMultiSelect('ammo-Categories', REF.enums?.categories, 'Name');
+
+  // ── Explosion editor selects ──
+  fillSelect('exp-DamageType', REF.base?.damageTypes, 'Id');
+  fillSelect('exp-LiquidType', REF.enums?.liquidType, 'Name');
+  fillSelect('exp-GasType', REF.enums?.gasType, 'Name');
+  fillSelect('exp-GasStrength', REF.enums?.gasStrength, 'Name');
 
   const damageEffects = {
     rows: (REF.base?.statusEffects?.rows || []).filter(r => r.RenewalType === 'Damage')

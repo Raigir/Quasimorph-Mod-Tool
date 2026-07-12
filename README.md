@@ -3,7 +3,7 @@
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-ff5f5f?logo=kofi&logoColor=white)](https://ko-fi.com/efateam)
 [![Author: Raigir](https://img.shields.io/badge/Author-Raigir-2f6f91)](https://github.com/Raigir)
 
-A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, sprites, localization, descriptors, crafting recipes, datadisks, faction rewards, project export, and reference data management.
+A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, explosions, sprites, localization, descriptors, crafting recipes, datadisks, faction rewards, project export, and reference data management.
 
 ## Requirements
 
@@ -52,13 +52,15 @@ mod-workflow/
 │           ├── Weapons/               # Weapon records (.json)
 │           ├── Ammo/                  # Ammo records
 │           ├── Firemodes/             # Firemode records
+│           ├── Explosions/            # Explosion records ({id}.json)
 │           ├── Localization/
 │           │   ├── Weapons/           # {id}_localization.json
 │           │   └── Ammo/             # {id}_localization.json
 │           ├── Descriptors/
 │           │   ├── Weapons/           # {id}_descriptor.json
 │           │   ├── Firemodes/         # {id}_descriptor.json
-│           │   └── Ammo/             # {id}_descriptor.json
+│           │   ├── Ammo/              # {id}_descriptor.json
+│           │   └── Explosions/        # {id}_descriptor.json
 │           ├── Crafting Recipes/      # {id}_receipt.json
 │           ├── Datadisks/             # {diskId}_diskData.json (shared)
 │           ├── FactionRewards/        # {factionId}_factionData.json (shared)
@@ -67,10 +69,10 @@ mod-workflow/
 │           │   │   └── {subfolder}/   # User-named (e.g., chu, cor)
 │           │   ├── Firemodes/         # Firemode sprites
 │           │   └── Ammo/             # Ammo sprites
+│           ├── Sounds/                # Sound files (referenced by descriptors)
 │           ├── Bundles/               # Asset bundles
 │           ├── Armors/
-│           ├── Consumables/
-│           ├── Explosions/
+│           └── Consumables/
 └── ref/
     ├── base/                          # Reference TSVs (game data)
     │   ├── ammo.txt
@@ -87,16 +89,18 @@ mod-workflow/
     │   ├── statusEffects.txt
     │   └── damageTypes.txt
     └── enums/                         # Enum value lists
-        ├── weaponClass.txt
-        ├── weaponSubClass.txt
-        ├── categories.txt
-        ├── ammoTypes.txt
-        ├── projectileIds.txt
+        ├── ammoTypes.txt              # derived from configs on ref update
+        ├── categories.txt             # derived from configs on ref update
         ├── ballisticTypes.txt
         ├── factionIdCodes.txt
+        ├── gasStrength.txt
+        ├── gasType.txt
         ├── handGrips.txt
         ├── itemClass.txt
-        └── languageCodes.txt
+        ├── languageCodes.txt
+        ├── liquidType.txt
+        ├── weaponClass.txt
+        └── weaponSubClass.txt
 ```
 
 ## Reference Data
@@ -104,7 +108,7 @@ mod-workflow/
 The `ref/` folder contains TSV files extracted from the base game. These are used to populate dropdown selections and combo boxes throughout the editors.
 
 - **base/** — Full game records (ammo, firemodes, grenades, repairs, traits, damage types, projectiles, factions, status effects, etc.)
-- **enums/** — Simple value lists (weapon classes, categories, ammo types, ballistic types, etc.)
+- **enums/** — Simple value lists (weapon classes, categories, ammo types, ballistic types, explosion liquid/gas types, etc.). `ammoTypes` and `categories` are re-derived from the configs on every reference update; the rest are static.
 
 Reference data can be updated from the **Options** panel using the game's config files. See `GUIDE.md` for details. A full source mapping is documented in `REF_DATA_MATRIX.md`.
 
