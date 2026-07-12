@@ -1,0 +1,5 @@
+#gasStrength																									
+Name																									
+Strong																									
+Weak																									
+#end																									

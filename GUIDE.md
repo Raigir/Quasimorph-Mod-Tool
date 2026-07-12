@@ -2,7 +2,7 @@
 
 ## Navigation
 
-The header contains three mode buttons: **Weapons**, **Ammo**, and **Firemodes**. The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name.
+The header contains four mode tabs: **Weapons**, **Ammo**, **Firemodes**, and **Explosions** (pill-style tab switcher). The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name. An **Options** button in the top-right opens a sliding panel for tool configuration.
 
 ---
 
@@ -16,9 +16,24 @@ Click the **✎** pencil icon on any project card to open Project Settings:
 
 - **Project Name** — rename the project (renames the folder on disk). Cannot be empty. Cannot duplicate an existing project name (case-insensitive). Invalid names highlight red with a tooltip.
 - **Bundle Path** — the default asset bundle path used when creating new weapon descriptors (e.g., `Bundles/efa_assets`). Defaults to `Bundles/`. Changing this does **not** update existing descriptors — only new weapons pick up the value.
+- **Skip Manifest on Export** — toggle. When enabled, the export ZIP will not include a `modmanifest.json` and only contains the Assets folder.
+- **Assemblies** — dynamic entry list. Each entry is a DLL filename (e.g., `QM_ImporterAPI.dll`). Used when generating `modmanifest.json` during export.
+- **Steam Tags** — dynamic entry list. Each entry is a tag string (e.g., `0.9.9`, `New Content`). Used when generating `modmanifest.json` during export.
 - **Weapon Image Folders** — manage subfolders under `Images/Weapons/` for organizing weapon sprites by faction or category (e.g., `chu`, `cor`, `civ`). Folders with images inside cannot be removed. Duplicate folder names are highlighted red with a tooltip and block saving.
 
 The **Save** button is disabled whenever the project name or folder names have validation errors.
+
+### Exporting a Project
+Click the **folder-arrow** icon on a project card. A confirmation dialog appears. The export generates a downloadable ZIP named after the project, containing:
+
+- **Assets/** — the complete folder structure with all asset files
+- **modmanifest.json** — generated from project settings:
+  - `UniqueModName` — the project name
+  - `Assemblies` — from the assemblies entry list
+  - `Dependencies` — always an empty array
+  - `SteamTags` — from the steam tags entry list
+
+If **Skip Manifest on Export** is enabled in project settings, the `modmanifest.json` is omitted and only the Assets folder is included. The `settings.json` file is never included in exports.
 
 ### Deleting a Project
 Click the **🗑** trash icon. A confirmation dialog warns that all assets within will be deleted.
@@ -53,6 +68,14 @@ The **Save** button appears on every tab but always saves all tabs at once. Conc
 
 The main weapon editor with these sections:
 
+**Stats** — A live, read-only readout at the top of the tab showing the weapon's final computed stats: Damage (with damage type), Crit (chance / damage), Accuracy, Scatter, Range, Rate of fire, Reload, Magazine, Ammo (the resolved ammo ID), and Durability. Values recalculate as you edit any field on the tab.
+
+- **Firemode switch** — when both firemodes are set, a switch next to the section title toggles which firemode's stats are shown (labeled with the firemode IDs).
+- **Ammo resolution** — per firemode: that slot's override ammo if set, otherwise Default Ammo Id. The Ammo chip shows which one is in effect (hover reveals whether it's an override).
+- **Calculations** — Damage: `base × (ammo DamageMult + firemode DamageMult − 1)`; if the ammo's BulletCastsPerShot > 1, damage is split per projectile (e.g. `5 × 2–4`). Accuracy: `(weapon BonusAccuracy + firemode Accuracy) × ammo AccuracyMult`, floored at 0%. Scatter: `(weapon BonusScatterAngle + firemode ScatterAngle) × ammo ScatterMult`. Range: weapon Range + ammo RangeBonus. Crit chance comes from the ammo, crit damage from the weapon. Rate of fire is the firemode's WeaponCastsCount. Values use game formatting (%, °) with standard .5-up rounding.
+- **No-ammo weapons** — if there's no override and no default ammo, Reload, Magazine, Ammo, and crit chance show "–" (the game treats such weapons as never reloading or running out).
+- Pulls from base reference data and project-created firemodes/ammo alike; project records take priority when IDs collide.
+
 **Sprite** — Upload inventory icon (50×50 or 100×50 PNG), floor sprite (max 30×30), and shadow sprite (max 30×30). All displayed at 2× scale. A folder dropdown lets you choose which `Images/Weapons/` subfolder to store sprites in — changing this moves existing sprites automatically. Descriptor image paths update to match.
 
 **Identity** — Id, IsImplicit toggle, TechLevel (1–10), Price, Weight, inventory sort/width.
@@ -75,13 +98,17 @@ Firemode 2 is **disabled until Firemode 1 is set**. Clearing Firemode 1 cascades
 
 Project-created firemodes and ammo appear in their respective dropdowns with a " - *Custom*" label (display only — the saved value is the plain ID). If a referenced firemode or ammo no longer exists, it shows as "(missing)" with a red border and blocks saving.
 
-Also: RequiredAmmo (enum dropdown), DefaultAmmoId (base + project ammo), OverrideProjectileId (from projectiles enum).
+Also: RequiredAmmo (dropdown from base ammo types + any custom ammo types discovered in project ammo records — custom entries show " - *Custom*"), DefaultAmmoId (base + project ammo), OverrideProjectileId (from projectiles enum).
+
+**Default Ammo filtering** — When RequiredAmmo holds a valid type, the DefaultAmmoId dropdown narrows to only ammo of that type (base + custom). With no required type set, the full ammo list is available — a default without a required type is legal. If a stored default no longer matches the selected required type, it stays visible flagged red as "(wrong type)" and blocks saving until resolved.
+
+**RequiredAmmo and custom ammo types** — When you create an ammo record with a free-typed AmmoType that doesn't exist in the base game's ammo types enum, that type automatically appears as an option in the weapon editor's RequiredAmmo dropdown. This lets you define new ammo categories through your ammo records and immediately reference them from weapons. If all ammo records using a custom type are later deleted, any weapons still referencing that type will show it as "(missing)" with a red border and block saving until resolved.
 
 **Traits** — Multi-select dropdown, filtered to WeaponTrait entries from itemTraits TSV.
 
 **Grenades** — DefaultGrenadeId (dropdown from base grenades, empty = `""`), AllowedGrenadeIds (multi-select from base grenades).
 
-**Disassembly** — CanDisassembly toggle, dynamic entry list. Each entry has an Item Id (combo box with suggestions from repairs + trash TSVs, `quest_` items filtered out, allows free text) and a Count (integer > 0). Click **+ Add Entry** to add rows, **×** to remove.
+**Disassembly** — Dynamic entry list. (The former CanDisassembly toggle and JSON key are gone — the game derives it from whether the disassembly list has entries. Older weapon files carrying the key are cleaned automatically on their next save.) Each entry has an Item Id (combo box with suggestions from repairs + trash TSVs, `quest_` items filtered out, allows free text) and a Count (integer > 0). Click **+ Add Entry** to add rows, **×** to remove.
 
 **Throwing & Melee** — ThrowRange, DurabilityLossOnThrow, MeleeCanAmputate, GetMeleeDamageFromCreature toggles.
 
@@ -169,7 +196,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Identity** — Id (info icon: "Add implicted_ to the front of this id to make this ammo an implicit ammo"), TechLevel (1–10), Price (integer ≥ 0), Weight (≥ 0), Inv Sort Order (integer ≥ 0, default 8), Inv Width (integer ≥ 0, default 1), Can Put In Vest (toggle, default true).
 
-**Ammo Properties** — AmmoType (dropdown from ammoTypes enum), Damage Type (dropdown from damageTypes enum), Projectile Id (dropdown from projectiles enum), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
+**Ammo Properties** — AmmoType (combobox from ammoTypes enum, allows free text — custom types automatically appear in weapon editor's RequiredAmmo dropdown), Damage Type (dropdown from damageTypes reference), Projectile Id (dropdown from projectiles reference), Ballistic Type (dropdown from ballisticTypes enum, default Ballistic). Max Stack (integer > 0), Min Ammo Amount (integer ≥ 0), Max Ammo Amount (integer ≥ 0, must be ≥ min).
 
 **Categories** — Searchable multi-select checkbox dropdown from categories enum.
 
@@ -185,7 +212,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
 
-**Gibs** — Bullet Sprites ID (dropdown from projectiles enum, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
+**Gibs** — Bullet Sprites ID (dropdown from projectiles reference, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
 
 #### Localization
 
@@ -203,6 +230,39 @@ Identical to weapon faction rewards. Entry list with Faction, Tech Level (1–10
 Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all config values. Descriptor copied with image paths cleared. Localization copied with keys remapped to new ID. Datadisk and faction reward assignments copied.
 
 ---
+
+## Explosions
+
+### Creating an Explosion
+Switch to **Explosions** mode and click **+ New**. An explosion record is created with ID `explosion_tempid_1` (auto-increments). Explosions are the simplest asset type — no sprites, localization, descriptor, datadisk, or faction-reward files. The record is a single JSON at `Assets/Explosions/{id}.json`.
+
+### Explosion ID
+IDs must be unique across both the project and the base game explosions (`ref/base/explosions.txt`). Same character rules as other assets (letters, numbers, underscores, hyphens). Changing the ID and saving renames the record file (new file written first, old deleted after) — there are no linked files to update.
+
+### Explosion Editor
+Single-panel layout. Fields are grouped into sections by what they relate to (the JSON is always written in the game's config column order regardless of on-screen grouping):
+
+- **Identity** — Id.
+- **Core Blast** — Visual Explosion (toggle), Radius, Damage, Damage Type (dropdown from base damageTypes), Distance Damage Falloff, Wound Chance.
+- **Damage Targets** — Gain Dmg To Creature, Self Damaging, Gain Dmg To Location, Gain Dmg To Monolith, Disintegrate (toggles).
+- **Throwback** — Throwback (toggle), Throwback Chance, Throwback Depend On Radius (toggle).
+- **Stun** — Stun (toggle), Stun Chance, Stun Duration, Stun Depend On Radius (toggle).
+- **Fire** — Propagate Fire (toggle), Propagate Fire Chance, Large Fire Chance, Fire Depend On Radius (toggle).
+- **Liquid** — Propagate Liquid (toggle), Liquid Type (dropdown from liquidType enum).
+- **Gas** — Propagate Gas (toggle), Gas Type (dropdown from gasType enum), Gas Strength (dropdown from gasStrength enum).
+- **Misc** — Ignore Mines (toggle). Note: `IsPlayerFire` also exists in the record but has no UI — new explosions initialize it to `false`, and any value in an existing file is preserved through edits.
+
+The four dropdowns (Damage Type, Liquid Type, Gas Type, Gas Strength) have no empty option — every explosion sets them concretely.
+
+Sidebar cards show the explosion ID with a `{Damage} {DamageType}` subtitle (e.g. "100 explosion").
+
+### Copying an Explosion
+Click the copy icon on an explosion card. Creates `{sourceId}_copy{n}` — copies both the explosion record and its descriptor.
+
+### Explosion Descriptor (sub-tab)
+The explosion editor has two sub-tabs: **Explosion Config** and **Descriptor**. The descriptor holds the visual/sound presentation and is saved as a separate record at `Assets/Descriptors/Explosions/{id}_descriptor.json` (record type `CustomExplosionDescriptor`). It's created, renamed, copied, and deleted automatically alongside the explosion record.
+
+Descriptor fields: Explosion Visual ID, Explosion Sound ID/Path (new records default to `Sounds/` as a starting path), Visual Explosion Delay (float ≥ 0), Visual Reach Cell Duration (float ≥ 0), Clear Gibs Radius in Pixels (int ≥ 0), Shake Camera On Explosion (toggle), and Visual Explosion Offset X/Y/Z (float, negatives allowed). Both sub-tabs share the Save button; saving validates and writes both records together. Projects also scaffold an `Assets/Sounds` folder for sound files the descriptor can reference.
 
 ## Validation
 
@@ -239,7 +299,9 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | Faction Weight | Positive number |
 | Faction Points | Positive integer |
 | Firemodes 1/2 | Orphan check — must exist in base or project |
-| DefaultAmmoId, OverrideAmmo 1/2 | Orphan check — must exist in base or project |
+| DefaultAmmoId | Orphan check, plus type check — must match RequiredAmmo's type when one is set |
+| OverrideAmmo 1/2 | Orphan check — must exist in base or project |
+| RequiredAmmo | Orphan check — must exist in base ammo types or project ammo records |
 
 ### Firemode Field Rules
 
@@ -249,6 +311,19 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | WeaponCastsCount | Integer, > 0 |
 | DamageMult | Positive number |
 | DelayBetweenShots | ≥ 0 |
+
+### Explosion Field Rules
+
+| Field | Rule |
+|-------|------|
+| Radius | Integer, ≥ 0 |
+| Damage | Integer, ≥ 0 |
+| StunDuration | Integer, ≥ 0 |
+| DistanceDamageFalloff | Integer, ≥ 0 |
+| WoundChance | Number, ≥ 0 (base data exceeds 1.0 — not clamped) |
+| ThrowbackChance, StunChance, PropagateFireChance | Number, 0–1 |
+| LargeFireChance | Integer, 0–100 (helper icon: "Uses values between 0-100") |
+| DamageType, LiquidType, GasType, GasStrength | Dropdown, no empty → always valid |
 
 ### Ammo Field Rules
 
@@ -288,7 +363,7 @@ Used for Categories, Traits, RepairItemIds, AllowedGrenadeIds, Datadisks (weapon
 
 ## Combo Boxes
 
-Used for Disassembly ItemId, Recipe Required Items, and Modify Items. Features:
+Used for Disassembly ItemId, Recipe Required Items, Modify Items, and Ammo Type (ammo editor). Features:
 - Dropdown with suggestions from reference data
 - Type to filter, click to pick
 - **Allows free text** — you can type any value even if it's not in the list
@@ -305,6 +380,36 @@ Some fields have a **?** icon to the right of the input. Hover over it to see a 
 - Modify Start Cost — "Starts cost formula as though at a later step when not 1."
 - Modify Step — "Scales cost per step."
 - Modify Level Limit — "Max upgradable level in workshop (before magnum upgrade)."
+- Ammo Per Shot (firemode) — "Amount of ammo consumed in 1 shot in a turn. Usually matched with weapon casts count."
+- Weapon Casts Count (firemode) — "Determines number of times the weapon fires (rate of fire)"
+- Large Fire Chance (explosion) — "Uses values between 0-100"
+
+---
+
+## Options Panel
+
+Click the **Options** button in the top-right corner of the header to open the options panel. It slides in from the right, sharing space with the main content area. Click Options again or the × button to close.
+
+### Reference Data Update
+
+Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories). Immutable enum files are not affected.
+
+**Two workflows:**
+
+- **Browse** — click Browse, select the folder containing the config files. The browser reads the files and sends them to the server.
+- **Paste path** — type or paste the absolute folder path. The server reads the files directly from disk.
+
+**Required files** (exact names, top-level only):
+- `config_items.txt`
+- `config_items_properties.txt`
+- `config_spacesandbox.txt`
+- `config_wounds.txt`
+
+These must be extracted from the game's resources. If any are missing, an error modal lists the missing files and the update is aborted — no partial writes.
+
+After a successful update, all reference data is reloaded and editor dropdowns repopulate automatically.
+
+**Change summary** — A modal opens after every successful update showing exactly what changed, per file: entries added, entries removed, and modified entries with each changed field as `old → new`. Column additions/removals are called out separately. Files with no changes are omitted; if nothing changed at all, the modal says so. Panels are collapsible per file, and the full list is shown (scrollable — nothing is truncated). Note: the first-ever update reports every entry as "added" since it's establishing the baseline; subsequent updates show only real changes.
 
 ---
 
