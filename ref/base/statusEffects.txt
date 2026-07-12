@@ -1,0 +1,12 @@
+#statuseffects																								
+Id	ProgressionType	RenewalType	Stage1WoundEffects	Stage2WoundEffects	Stage3WoundEffects	Stage4WoundEffects	IncrementModifier	DecrementModifier	ResistModifier	HoldDurationMin	HoldDurationMax	VisualState	BadLuckStep	BadLuckCap										
+infectionEffect	PeakHold	Refresh	satiety -0.3	satiety -0.3 wound_heal_chance -0.2	satiety -0.3 regen_efficacy -0.5 wound_heal_chance -0.2	satiety -0.3 regen_efficacy -0.5 wound_heal_chance -0.2 dot_dmg 1	1	1	1	5	30	None	0	1										
+poisonEffect	Decrement	Damage	dot_dmg 2	dot_dmg 3 income_pain 0.2	dot_dmg 4 income_pain 0.3 wound_chance_mult 0.5	dot_dmg 5 income_pain 0.4 wound_chance_mult 0.6 income_dmg 0.1	3	3	6	1	5	Poisoned	0	1										
+morphineAddiction	Increment	Reset	qmorph 1	dodge_reduce -0.2 accuracy_reduce -0.2	eat_dmg 5 satiety -0.5 vomiting 0.1	apoint_dmg 1 los_reduce -2 pain_threshold_regen -1 addiction_chance 0.3	1	1	1	0	0	None	0.15	0.85										
+alcoholAddiction	Increment	Reset	scatter_angle 0.3 accuracy_reduce -0.1	scatter_angle 0.4 accuracy_reduce -0.15	scatter_angle 0.5 accuracy_reduce -0.2 vomiting 0.05	scatter_angle 0.6 accuracy_reduce -0.25 vomiting 0.05 qmorph_summon 0.01	2	1	1	0	0	None	0.05	0.85										
+nicotineAddiction	Increment	Reset	food_calories 0.1 max_health -5	food_calories 0.2 max_health -10	food_calories 0.3 max_health -15	run_unavailable 0 food_calories 0.4 max_health -20	1	1	1	0	0	None	0.05	0.85										
+gavaahAddiction	Increment	Reset	qmorph_summon 0.01 qmorph 2	qmorph_summon 0.02 qmorph 3	qmorph_summon 0.03 qmorph 4 vomiting 0.05	qmorph_summon 0.04 qmorph 5 vomiting 0.05	1	1	1	0	0	None	0.05	0.85										
+coldEffect	Decrement	Damage	income_dmg 0.1	income_dmg 0.2	income_dmg 0.3 run_unavailable 0	income_dmg 0.3 run_unavailable 0 frozen_stun 1	1	1	8	0	0	None	0	1										
+beamEffect	None	Damage	max_health -5	max_health -10 pain_threshold_regen -1	max_health -15 pain_threshold_regen -1 vomiting 0.03	max_health -20 pain_threshold_regen -2 vomiting 0.06 dot_dmg 2	1	4	5	0	0	None	0	1										
+shockEffect	Decrement	Damage	no_spotted_signal 0 dodge_reduce -0.04	no_spotted_signal 0 dodge_reduce -0.08	no_spotted_signal 0 dodge_reduce -0.12	no_spotted_signal 0 dodge_reduce -0.16 shock_stun 1	1	5	3	0	0	None	0	1										
+#end																								

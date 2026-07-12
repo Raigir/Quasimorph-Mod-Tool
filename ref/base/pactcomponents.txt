@@ -4,6 +4,7 @@ quasi_medical_kit_1										gavvakh	100	25
 quasi_repair_kit										siaira	100	25																				
 demonic_eye										agga	100	25																				
 ron_blood										shavva	100	25																				
+ron_moonshine										shavva	120	15																				
 precious_metals										eon	110	25																				
 human_poop		Prison Civilian Possessed Medical	1	1	0.1	1	Organ	FALSE	10	eon	50	25																				
 human_rib										shavva	50	25																				
@@ -34,24 +35,25 @@ rotten_dog_meat										siaira	95	10
 roasted_dog_meat										siaira	85	20																				
 dog_skin										siaira	70	25																				
 human_organ_1										siaira	90	12																				
+candy_1										siaira	80	10																				
 venus_guts		Gannix	1	40	0.2	1	QuasiOrgan	FALSE	20	gavvakh	130	20																				
-quasi_venus_rags										siaira	100	20																				
-quasi_venus_feather										siaira	130	15																				
-venus_armor_plates										siaira	90	25																				
-venus_melee_parts										gavvakh	90	25																				
-venus_weapon_parts										gavvakh	100	20																				
-quasi_darts_ammo										gavvakh	120	15																				
+quasi_venus_rags										siaira	90	20																				
+quasi_venus_feather										siaira	115	15																				
+venus_armor_plates										siaira	85	25																				
+venus_melee_parts										gavvakh	85	25																				
+venus_weapon_parts										gavvakh	90	20																				
+quasi_darts_ammo										gavvakh	110	15																				
 quasi_basic_ammo										eon	80	20																				
-quasi_grenade										eon	150	12																				
+quasi_grenade										eon	140	12																				
 mercury_guts		Shartamakhum	1	40	0.2	1	QuasiOrgan	FALSE	20	agga	130	20																				
 mercury_scales		Shartamakhum	1	40	0.3	1	QuasiOrgan	FALSE	20	agga	120	25																				
-mercury_rags										agga	100	20																				
-mercury_glass										eon	90	25																				
-quasi_energy_ammo										eon	130	20																				
+mercury_rags										agga	90	20																				
+mercury_glass										eon	85	25																				
+quasi_energy_ammo										eon	125	20																				
 moon_guts		Duggur	1	40	0.2	1	QuasiOrgan	FALSE	20	agga	130	20																				
-moon_weapon_parts										shavva	100	20																				
-moon_armor_plates										agga	100	20																				
-quasi_bolts_ammo										shavva	100	25																				
+moon_weapon_parts										shavva	90	20																				
+moon_armor_plates										agga	90	20																				
+quasi_bolts_ammo										shavva	85	25																				
 quasi_ron_medicine_1										agga	110	25																				
 ron_tentacle										agga	130	15																				
 roasted_ron_tentacle										agga	130	20																				
@@ -61,14 +63,15 @@ cattaram_stone										eon	130	20
 cattaram_mine										eon	130	15																				
 skrivnus_knife										gavvakh	140	15																				
 impaler										gavvakh	130	25																				
-urparp_grenade										shavva	120	12																				
-mars_gas_ammo										shavva	150	10																				
-mars_gear										shavva	130	20																				
-mars_skin										gavvakh	120	25																				
-mars_crab_meat										gavvakh	150	10																				
-roasted_mars_crab_meat										gavvakh	160	30																				
+urparp_grenade										shavva	150	10																				
+mars_gas_ammo										shavva	130	12																				
+mars_gear										shavva	115	20																				
+mars_skin										gavvakh	100	25																				
+mars_crab_meat										gavvakh	140	10																				
+roasted_mars_crab_meat										gavvakh	150	30																				
 jupiter_goulash										gavvakh	120	40																				
 jupiter_mushrooms										gavvakh	100	30																				
 jupiter_grass										shavva	130	15																				
 jupiter_guts		Flauros	1	40	0.2	1	QuasiOrgan	FALSE	20	shavva	120	25																				
+spore_mine										gavvakh	120	20																				
 #end																																
