@@ -18,6 +18,7 @@ const ASSET_CATEGORIES = [
   'Crafting Recipes',
   'Datadisks',
   'Descriptors/Ammo',
+  'Descriptors/Explosions',
   'Descriptors/Firemodes',
   'Descriptors/Weapons',
   'Explosions',
@@ -226,6 +227,7 @@ function createProject(input) {
   fs.mkdirSync(path.join(assetsDir, 'Images', 'Weapons'), { recursive: true });
   fs.mkdirSync(path.join(assetsDir, 'Images', 'Firemodes'), { recursive: true });
   fs.mkdirSync(path.join(assetsDir, 'Images', 'Ammo'), { recursive: true });
+  fs.mkdirSync(path.join(assetsDir, 'Sounds'), { recursive: true });
 
   console.log(`[PROJECT] Created: ${id}`);
   return { status: 'ok', id, name: id };
@@ -773,7 +775,7 @@ function deriveAmmoTypes(configItemsContent) {
   const sorted = [...types].filter(Boolean).sort();
   let out = '#ammoTypes\nName\n';
   for (const t of sorted) out += t + '\n';
-  out += '\n#end\n';
+  out += '#end\n';
   return out;
 }
 
@@ -852,11 +854,14 @@ function diffRefFile(oldContent, newContent, isEnum) {
   const columnsRemoved = colsA.filter(c => !colsB.includes(c));
 
   const added = [], removed = [], modified = [];
-  for (const id of b.order) if (!a.rows.has(id)) added.push(id);
-  for (const id of a.order) if (!b.rows.has(id)) removed.push(id);
+  // order arrays can contain an Id twice if the source config duplicates a
+  // row (rows Map is last-wins) — process each Id once.
+  const uniq = arr => [...new Set(arr)];
+  for (const id of uniq(b.order)) if (!a.rows.has(id)) added.push(id);
+  for (const id of uniq(a.order)) if (!b.rows.has(id)) removed.push(id);
 
   // Field-level comparison for entries present in both, matched by column name
-  for (const id of b.order) {
+  for (const id of uniq(b.order)) {
     if (!a.rows.has(id)) continue;
     const oldCells = a.rows.get(id), newCells = b.rows.get(id);
     const fields = [];
@@ -1099,6 +1104,10 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
   'MGSC.AmmoRecord': ['Price', 'Weight'],
   'MGSC.DatadiskRecord': ['Price', 'Weight'],
   'QM_ImporterAPI.Templates.FactionTemplate': ['Weight', 'Points'],
+  // Explosion float params live under Parameters; writeJson matches by field
+  // name across the whole tree, and these names are unique to explosions.
+  'MGSC.ExplosionRecord': ['WoundChance', 'ThrowbackChance', 'StunChance', 'PropagateFireChance'],
+  'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor': ['VisualExplosionDelay', 'VisualReachCellDuration', 'VisualExplosionOffsetX', 'VisualExplosionOffsetY', 'VisualExplosionOffsetZ'],
 };
 
 function writeJson(filePath, data) {
@@ -1106,7 +1115,7 @@ function writeJson(filePath, data) {
   // Force .0 on known float fields (per record type) that serialize as integers
   const floatFields = FLOAT_FIELDS_BY_RECORD_TYPE[data?.RecordType] || [];
   for (const field of floatFields) {
-    json = json.replace(new RegExp(`("${field}":\\s*)(\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) => {
+    json = json.replace(new RegExp(`("${field}":\\s*)(-?\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) => {
       return num.includes('.') ? m : `${pre}${num}.0${post}`;
     });
   }

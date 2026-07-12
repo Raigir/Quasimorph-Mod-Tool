@@ -5,7 +5,7 @@ highexplosion_grenade		Military AnCom RealWare SheduThousand Grasshopper Franche
 *quasi_grenade		RitualItem	5	150	0.1	1	Grenade	TRUE	5	1	FALSE	7	1	2	0.2	quasi_explosion																
 thermal_grenade		Military RealWare SheduThousand ChurchRevelation ChurchGannix Sunlight Emeraldlight CoreWard CResistance 	4	125	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	thermal_explosion	tin 1 gas_ammo 1 powder 1															
 stun_grenade		Security Specops AnCom SBN Dilthey RealWare Sunlight Emeraldlight FrancheComte SheduThousand	1	50	0.15	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	stun_explosion	tin 1 acid 1 human_poop 1															
-smoke_grenade		Security Specops AnCom SBN Dilthey RealWare Sunlight Emeraldlight FrancheComte SheduThousand	4	80	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	smoke_explosion	tin 1 acid 1 plastic 1															
+smoke_grenade		Security Specops AnCom SBN FrancheComte	4	80	0.2	1	Grenade	TRUE	3	1	TRUE	7	1	2	0.2	smoke_explosion	tin 1 acid 1 plastic 1															
 *throwable_heart		Medical SheduThousand	1	5	0.15	1	Grenade	TRUE	3	0	TRUE	7	1	2	0.2	heart_explosion																
 handmade_frag_grenade		Worker Miner Prison SheduThousand UnchainedBelt CResistance	1	25	0.5	1	Grenade	TRUE	3	2	TRUE	6	1	2	0.2	frag_low_explosion	tin 1 explosives 1															
 handmade_smoke_grenade		Worker Miner Prison SheduThousand UnchainedBelt CResistance	2	40	0.5	1	Grenade	TRUE	3	2	TRUE	6	1	2	0.2	smoke_low_explosion	tin 1 plastic 1 gas_ammo 1															

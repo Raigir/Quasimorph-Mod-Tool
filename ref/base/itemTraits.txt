@@ -47,8 +47,9 @@ explosive_poison	AmmoTrait	Passive	FALSE	SExplosive rocket_poison_explosion	trai
 explosive_nuke	AmmoTrait	Passive	FALSE	SExplosive rocket_nuke_explosion	trait_inherit_damage																							
 explosive_quasi	AmmoTrait	Passive	FALSE	SExplosive rocket_quasi_explosion	trait_inherit_damage																							
 explosive_hfg	AmmoTrait	Passive	FALSE	SExplosive hfg_explosion	trait_inherit_damage																							
+explosive_plasma	AmmoTrait	Passive	FALSE	SExplosive flak_plasma_explosion	trait_inherit_damage																							
 ricochet	AmmoTrait	Passive	FALSE	IRicochet 5 IMaxDistance 15	traits_ricochet																							
-collimator	WeaponTrait	Passive	FALSE	FFalloffBonus -0.12	traits_collimator																							
+collimator	WeaponTrait	Passive	FALSE	FFalloffBonus -0.10	traits_collimator																							
 laser_sight	WeaponTrait	Passive	FALSE	BLaserSight true	traits_laser_sight																							
 corrosive	AmmoTrait	Passive	FALSE	FCorrosiveEffect 0.8	traits_corrosive																							
 backstab	WeaponTrait	Passive	FALSE	FBackstabCritChance 0.6 FBackstabCritDmg 1.5	traits_backstab																							

@@ -92,8 +92,11 @@ Same update policy as base files: **full replacement** from source. ammoTypes an
 |---|---|
 | ballisticTypes.txt | Static list |
 | factionIdCodes.txt | Static list |
+| gasStrength.txt | Static list — explosion GasStrength values |
+| gasType.txt | Static list — explosion GasType values |
 | handGrips.txt | Static list |
 | itemClass.txt | Static list |
 | languageCodes.txt | Static list |
+| liquidType.txt | Static list — explosion LiquidType values |
 | weaponClass.txt | Static list |
 | weaponSubClass.txt | Static list |

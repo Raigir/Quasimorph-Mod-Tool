@@ -1,0 +1,7 @@
+#liquidType																									
+Name																									
+Ice																									
+Red																									
+Toxic																									
+Water																									
+#end																									

@@ -1,0 +1,9 @@
+#gasType																									
+Name																									
+Cold																									
+Flammable																									
+Nano																									
+Shock																									
+Smoke																									
+Toxic																									
+#end																									
