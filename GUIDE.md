@@ -234,7 +234,7 @@ Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all confi
 ## Explosions
 
 ### Creating an Explosion
-Switch to **Explosions** mode and click **+ New**. An explosion record is created with ID `explosion_tempid_1` (auto-increments). Explosions are the simplest asset type — no sprites, localization, descriptor, datadisk, or faction-reward files. The record is a single JSON at `Assets/Explosions/{id}.json`.
+Switch to **Explosions** mode and click **+ New**. An explosion record is created with ID `explosion_tempid_1` (auto-increments), along with a blank descriptor. Explosions have no sprites, localization, datadisk, or faction-reward files — just the record at `Assets/Explosions/{id}.json` and its descriptor (see the Descriptor sub-tab section below).
 
 ### Explosion ID
 IDs must be unique across both the project and the base game explosions (`ref/base/explosions.txt`). Same character rules as other assets (letters, numbers, underscores, hyphens). Changing the ID and saving renames the record file (new file written first, old deleted after) — there are no linked files to update.
