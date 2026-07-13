@@ -862,13 +862,46 @@ function deriveTooltipIconTags(configPropsContent) {
   return out;
 }
 
-// traitEffects — Parameters column holds "Effect modifier" pairs; the unique
-// first token of each is the effect name (modifier may be float/int/string).
+// traitEffects — the Parameters column holds one or two "Effect modifier"
+// pairs. Every effect name is collected uniquely. An effect that only ever
+// appears as a secondary pair is non-functional without its primary, so it
+// gets a DependentTrait column listing the primaries it appeared under
+// (space-separated). Effects that appear as a primary anywhere are
+// standalone-functional and get a blank DependentTrait.
 function deriveTraitEffects(configPropsContent) {
-  const vals = collectItemTraitColumn(configPropsContent, 'Parameters', raw => raw.split(/\s+/)[0]);
-  if (!vals) return null;
-  let out = '#traitEffects\nName\n';
-  for (const v of vals) out += v + '\n';
+  const section = extractSection(configPropsContent, 'itemtraits');
+  if (!section) return null;
+  const lines = section.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return null;
+  const headers = lines[1].split('\t');
+  const parIdx = headers.findIndex(h => h.trim().toLowerCase() === 'parameters');
+  if (parIdx < 0) return null;
+
+  const primaries = new Set();
+  const parents = new Map(); // effect -> Set(primary effects it depended on)
+  for (let i = 2; i < lines.length; i++) {
+    if (lines[i].trim().toLowerCase() === '#end') break;
+    const raw = (lines[i].split('\t')[parIdx] || '').trim();
+    if (!raw) continue;
+    const toks = raw.split(/\s+/);
+    const prim = toks[0];
+    primaries.add(prim);
+    // subsequent pairs (effect at even indices) depend on the primary
+    for (let t = 2; t < toks.length; t += 2) {
+      const eff = toks[t];
+      if (!eff) continue;
+      if (!parents.has(eff)) parents.set(eff, new Set());
+      parents.get(eff).add(prim);
+    }
+  }
+
+  const all = new Set([...primaries, ...parents.keys()]);
+  if (!all.size) return null;
+  let out = '#traitEffects\nName\tDependentTrait\n';
+  for (const eff of [...all].sort()) {
+    const dep = primaries.has(eff) ? '' : [...(parents.get(eff) || [])].sort().join(' ');
+    out += eff + '\t' + dep + '\n';
+  }
   out += '#end\n';
   return out;
 }
