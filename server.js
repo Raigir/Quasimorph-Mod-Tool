@@ -811,6 +811,68 @@ function deriveCategories(configItemsContent) {
   return out;
 }
 
+// Shared column extractor for the #itemtraits section.
+// Returns unique non-blank values, transformed by `pick` (default: whole cell).
+function collectItemTraitColumn(configPropsContent, columnName, pick) {
+  const section = extractSection(configPropsContent, 'itemtraits');
+  if (!section) return null;
+  const lines = section.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return null;
+  const headers = lines[1].split('\t');
+  const colIdx = headers.findIndex(h => h.trim().toLowerCase() === columnName.toLowerCase());
+  if (colIdx < 0) return null;
+  const values = new Set();
+  for (let i = 2; i < lines.length; i++) {
+    if (lines[i].trim().toLowerCase() === '#end') break;
+    const raw = (lines[i].split('\t')[colIdx] || '').trim();
+    if (!raw) continue;
+    const v = pick ? pick(raw) : raw;
+    if (v) values.add(v);
+  }
+  return values.size ? [...values].sort() : null;
+}
+
+// TooltipIconTags — unique TooltipIconTag values from #itemtraits, each with
+// the effects it co-occurred with (space-separated) as a suggestion source.
+function deriveTooltipIconTags(configPropsContent) {
+  const section = extractSection(configPropsContent, 'itemtraits');
+  if (!section) return null;
+  const lines = section.split('\n').filter(l => l.trim());
+  if (lines.length < 3) return null;
+  const headers = lines[1].split('\t');
+  const iconIdx = headers.findIndex(h => h.trim().toLowerCase() === 'tooltipicontag');
+  const parIdx = headers.findIndex(h => h.trim().toLowerCase() === 'parameters');
+  if (iconIdx < 0) return null;
+  const assoc = new Map(); // icon -> Set(effects)
+  for (let i = 2; i < lines.length; i++) {
+    if (lines[i].trim().toLowerCase() === '#end') break;
+    const cells = lines[i].split('\t');
+    const icon = (cells[iconIdx] || '').trim();
+    if (!icon) continue;
+    if (!assoc.has(icon)) assoc.set(icon, new Set());
+    const par = parIdx >= 0 ? (cells[parIdx] || '').trim() : '';
+    if (par) assoc.get(icon).add(par.split(/\s+/)[0]);
+  }
+  if (!assoc.size) return null;
+  let out = '#tooltipIconTags\nName\tAssociatedEffects\n';
+  for (const icon of [...assoc.keys()].sort()) {
+    out += icon + '\t' + [...assoc.get(icon)].sort().join(' ') + '\n';
+  }
+  out += '#end\n';
+  return out;
+}
+
+// traitEffects — Parameters column holds "Effect modifier" pairs; the unique
+// first token of each is the effect name (modifier may be float/int/string).
+function deriveTraitEffects(configPropsContent) {
+  const vals = collectItemTraitColumn(configPropsContent, 'Parameters', raw => raw.split(/\s+/)[0]);
+  if (!vals) return null;
+  let out = '#traitEffects\nName\n';
+  for (const v of vals) out += v + '\n';
+  out += '#end\n';
+  return out;
+}
+
 // Parse a ref TSV into { header, key, rows: Map<keyVal, {cells, raw}> }.
 // Section files: line0 = #section, line1 = column header, rows keyed by Id
 // (leading * stripped). Enum value-lists: line0 = #name, line1 = "Name",
@@ -946,6 +1008,27 @@ async function updateRefData(input) {
     const d = diffRefFile(oldContent, categories, true);
     if (d) diffs['categories.txt'] = d;
     fs.writeFileSync(target, categories, 'utf8');
+    extracted++;
+  }
+
+  // Trait-derived enums (from config_items_properties.txt #itemtraits)
+  const configProps = configs['config_items_properties.txt'];
+  const tooltipIconTags = deriveTooltipIconTags(configProps);
+  if (tooltipIconTags) {
+    const target = path.join(enumsDir, 'tooltipIconTags.txt');
+    const oldContent = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+    const d = diffRefFile(oldContent, tooltipIconTags, true);
+    if (d) diffs['tooltipIconTags.txt'] = d;
+    fs.writeFileSync(target, tooltipIconTags, 'utf8');
+    extracted++;
+  }
+  const traitEffects = deriveTraitEffects(configProps);
+  if (traitEffects) {
+    const target = path.join(enumsDir, 'traitEffects.txt');
+    const oldContent = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
+    const d = diffRefFile(oldContent, traitEffects, true);
+    if (d) diffs['traitEffects.txt'] = d;
+    fs.writeFileSync(target, traitEffects, 'utf8');
     extracted++;
   }
 

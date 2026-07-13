@@ -392,7 +392,7 @@ Click the **Options** button in the top-right corner of the header to open the o
 
 ### Reference Data Update
 
-Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories). Immutable enum files are not affected.
+Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories, tooltipIconTags, traitEffects). Immutable enum files are not affected.
 
 **Two workflows:**
 

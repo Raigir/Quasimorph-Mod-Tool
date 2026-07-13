@@ -81,8 +81,10 @@ config_wounds.txt
 
 | Enum File | Source | Derivation Method |
 |---|---|---|
-| ammoTypes.txt | `config_items.txt` `#ammo` section | Extract unique values from `AmmoType` column across all ammo entries, plus the empty row (blank value). Output: single `Name` column. |
+| ammoTypes.txt | `config_items.txt` `#ammo` section | Extract unique values from `AmmoType` column across all ammo entries (blank values skipped — no empty row generated). Output: single `Name` column. The UI adds its own valid "empty" selection independently. |
 | categories.txt | `config_items.txt` all sections | Extract unique values from `Categories` column across essentially all item sections. Categories are space-delimited per entry, so each entry may contribute multiple values. Output: single `Name` column. |
+| tooltipIconTags.txt | `config_items_properties.txt` `#itemtraits` section | Extract unique values from `TooltipIconTag` column (blank values skipped). Output: `Name` column plus `AssociatedEffects` — the space-separated set of trait effects (Parameters first token) each icon co-occurred with, used as a suggestion source for prepopulating icon/effect fields. |
+| traitEffects.txt | `config_items_properties.txt` `#itemtraits` section | The `Parameters` column holds "Effect modifier" pairs; extract the unique first token (the effect name) of each non-blank value. Modifier may be float/int/string and is not collected. Output: single `Name` column. |
 
 Same update policy as base files: **full replacement** from source. ammoTypes and categories are value extractions (unique column values), not section copies.
 
@@ -95,6 +97,7 @@ Same update policy as base files: **full replacement** from source. ammoTypes an
 | gasStrength.txt | Static list — explosion GasStrength values |
 | gasType.txt | Static list — explosion GasType values |
 | handGrips.txt | Static list |
+| itemTraitTypes.txt | Static list — trait ItemTraitType values (AmmoTrait, WeaponTrait) |
 | itemClass.txt | Static list |
 | languageCodes.txt | Static list |
 | liquidType.txt | Static list — explosion LiquidType values |
