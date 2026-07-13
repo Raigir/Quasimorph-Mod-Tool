@@ -1,0 +1,48 @@
+#traitEffects
+Name	DependentTrait
+BExtraKnockback	
+BHeavyWeapon	
+BLaserSight	
+BMeleeCleave	
+BMutilate	
+BPiercingThrow	
+BSelfcharging	
+BSingleLoad	
+BSuppressor	
+BThrowAutoCrit	
+BThrowAutoHit	
+BUnthrowable	
+FArmorPenetration	
+FBackstabCritChance	
+FBackstabCritDmg	FBackstabCritChance
+FBipodAccuracy	FBipodScatter
+FBipodScatter	
+FCorrosiveEffect	
+FDoWoundChance	
+FFalloffBonus	
+FFireSpread	
+FIncendiaryChance	
+FOffHandCritBonus	
+FPainCritMult	
+FPainDamageMult	
+FPierce	
+FPiercingTrauma	
+FStunChance	
+FSuppressedAccuracy	
+FThrowbackChance	
+FToxicSpread	
+FUnwieldyMult	
+FWaterSpread	
+IEffRangeStarts	
+IEnemyStunDuration	FStunChance
+IFragile	
+IMarkCritVulnerableDuration	
+IMaxDistance	IRicochet
+IMeleeSweep	
+IOverclockDamage	
+IOverheatDurability	
+IRampUpProjectiles	
+IRicochet	
+IStartSpreadDistance	FFireSpread FToxicSpread FWaterSpread
+SExplosive	
+#end

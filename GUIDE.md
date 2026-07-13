@@ -2,7 +2,7 @@
 
 ## Navigation
 
-The header contains four mode tabs: **Weapons**, **Ammo**, **Firemodes**, and **Explosions** (pill-style tab switcher). The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name. An **Options** button in the top-right opens a sliding panel for tool configuration.
+The header contains five mode tabs: **Weapons**, **Ammo**, **Firemodes**, **Explosions**, and **Traits** (pill-style tab switcher). The active mode determines which assets are shown in the sidebar list and what editor is available. A search filter above the asset list lets you filter by ID or English name. An **Options** button in the top-right opens a sliding panel for tool configuration.
 
 ---
 
@@ -104,7 +104,7 @@ Also: RequiredAmmo (dropdown from base ammo types + any custom ammo types discov
 
 **RequiredAmmo and custom ammo types** — When you create an ammo record with a free-typed AmmoType that doesn't exist in the base game's ammo types enum, that type automatically appears as an option in the weapon editor's RequiredAmmo dropdown. This lets you define new ammo categories through your ammo records and immediately reference them from weapons. If all ammo records using a custom type are later deleted, any weapons still referencing that type will show it as "(missing)" with a red border and block saving until resolved.
 
-**Traits** — Multi-select dropdown, filtered to WeaponTrait entries from itemTraits TSV.
+**Traits** — Multi-select dropdown of WeaponTrait entries: base-game traits from the itemTraits TSV plus any project-local custom traits whose Item Trait Type is WeaponTrait (custom entries show a " - *Custom*" label; the saved value is the plain ID).
 
 **Grenades** — DefaultGrenadeId (dropdown from base grenades, empty = `""`), AllowedGrenadeIds (multi-select from base grenades).
 
@@ -204,7 +204,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Status Effects** — StatusEffectId (dropdown from base game status effects, filtered to Damage renewal types), ChanceToApply (≥ 0), StatusDamageModifier (negatives allowed), StatusResistModifier (negatives allowed).
 
-**Traits** — Multi-select dropdown, filtered to AmmoTrait entries from itemTraits TSV.
+**Traits** — Multi-select dropdown of AmmoTrait entries: base-game traits plus project-local custom traits whose Item Trait Type is AmmoTrait (custom entries show a " - *Custom*" label; the saved value is the plain ID).
 
 **Hidden defaults** — ItemClass ("Ammo"), IsImplictedAmmo (false), IsChargeOnly (false). Always saved but not editable.
 
@@ -234,7 +234,7 @@ Click the copy icon on an ammo card. Creates `{sourceId}_copy{n}` with all confi
 ## Explosions
 
 ### Creating an Explosion
-Switch to **Explosions** mode and click **+ New**. An explosion record is created with ID `explosion_tempid_1` (auto-increments). Explosions are the simplest asset type — no sprites, localization, descriptor, datadisk, or faction-reward files. The record is a single JSON at `Assets/Explosions/{id}.json`.
+Switch to **Explosions** mode and click **+ New**. An explosion record is created with ID `explosion_tempid_1` (auto-increments), along with a blank descriptor. Explosions have no sprites, localization, datadisk, or faction-reward files — just the record at `Assets/Explosions/{id}.json` and its descriptor (see the Descriptor sub-tab section below).
 
 ### Explosion ID
 IDs must be unique across both the project and the base game explosions (`ref/base/explosions.txt`). Same character rules as other assets (letters, numbers, underscores, hyphens). Changing the ID and saving renames the record file (new file written first, old deleted after) — there are no linked files to update.
@@ -263,6 +263,35 @@ Click the copy icon on an explosion card. Creates `{sourceId}_copy{n}` — copie
 The explosion editor has two sub-tabs: **Explosion Config** and **Descriptor**. The descriptor holds the visual/sound presentation and is saved as a separate record at `Assets/Descriptors/Explosions/{id}_descriptor.json` (record type `CustomExplosionDescriptor`). It's created, renamed, copied, and deleted automatically alongside the explosion record.
 
 Descriptor fields: Explosion Visual ID, Explosion Sound ID/Path (new records default to `Sounds/` as a starting path), Visual Explosion Delay (float ≥ 0), Visual Reach Cell Duration (float ≥ 0), Clear Gibs Radius in Pixels (int ≥ 0), Shake Camera On Explosion (toggle), and Visual Explosion Offset X/Y/Z (float, negatives allowed). Both sub-tabs share the Save button; saving validates and writes both records together. Projects also scaffold an `Assets/Sounds` folder for sound files the descriptor can reference.
+
+## Traits
+
+### Creating a Trait
+Switch to **Traits** mode and click **+ New**. A trait record is created with ID `trait_tempid_1` (auto-increments) and one blank effect entry. Traits are saved as a single JSON at `Assets/Traits/{id}.json` (record type `MGSC.ItemTraitRecord`) — no linked files.
+
+### Trait ID
+IDs must be unique across both the project and the base game traits (`ref/base/itemTraits.txt`). Same character rules as other assets (letters, numbers, underscores, hyphens). Changing the ID and saving renames the record file (new written first, old deleted after).
+
+### Trait Editor
+Single-panel editor:
+
+- **Identity** — Id.
+- **Trait Config** — Item Trait Type (dropdown from the itemTraitTypes enum, defaults WeaponTrait) | Is Negative (toggle). Tooltip Icon Tag (dropdown from the tooltipIconTags enum, defaults empty). `TraitContext` is always written as `Passive` and has no field.
+- **Effects** — a repeater of effect entries (see below).
+
+### Effects
+Each effect entry has three fields plus a remove (×) button:
+
+- **Effect Name** — a combobox: type freely or pick from the traitEffects enum. The suggestion list is dependency-aware — the first entry only offers independent effects; later entries also offer dependent effects once their required primary is selected in another entry. An effect name already used in another entry is never offered again, and a duplicate name blocks saving.
+- **Val Type** — Boolean, Int, Float, or String. When you pick an effect from the list, the type is set automatically from the effect's leading letter (B/F/I/S). Typing a name manually leaves the type for you to set.
+- **Value** — the control matches the type: a false/true dropdown for Boolean, a whole-number input for Int, a decimal-number input for Float, and free text for String. Changing the Val Type clears the value and swaps the control. On save the value is written to the matching value field (blank numeric values save as 0; blank String saves as null). All four value fields are always written to the file; only the one matching the type carries your value.
+
+When the first effect is picked from the list, if it maps to a tooltip icon (via the icon's associated effects) the Tooltip Icon Tag is set for you. Only the first entry's list-selection does this, and only that action — you can freely change the icon afterward.
+
+Custom traits become selectable in the weapon or ammo editors (matched by Item Trait Type — WeaponTrait shows in weapons, AmmoTrait in ammo) with a " - *Custom*" label. Changing a custom trait's type moves which editor it appears in. If you delete a custom trait (or change its type) that a weapon or ammo record still references, the reference is not silently removed — on next open that record's Traits field is outlined red and the trait shows inside the dropdown as a red "(missing)" checkbox that stays checked and blocks saving until you uncheck it, so a dangling reference can't reach the exported mod unnoticed.
+
+### Copying a Trait
+Click the copy icon on a trait card. Creates `{sourceId}_copy{n}` — a straight record copy.
 
 ## Validation
 
@@ -324,6 +353,18 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | ThrowbackChance, StunChance, PropagateFireChance | Number, 0–1 |
 | LargeFireChance | Integer, 0–100 (helper icon: "Uses values between 0-100") |
 | DamageType, LiquidType, GasType, GasStrength | Dropdown, no empty → always valid |
+
+### Trait Field Rules
+
+| Field | Rule |
+|-------|------|
+| Id | Non-empty; letters, numbers, `_`, `-`; unique vs project + base game |
+| Effects | At least one entry with a name required |
+| Effect Name | No duplicates across entries |
+| Float value | Must parse as a number (blank = 0) |
+| Int value | Must parse as a whole number (blank = 0) |
+| Boolean / String value | Always valid (dropdown / free text) |
+| Item Trait Type | Dropdown, no empty → always valid |
 
 ### Ammo Field Rules
 
@@ -392,7 +433,7 @@ Click the **Options** button in the top-right corner of the header to open the o
 
 ### Reference Data Update
 
-Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories). Immutable enum files are not affected.
+Update the tool's reference data files from the game's config files. This rebuilds all `ref/base/` files and mutable `ref/enums/` files (ammoTypes, categories, tooltipIconTags, traitEffects). Immutable enum files are not affected.
 
 **Two workflows:**
 
