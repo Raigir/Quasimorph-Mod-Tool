@@ -288,7 +288,7 @@ Each effect entry has three fields plus a remove (×) button:
 
 When the first effect is picked from the list, if it maps to a tooltip icon (via the icon's associated effects) the Tooltip Icon Tag is set for you. Only the first entry's list-selection does this, and only that action — you can freely change the icon afterward.
 
-Custom traits become selectable in the weapon or ammo editors (matched by Item Trait Type — WeaponTrait shows in weapons, AmmoTrait in ammo) with a " - *Custom*" label. Changing a custom trait's type moves which editor it appears in. If you delete a custom trait (or change its type) that a weapon or ammo record still references, the reference is not silently removed — on next open that record shows the trait as a red "(missing)" checkbox that stays checked and blocks saving until you uncheck it, so a dangling reference can't reach the exported mod unnoticed.
+Custom traits become selectable in the weapon or ammo editors (matched by Item Trait Type — WeaponTrait shows in weapons, AmmoTrait in ammo) with a " - *Custom*" label. Changing a custom trait's type moves which editor it appears in. If you delete a custom trait (or change its type) that a weapon or ammo record still references, the reference is not silently removed — on next open that record's Traits field is outlined red and the trait shows inside the dropdown as a red "(missing)" checkbox that stays checked and blocks saving until you uncheck it, so a dangling reference can't reach the exported mod unnoticed.
 
 ### Copying a Trait
 Click the copy icon on a trait card. Creates `{sourceId}_copy{n}` — a straight record copy.
