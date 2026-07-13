@@ -647,6 +647,7 @@
   }
   .multi-select-display:hover { border-color:var(--border-active); }
   .multi-select-display.open { border-color:var(--accent-dim); }
+  .multi-select-display.invalid { border-color:var(--error); }
   .multi-select-display .placeholder { color:var(--text-dim); }
   .multi-select-dropdown {
     display:none; position:absolute; top:100%; left:0; right:0;
@@ -700,6 +701,8 @@
     background-repeat:no-repeat; background-position:center;
   }
   .multi-select-dropdown label:hover { background:var(--bg-hover); }
+  .multi-select-dropdown label.trait-missing { color:var(--error); }
+  .multi-select-dropdown label.trait-missing::before { border-color:var(--error); }
   .ed-actions {
     display:flex; gap:8px; justify-content:flex-end;
     padding-top:8px;
@@ -748,6 +751,9 @@
     display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;
   }
   .entry-item .entry-field.narrow { flex:0 0 80px; }
+  /* Trait effect rows: name and value fields fixed to span2 width; row hugs content. */
+  #traitEffectRows .entry-item { display:inline-flex; }
+  #traitEffectRows .entry-field.trait-span2 { flex:0 0 calc(2 * var(--field-w) + 1 * var(--ed-gap)); }
   .entry-item .entry-field label {
     font-size:9px; font-weight:600; text-transform:uppercase;
     letter-spacing:0.04em; color:var(--text-dim);
@@ -999,6 +1005,7 @@
         <button class="btn" id="modeAmmo" onclick="guardSwitchMode('ammo')">Ammo</button>
         <button class="btn" id="modeFiremodes" onclick="guardSwitchMode('firemodes')">Firemodes</button>
         <button class="btn" id="modeExplosions" onclick="guardSwitchMode('explosions')">Explosions</button>
+        <button class="btn" id="modeTraits" onclick="guardSwitchMode('traits')">Traits</button>
       </div>
     </div>
     <div class="c-header-actions">
@@ -1608,6 +1615,37 @@
     </div>
   </div>
 
+  <!-- Trait Editor -->
+  <div class="editor-wrap" id="traitConfigWrap">
+    <div class="ed-section">
+      <div class="ed-section-title">Identity</div>
+      <div class="ed-row">
+        <div class="ed-field span3"><label>Id</label><input type="text" id="trait-Id"></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Trait Config</div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Item Trait Type</label><select id="trait-ItemTraitType"></select></div>
+        <div class="ed-field" style="flex:1 1 0;"><label>Is Negative</label><input type="checkbox" id="trait-IsNegative"><div class="tog" onclick="togClick(this)"></div></div>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field span2"><label>Tooltip Icon Tag</label><select id="trait-TooltipIconTag"></select></div>
+      </div>
+    </div>
+
+    <div class="ed-section">
+      <div class="ed-section-title">Effects</div>
+      <div id="traitEffectRows" style="display:flex; flex-direction:column; gap:6px; align-items:flex-start;"></div>
+      <button class="btn" style="margin-top:10px;" onclick="addTraitEffectEntry()">+ Add Effect</button>
+    </div>
+
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveTrait()">Save</button>
+    </div>
+  </div>
+
   <!-- Ammo Tab Bar -->
   <div class="tab-bar" id="ammoTabBar">
     <button class="tab-btn active" onclick="switchAmmoTab('ammoConfig')">Ammo Config</button>
@@ -1951,6 +1989,7 @@ let selWeapon = null;
 let selFiremode = null;
 let selAmmo = null;
 let selExplosion = null;
+let selTrait = null;
 let REF = null;
 let curImageFolder = '';
 let currentMode = 'weapons';
@@ -1962,6 +2001,7 @@ let statsFm = 0;
 let _projFiremodeData = {};
 let _projAmmoData = {};
 let _allAmmoForDefault = [];
+let _projTraitData = {};
 
 // Per-asset image version tokens — bumped on upload/rename/move so previews
 // and thumbnails refresh when they change, without busting the browser
@@ -2295,7 +2335,7 @@ async function selectProject(id, skipAutoSelect) {
 }
 
 function renderModeList(tree, skipAutoSelect) {
-  const catMap = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions' };
+  const catMap = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions', traits: 'Traits' };
   const cat = catMap[currentMode] || 'Weapons';
   const items = tree[cat] || [];
   const emptyState = document.getElementById('emptyState');
@@ -2335,6 +2375,15 @@ function renderModeList(tree, skipAutoSelect) {
     } else {
       emptyState.style.display = '';
       emptyState.querySelector('div:last-child').textContent = 'No explosions yet';
+    }
+  } else if (currentMode === 'traits') {
+    renderTraitList(items);
+    if (items.length) {
+      emptyState.style.display = 'none';
+      if (!skipAutoSelect) selectTrait(items[0].id);
+    } else {
+      emptyState.style.display = '';
+      emptyState.querySelector('div:last-child').textContent = 'No traits yet';
     }
   }
 }
@@ -2441,10 +2490,7 @@ function populateAmmoEditor(d) {
   val('ammo-StatusDamageModifier', d.StatusDamageModifier ?? 0.0);
   val('ammo-StatusResistModifier', d.StatusResistModifier ?? 0.0);
   // Traits
-  document.querySelectorAll('#ammo-Traits input[type="checkbox"]').forEach(cb => {
-    cb.checked = (d.Traits || []).includes(cb.value);
-  });
-  updateMultiSelectDisplay(document.querySelector('#ammo-Traits input[type="checkbox"]'));
+  applyTraitSelection('ammo-Traits', d.Traits || []);
   // Categories
   document.querySelectorAll('#ammo-Categories input[type="checkbox"]').forEach(cb => {
     cb.checked = (d.Categories || []).includes(cb.value);
@@ -2682,6 +2728,7 @@ async function selectAmmo(id) {
     const record = await api('asset', { params: { project: selProject.id, category: 'Ammo', id } });
     selAmmo = { id, record };
     document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    await refreshTraitSelects();
     populateAmmoEditor(record.Data);
     await loadAmmoDescriptor(id);
     await loadAmmoLocalization(id);
@@ -2768,6 +2815,8 @@ function validateAllAmmo() {
     const ptsOk = !isNaN(pv) && Number.isInteger(pv) && pv > 0;
     pts.classList.toggle('invalid', !ptsOk); if (!ptsOk) allValid = false;
   });
+  // Orphaned trait references block save
+  if (document.querySelector('#ammo-Traits label.trait-missing input:checked')) allValid = false;
   return allValid;
 }
 
@@ -2797,6 +2846,10 @@ function collectAmmoValidationErrors() {
   const minA = parseInt(document.getElementById('ammo-MinAmmoAmount').value) || 0;
   const maxA = parseInt(document.getElementById('ammo-MaxAmmoAmount').value) || 0;
   if (maxA < minA) add('Ammo Properties', 'Max Ammo Amount must be ≥ Min Ammo Amount');
+  // Orphaned trait references
+  document.querySelectorAll('#ammo-Traits label.trait-missing input:checked').forEach(cb => {
+    add('Traits', `Trait "${cb.value}" — not found in base game or project AmmoTraits`);
+  });
   // Faction Rewards
   let frIdx = 0;
   document.querySelectorAll('#ammoFactionRewardList .entry-item').forEach(el => {
@@ -3843,6 +3896,443 @@ function confirmCopyExplosion(id) {
   showConfirm(`Copy the asset "${id}"?`, () => copyExplosion(id), 'Copy', 'primary');
 }
 
+// ═══════════════════════════════════════════════════════════════════
+//  TRAITS
+// ═══════════════════════════════════════════════════════════════════
+
+const VALTYPES = ['Boolean', 'Int', 'Float', 'String'];
+
+// Map an effect name's lead letter to a ValType (B/F/I/S).
+function valTypeFromEffect(name) {
+  const c = (name || '').charAt(0).toUpperCase();
+  if (c === 'B') return 'Boolean';
+  if (c === 'F') return 'Float';
+  if (c === 'I') return 'Int';
+  if (c === 'S') return 'String';
+  return 'Boolean';
+}
+
+function newTraitRecord(id) {
+  return {
+    RecordType: 'MGSC.ItemTraitRecord',
+    Data: {
+      Id: id || 'trait_tempid_1',
+      ItemTraitType: 'WeaponTrait',
+      TraitContext: 'Passive',
+      IsNegative: false,
+      TooltipIconTag: '',
+      Parameters: [],
+    }
+  };
+}
+
+// Names selected in effect rows other than the given row's input element.
+function traitSelectedNames(exceptInput) {
+  const names = [];
+  document.querySelectorAll('#traitEffectRows .entry-item').forEach(row => {
+    const inp = row.querySelector('.trait-eff-name');
+    if (inp && inp !== exceptInput) {
+      const v = inp.value.trim();
+      if (v) names.push(v);
+    }
+  });
+  return names;
+}
+
+// Build the allowed effect-name list for a given row's combobox.
+// Row 0: independents only, always. Later rows: independents + dependents whose
+// primary is selected in another row. Excludes names already used elsewhere.
+function traitEffectOptions(input) {
+  const rows = [...document.querySelectorAll('#traitEffectRows .entry-item')];
+  const thisRow = input.closest('.entry-item');
+  const rowIndex = rows.indexOf(thisRow);
+  const selectedElsewhere = traitSelectedNames(input);
+  const all = REF.enums?.traitEffects?.rows || [];
+  const avail = (n) => n && !selectedElsewhere.includes(n);
+
+  const independents = all
+    .filter(r => !((r.DependentTrait || '').trim()) && avail(r.Name))
+    .map(r => ({ name: r.Name, label: r.Name }));
+
+  if (rowIndex === 0) return dedupeByName(independents);
+
+  // Dependents whose primary is selected in another row — pinned to the top,
+  // labelled with the primary that allowed them (display only).
+  const unlocked = [];
+  for (const r of all) {
+    const dep = (r.DependentTrait || '').trim();
+    if (!dep || !avail(r.Name)) continue;
+    const allowedBy = dep.split(/\s+/).find(p => selectedElsewhere.includes(p));
+    if (allowedBy) unlocked.push({ name: r.Name, label: `${r.Name} - allowed by ${allowedBy}` });
+  }
+  unlocked.sort((a, b) => a.name.localeCompare(b.name));
+  return dedupeByName([...unlocked, ...independents]);
+}
+
+function dedupeByName(items) {
+  const seen = new Set();
+  return items.filter(it => !seen.has(it.name) && seen.add(it.name));
+}
+
+// Rebuild a row's dropdown options, then open it (mirrors openCombobox).
+function openTraitEffectCombobox(input) {
+  document.querySelectorAll('.combobox-list.open').forEach(l => l.classList.remove('open'));
+  const list = input.nextElementSibling;
+  list.innerHTML = traitEffectOptions(input).map(o =>
+    `<div class="cb-option" data-name="${esc(o.name)}" onmousedown="pickTraitEffect(this)">${esc(o.label)}</div>`
+  ).join('');
+  filterCombobox(input);
+  list.classList.add('open');
+}
+
+// Selection from the list: set value, infer ValType, and (row 0 only) flip icon.
+function pickTraitEffect(option) {
+  const combobox = option.closest('.combobox');
+  const input = combobox.querySelector('input');
+  const name = option.dataset.name;
+  input.value = name;
+  option.closest('.combobox-list').classList.remove('open');
+
+  const row = input.closest('.entry-item');
+  const sel = row.querySelector('.trait-eff-valtype');
+  if (sel) {
+    const inferred = valTypeFromEffect(name);
+    if (sel.value !== inferred) {
+      sel.value = inferred;
+      onTraitValTypeChange(sel); // rebuild + clear the value control to match
+    }
+  }
+
+  // Icon flip — only when this is the first effect row.
+  const rows = [...document.querySelectorAll('#traitEffectRows .entry-item')];
+  if (rows.indexOf(row) === 0) {
+    const iconRow = (REF.enums?.tooltipIconTags?.rows || [])
+      .find(r => ((r.AssociatedEffects || '').split(/\s+/).includes(name)));
+    if (iconRow) {
+      const iconSel = document.getElementById('trait-TooltipIconTag');
+      if (iconSel && [...iconSel.options].some(o => o.value === iconRow.Name)) {
+        iconSel.value = iconRow.Name;
+      }
+    }
+  }
+}
+
+// Build the value control markup matching a ValType. Boolean → select,
+// Int/Float → number input (Int step 1, Float step any), String → free text.
+function traitValueFieldHtml(valType, valText) {
+  const v = esc(valText ?? '');
+  if (valType === 'Boolean') {
+    const isTrue = /^true$/i.test((valText ?? '').trim());
+    return `<select class="trait-eff-value">
+        <option value="false"${isTrue ? '' : ' selected'}>false</option>
+        <option value="true"${isTrue ? ' selected' : ''}>true</option>
+      </select>`;
+  }
+  if (valType === 'Int') {
+    return `<input type="number" step="1" class="trait-eff-value" value="${v}" oninput="validateTraitValue(this)">`;
+  }
+  if (valType === 'Float') {
+    return `<input type="number" step="any" class="trait-eff-value" value="${v}" oninput="validateTraitValue(this)">`;
+  }
+  return `<input type="text" class="trait-eff-value" value="${v}">`;
+}
+
+function validateTraitValue(input) {
+  const v = input.value.trim();
+  // Empty is allowed (parses to 0); otherwise must be a number.
+  input.classList.toggle('invalid', v !== '' && isNaN(parseFloat(v)));
+}
+
+// ValType select changed: swap the value control to the new type and clear it.
+function onTraitValTypeChange(sel) {
+  const row = sel.closest('.entry-item');
+  const field = row.querySelector('.trait-eff-value-field');
+  const newType = sel.value;
+  field.innerHTML = '<label>Value</label>' + traitValueFieldHtml(newType, '');
+}
+
+function addTraitEffectEntry(param) {
+  const list = document.getElementById('traitEffectRows');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  const valType = param?.ValType || 'Boolean';
+  let valText = '';
+  if (param) {
+    if (valType === 'Boolean') valText = param.BoolVal ? 'true' : 'false';
+    else if (valType === 'Float') valText = String(param.FloatVal ?? 0);
+    else if (valType === 'Int') valText = String(param.IntVal ?? 0);
+    else if (valType === 'String') valText = param.StrVal ?? '';
+  }
+  entry.innerHTML = `
+    <div class="entry-field trait-span2">
+      <label>Effect Name</label>
+      <div class="combobox">
+        <input type="text" class="trait-eff-name" value="${esc(param?.Name || '')}" onfocus="openTraitEffectCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow" style="flex:0 0 110px;">
+      <label>Val Type</label>
+      <select class="trait-eff-valtype" onchange="onTraitValTypeChange(this)">
+        ${VALTYPES.map(t => `<option value="${t}"${t === valType ? ' selected' : ''}>${t}</option>`).join('')}
+      </select>
+    </div>
+    <div class="entry-field trait-span2 trait-eff-value-field"><label>Value</label>${traitValueFieldHtml(valType, valText)}</div>
+    <button class="entry-rm trait-eff-rm" onclick="removeTraitEffectEntry(this)">&times;</button>
+  `;
+  list.appendChild(entry);
+  refreshTraitRemoveButtons();
+}
+
+function removeTraitEffectEntry(btn) {
+  btn.parentElement.remove();
+  refreshTraitRemoveButtons();
+}
+
+// A trait needs at least one effect entry, so the sole remaining row
+// (including the starter row) has no remove button.
+function refreshTraitRemoveButtons() {
+  const rows = document.querySelectorAll('#traitEffectRows .entry-item');
+  rows.forEach(row => {
+    const rm = row.querySelector('.trait-eff-rm');
+    if (rm) rm.style.display = rows.length === 1 ? 'none' : '';
+  });
+}
+
+function populateTraitEditor(d) {
+  val('trait-Id', d.Id);
+  val('trait-ItemTraitType', d.ItemTraitType ?? 'WeaponTrait');
+  chk('trait-IsNegative', d.IsNegative);
+  val('trait-TooltipIconTag', d.TooltipIconTag ?? '');
+  const list = document.getElementById('traitEffectRows');
+  list.innerHTML = '';
+  (d.Parameters || []).forEach(p => addTraitEffectEntry(p));
+  // A trait needs at least one effect; give an empty record a starter row.
+  if (!(d.Parameters || []).length) addTraitEffectEntry();
+}
+
+// Build a full Parameters entry, placing the value into the field for its type.
+function buildTraitParam(name, valType, valText) {
+  const p = { Name: name, ValType: valType, BoolVal: false, FloatVal: 0.0, IntVal: 0, StrVal: null };
+  if (valType === 'Boolean') p.BoolVal = /^true$/i.test(valText.trim());
+  else if (valType === 'Float') p.FloatVal = parseFloat(valText) || 0;
+  else if (valType === 'Int') p.IntVal = parseInt(valText) || 0;
+  else if (valType === 'String') p.StrVal = valText.trim() === '' ? null : valText.trim();
+  return p;
+}
+
+function collectTraitEditor() {
+  const params = [];
+  document.querySelectorAll('#traitEffectRows .entry-item').forEach(row => {
+    const name = row.querySelector('.trait-eff-name').value.trim();
+    const valType = row.querySelector('.trait-eff-valtype').value;
+    const valText = row.querySelector('.trait-eff-value').value;
+    if (name) params.push(buildTraitParam(name, valType, valText));
+  });
+  return {
+    Id: document.getElementById('trait-Id').value.trim(),
+    ItemTraitType: document.getElementById('trait-ItemTraitType').value,
+    TraitContext: 'Passive',
+    IsNegative: document.getElementById('trait-IsNegative').checked,
+    TooltipIconTag: document.getElementById('trait-TooltipIconTag').value,
+    Parameters: params,
+  };
+}
+
+function captureTraitSnapshot() {
+  const parts = [];
+  document.querySelectorAll('#traitConfigWrap input, #traitConfigWrap select').forEach(el => {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox') parts.push((el.id || el.className) + ':' + el.checked);
+    else parts.push((el.id || el.className) + ':' + el.value);
+  });
+  return parts.join('|');
+}
+
+function isTraitDirty() {
+  if (!_formSnapshot || !selTrait) return false;
+  return captureTraitSnapshot() !== _formSnapshot;
+}
+
+function collectTraitValidationErrors() {
+  const errors = [];
+  const add = (msg) => errors.push({ tab: 'Trait', section: 'Trait', msg });
+  const rows = [...document.querySelectorAll('#traitEffectRows .entry-item')];
+  const named = rows.map(r => ({
+    name: r.querySelector('.trait-eff-name').value.trim(),
+    type: r.querySelector('.trait-eff-valtype').value,
+    val: r.querySelector('.trait-eff-value').value,
+  }));
+  const withName = named.filter(n => n.name);
+  if (!withName.length) add('At least one effect with a name is required');
+
+  const seen = new Set();
+  for (const n of withName) {
+    if (seen.has(n.name)) add(`Duplicate effect name: ${n.name}`);
+    seen.add(n.name);
+    const blank = n.val.trim() === ''; // empty saves as 0 — valid
+    if (!blank && n.type === 'Float' && isNaN(parseFloat(n.val))) add(`${n.name} — Float value must be a number`);
+    if (!blank && n.type === 'Int') {
+      const v = parseFloat(n.val);
+      if (isNaN(v) || !Number.isInteger(v)) add(`${n.name} — Int value must be a whole number`);
+    }
+  }
+  return errors;
+}
+
+async function selectTrait(id) {
+  if (!selProject || isLoading) return;
+  isLoading = true;
+  try {
+    const record = await api('asset', { params: { project: selProject.id, category: 'Traits', id } });
+    selTrait = { id, record };
+    document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+    populateTraitEditor(record.Data);
+    hideAllEditors();
+    document.getElementById('traitConfigWrap').classList.add('visible');
+    document.getElementById('emptyState').style.display = 'none';
+    document.querySelectorAll('#assetList .card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('#assetList .card').forEach(c => {
+      if (c.querySelector('.c-name')?.textContent === id) c.classList.add('active');
+    });
+    try { _formSnapshot = captureTraitSnapshot(); } catch { _formSnapshot = null; }
+  } catch (e) { toast(e.message, 1); }
+  finally { isLoading = false; }
+}
+
+function guardSelectTrait(id) {
+  if (selTrait?.id === id || isLoading || isSaving) return;
+  if (isCurrentModeDirty()) {
+    showConfirm('You have unsaved changes. Continue without saving?', () => selectTrait(id), 'Yes', '');
+  } else {
+    selectTrait(id);
+  }
+}
+
+function renderTraitList(items) {
+  const el = document.getElementById('assetList');
+  if (!items.length) { el.innerHTML = '<div class="sb-empty">No traits yet</div>'; return; }
+  el.innerHTML = items.map(t => `
+    <div class="card" onclick="guardSelectTrait('${esc(t.id)}')">
+      <div class="card-top"><div class="card-info">
+        <div class="c-name">${esc(t.dataId || t.id)}</div>
+        <div class="c-sub">${esc(t.recordType)}</div>
+      </div></div>
+      <button class="card-copy" onclick="event.stopPropagation(); confirmCopyTrait('${esc(t.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="10" height="13" rx="1.5" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="9" stroke-width="1.5" stroke-linecap="round"/><line x1="9" y1="6" x2="15" y2="6" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="card-trash" onclick="event.stopPropagation(); confirmDeleteTrait(this, '${esc(t.id)}')"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M4 4v9a1 1 0 001 1h6a1 1 0 001-1V4" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7" y2="11" stroke-width="1.3" stroke-linecap="round"/><line x1="9" y1="7" x2="9" y2="11" stroke-width="1.3" stroke-linecap="round"/></svg></button>
+    </div>`).join('');
+}
+
+async function createNewTrait() {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Traits' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`trait_tempid_${n}`)) n++;
+    const newId = `trait_tempid_${n}`;
+    const record = newTraitRecord(newId);
+    await api('asset', {
+      body: { project: selProject.id, category: 'Traits', id: newId, recordType: record.RecordType, data: record.Data }
+    });
+    toast(`Created trait "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectTrait(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function saveTrait() {
+  if (!selProject || !selTrait || isSaving || isLoading) return;
+
+  const errors = collectTraitValidationErrors();
+  if (errors.length) { showValidationErrorModal(errors); return; }
+
+  const data = collectTraitEditor();
+  const newId = data.Id;
+  const oldId = selTrait.id;
+
+  if (!newId) { toast('Trait Id cannot be empty', 1); document.getElementById('trait-Id').classList.add('invalid'); return; }
+  if (!/^[a-zA-Z0-9_-]+$/.test(newId)) { toast('Trait Id contains invalid characters', 1); document.getElementById('trait-Id').classList.add('invalid'); return; }
+  document.getElementById('trait-Id').classList.remove('invalid');
+
+  if (newId !== oldId) {
+    try {
+      await api('asset', { params: { project: selProject.id, category: 'Traits', id: newId } });
+      toast('Duplicate ID', 1);
+      document.getElementById('trait-Id').classList.add('invalid');
+      return;
+    } catch {}
+  }
+
+  const baseIds = (REF?.base?.itemTraits?.rows || []).map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean);
+  if (baseIds.includes(newId)) {
+    toast('ID conflicts with base game trait', 1);
+    document.getElementById('trait-Id').classList.add('invalid');
+    return;
+  }
+
+  isSaving = true;
+  try {
+    await api('asset', {
+      body: { project: selProject.id, category: 'Traits', id: newId, recordType: 'MGSC.ItemTraitRecord', data }
+    });
+    if (newId !== oldId) {
+      await api('asset_delete', { params: { project: selProject.id, category: 'Traits', id: oldId } });
+    }
+    selTrait.id = newId;
+    toast('Saved');
+    _formSnapshot = captureTraitSnapshot();
+    await selectProject(selProject.id, true);
+    selectTrait(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function copyTrait(sourceId) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    const existing = await api('assets', { params: { project: selProject.id, category: 'Traits' } });
+    const ids = existing.assets.map(a => a.id);
+    let n = 1;
+    while (ids.includes(`${sourceId}_copy${n}`)) n++;
+    const newId = `${sourceId}_copy${n}`;
+    const src = await api('asset', { params: { project: selProject.id, category: 'Traits', id: sourceId } });
+    const data = { ...src.Data, Id: newId };
+    await api('asset', {
+      body: { project: selProject.id, category: 'Traits', id: newId, recordType: 'MGSC.ItemTraitRecord', data }
+    });
+    toast(`Copied "${sourceId}" → "${newId}"`);
+    await selectProject(selProject.id, true);
+    selectTrait(newId);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+async function deleteTrait(id) {
+  if (!selProject || isSaving || isLoading) return;
+  isSaving = true;
+  try {
+    await api('asset_delete', { params: { project: selProject.id, category: 'Traits', id } });
+    toast(`Deleted "${id}"`);
+    selTrait = null;
+    _formSnapshot = null;
+    hideAllEditors();
+    await selectProject(selProject.id);
+  } catch (e) { toast(e.message, 1); }
+  finally { isSaving = false; }
+}
+
+function confirmDeleteTrait(btn, id) {
+  showConfirm(`Are you sure you want to delete ${id}?`, () => deleteTrait(id));
+}
+
+function confirmCopyTrait(id) {
+  showConfirm(`Copy the asset "${id}"?`, () => copyTrait(id), 'Copy', 'primary');
+}
+
 async function copyFiremode(sourceId) {
   if (!selProject || isSaving || isLoading) return;
   isSaving = true;
@@ -4092,6 +4582,7 @@ async function selectWeapon(id) {
     await refreshFiremodeSelects();
     await refreshAmmoSelects();
     await refreshRequiredAmmoSelect();
+    await refreshTraitSelects();
     populateEditor(record.Data);
     statsFm = 0;
     updateStatsReadout();
@@ -4279,7 +4770,7 @@ function populateEditor(d) {
   // Traits multi-select
   const traits = d.Traits || [];
   const trContainer = document.getElementById('ed-Traits');
-  trContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = traits.includes(cb.value); });
+  applyTraitSelection('ed-Traits', traits);
   const trDisplay = trContainer.querySelector('.multi-select-display');
   if (traits.length) { trDisplay.textContent = traits.join(', '); }
   else { trDisplay.innerHTML = '<span class="placeholder">Select traits…</span>'; }
@@ -4476,6 +4967,8 @@ function validateAll() {
       allValid = false;
     }
   });
+  // Orphaned trait references block save
+  if (document.querySelector('#ed-Traits label.trait-missing input:checked')) allValid = false;
   return allValid;
 }
 
@@ -4569,6 +5062,11 @@ function collectValidationErrors() {
   if (raEl.value && raEl.querySelector(`.orphan-opt[value="${CSS.escape(raEl.value)}"]`)) {
     add('Weapon Config', 'Firemodes & Ammo', `Required Ammo "${raEl.value}" — not found in base ammo types or project ammo records`);
   }
+
+  // Trait validation (orphaned references — deleted or wrong-type custom traits)
+  document.querySelectorAll('#ed-Traits label.trait-missing input:checked').forEach(cb => {
+    add('Weapon Config', 'Traits', `Trait "${cb.value}" — not found in base game or project WeaponTraits`);
+  });
 
   // Faction Rewards
   let frIdx = 0;
@@ -4684,6 +5182,7 @@ function isCurrentModeDirty() {
   if (currentMode === 'ammo') return isAmmoDirty();
   if (currentMode === 'firemodes') return isFiremodeDirty();
   if (currentMode === 'explosions') return isExplosionDirty();
+  if (currentMode === 'traits') return isTraitDirty();
   return isFormDirty();
 }
 
@@ -6295,6 +6794,11 @@ function updateMultiSelectDisplay(checkbox) {
   } else {
     display.innerHTML = '<span class="placeholder">Select…</span>';
   }
+  // A trait container is invalid only while a missing reference remains checked.
+  if (display) {
+    const hasCheckedMissing = !!container.querySelector('label.trait-missing input:checked');
+    display.classList.toggle('invalid', hasCheckedMissing);
+  }
 }
 
 function filterMultiSelect(input) {
@@ -6376,6 +6880,7 @@ function hideAllEditors() {
   document.getElementById('fmConfigWrap')?.classList.remove('visible');
   document.getElementById('expConfigWrap')?.classList.remove('visible');
   document.getElementById('expTabBar')?.classList.remove('visible');
+  document.getElementById('traitConfigWrap')?.classList.remove('visible');
   document.getElementById('ammoTabBar')?.classList.remove('visible');
   for (const paneId of Object.values(EXP_TAB_PANES)) {
     document.getElementById(paneId)?.classList.remove('visible');
@@ -6393,7 +6898,7 @@ function switchMode(mode) {
   document.querySelectorAll('.c-header-modes .btn').forEach(b => b.classList.remove('active'));
   document.getElementById('mode' + mode.charAt(0).toUpperCase() + mode.slice(1)).classList.add('active');
 
-  const titles = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions' };
+  const titles = { weapons: 'Weapons', ammo: 'Ammo', firemodes: 'Firemodes', explosions: 'Explosions', traits: 'Traits' };
   document.getElementById('assetListTitle').textContent = titles[mode] || 'Assets';
   document.getElementById('assetFilterInput').value = '';
 
@@ -6402,6 +6907,7 @@ function switchMode(mode) {
   selFiremode = null;
   selAmmo = null;
   selExplosion = null;
+  selTrait = null;
   _formSnapshot = null;
   hideAllEditors();
   document.getElementById('emptyState').style.display = '';
@@ -6409,7 +6915,8 @@ function switchMode(mode) {
 
   // Re-render list from cached tree
   if (selProject && selProject._tree) {
-    if (mode === 'weapons') { refreshFiremodeSelects(); refreshAmmoSelects(); refreshRequiredAmmoSelect(); }
+    if (mode === 'weapons') { refreshFiremodeSelects(); refreshAmmoSelects(); refreshRequiredAmmoSelect(); refreshTraitSelects(); }
+    if (mode === 'ammo') { refreshTraitSelects(); }
     renderModeList(selProject._tree);
   }
 }
@@ -6456,6 +6963,7 @@ document.getElementById('btnNewAsset').addEventListener('click', () => {
   else if (currentMode === 'ammo') createNewAmmo();
   else if (currentMode === 'firemodes') createNewFiremode();
   else if (currentMode === 'explosions') createNewExplosion();
+  else if (currentMode === 'traits') createNewTrait();
 });
 
 document.addEventListener('dblclick', (e) => {
@@ -6544,6 +7052,87 @@ async function refreshAmmoSelects() {
   document.getElementById('ed-OverrideAmmo2').innerHTML = oaHtml;
   if (oa1Val) document.getElementById('ed-OverrideAmmo1').value = oa1Val;
   if (oa2Val) document.getElementById('ed-OverrideAmmo2').value = oa2Val;
+}
+
+// Fill the weapon and ammo Traits multiselects with base traits of the right
+// type plus project-local custom traits of that type (labelled "- *Custom*").
+// Preserves current checkbox selections across the re-fill.
+async function refreshTraitSelects() {
+  if (selProject) {
+    try {
+      const data = await api('assets', { params: { project: selProject.id, category: 'Traits' } });
+      _projTraitData = {};
+      data.assets.forEach(a => { _projTraitData[a.dataId || a.id] = a.data || {}; });
+    } catch { _projTraitData = {}; }
+  } else {
+    _projTraitData = {};
+  }
+
+  const build = (containerId, wantType) => {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    // preserve current selection
+    const checked = new Set(
+      Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value)
+    );
+    const base = (REF.base?.itemTraits?.rows || [])
+      .filter(r => r.ItemTraitType === wantType)
+      .map(r => (r.Id || '').trim().replace(/^\*/, ''))
+      .filter(Boolean);
+    const baseSet = new Set(base);
+    const custom = Object.entries(_projTraitData)
+      .filter(([, d]) => (d.ItemTraitType || '') === wantType)
+      .map(([id]) => id)
+      .filter(id => id && !baseSet.has(id));
+
+    const opts = [
+      ...base.sort().map(id => ({ id, custom: false })),
+      ...custom.sort().map(id => ({ id, custom: true })),
+    ];
+    const items = opts.map(o =>
+      `<label><input type="checkbox" value="${esc(o.id)}"${checked.has(o.id) ? ' checked' : ''} onchange="updateMultiSelectDisplay(this)">${esc(o.custom ? o.id + ' - *Custom*' : o.id)}</label>`
+    ).join('');
+    const dropdown = container.querySelector('.multi-select-dropdown');
+    dropdown.innerHTML = `<div class="multi-select-search"><input type="text" placeholder="Search…" oninput="filterMultiSelect(this)"><button class="multi-select-clear" onclick="clearMultiSelect(this)">Clear</button></div><div class="multi-select-list">${items}</div>`;
+    const anyCb = container.querySelector('input[type="checkbox"]');
+    if (anyCb) updateMultiSelectDisplay(anyCb);
+  };
+
+  build('ed-Traits', 'WeaponTrait');
+  build('ammo-Traits', 'AmmoTrait');
+}
+
+// Check the boxes for selectedIds; for any stored id with no matching option
+// (a deleted or wrong-type trait), inject a checked, red "(missing)" checkbox
+// so the dangling reference is visible and blocks save until resolved.
+function applyTraitSelection(containerId, selectedIds) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const ids = selectedIds || [];
+  const listEl = container.querySelector('.multi-select-list');
+
+  // Clear any previously injected missing rows, then check known ones.
+  container.querySelectorAll('label.trait-missing').forEach(l => l.remove());
+  const present = new Set();
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = ids.includes(cb.value);
+    present.add(cb.value);
+  });
+
+  // Inject a flagged row for each stored id we couldn't find.
+  let missingCount = 0;
+  for (const id of ids) {
+    if (present.has(id)) continue;
+    missingCount++;
+    const label = document.createElement('label');
+    label.className = 'trait-missing';
+    label.innerHTML = `<input type="checkbox" value="${esc(id)}" checked onchange="updateMultiSelectDisplay(this)">${esc(id)} (missing)`;
+    if (listEl) listEl.insertBefore(label, listEl.firstChild);
+  }
+  const display = container.querySelector('.multi-select-display');
+  if (display) display.classList.toggle('invalid', missingCount > 0);
+  const anyCb = container.querySelector('input[type="checkbox"]');
+  if (anyCb) updateMultiSelectDisplay(anyCb);
 }
 
 async function refreshRequiredAmmoSelect() {
@@ -6971,9 +7560,12 @@ function populateRefSelects() {
 
   // ── Explosion editor selects ──
   fillSelect('exp-DamageType', REF.base?.damageTypes, 'Id');
-  fillSelect('exp-LiquidType', REF.enums?.liquidType, 'Name');
-  fillSelect('exp-GasType', REF.enums?.gasType, 'Name');
+  fillSelect('exp-LiquidType', REF.enums?.liquidType, 'Name');  fillSelect('exp-GasType', REF.enums?.gasType, 'Name');
   fillSelect('exp-GasStrength', REF.enums?.gasStrength, 'Name');
+
+  // ── Trait editor selects ──
+  fillSelect('trait-ItemTraitType', REF.enums?.itemTraitTypes, 'Name');
+  fillSelectWithEmpty('trait-TooltipIconTag', REF.enums?.tooltipIconTags, 'Name');
 
   const damageEffects = {
     rows: (REF.base?.statusEffects?.rows || []).filter(r => r.RenewalType === 'Damage')

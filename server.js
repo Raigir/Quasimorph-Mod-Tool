@@ -26,6 +26,7 @@ const ASSET_CATEGORIES = [
   'Firemodes',
   'Localization/Ammo',
   'Localization/Weapons',
+  'Traits',
   'Weapons',
 ];
 
@@ -1224,6 +1225,8 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
   // name across the whole tree, and these names are unique to explosions.
   'MGSC.ExplosionRecord': ['WoundChance', 'ThrowbackChance', 'StunChance', 'PropagateFireChance'],
   'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor': ['VisualExplosionDelay', 'VisualReachCellDuration', 'VisualExplosionOffsetX', 'VisualExplosionOffsetY', 'VisualExplosionOffsetZ'],
+  // Trait Parameters entries each carry a FloatVal; matched by name across the array.
+  'MGSC.ItemTraitRecord': ['FloatVal'],
 };
 
 function writeJson(filePath, data) {

@@ -3,7 +3,7 @@
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-ff5f5f?logo=kofi&logoColor=white)](https://ko-fi.com/efateam)
 [![Author: Raigir](https://img.shields.io/badge/Author-Raigir-2f6f91)](https://github.com/Raigir)
 
-A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, explosions, sprites, localization, descriptors, crafting recipes, datadisks, faction rewards, project export, and reference data management.
+A local workflow tool for managing Quasimorph game mod projects based on the Content Mod Creator (by Crynano) API — weapons, ammo, firemodes, explosions, traits, sprites, localization, descriptors, crafting recipes, datadisks, faction rewards, project export, and reference data management.
 
 ## Requirements
 
@@ -53,6 +53,7 @@ mod-workflow/
 │           ├── Ammo/                  # Ammo records
 │           ├── Firemodes/             # Firemode records
 │           ├── Explosions/            # Explosion records ({id}.json)
+│           ├── Traits/                # Trait records ({id}.json)
 │           ├── Localization/
 │           │   ├── Weapons/           # {id}_localization.json
 │           │   └── Ammo/             # {id}_localization.json
