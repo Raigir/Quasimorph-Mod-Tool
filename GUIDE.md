@@ -78,7 +78,7 @@ The main weapon editor with these sections:
 
 **Sprite** — Upload inventory icon (50×50 or 100×50 PNG), floor sprite (max 30×30), and shadow sprite (max 30×30). All displayed at 2× scale. A folder dropdown lets you choose which `Images/Weapons/` subfolder to store sprites in — changing this moves existing sprites automatically. Descriptor image paths update to match.
 
-**Identity** — Id, IsImplicit toggle, TechLevel (1–10), Price, Weight, inventory sort/width.
+**Identity** — Id, IsImplicit toggle, TechLevel (1–10), Price (integer ≥ 0), Weight (number ≥ 0), inventory sort/width.
 
 **Classification** — WeaponClass and WeaponSubClass (dropdowns from enums), Categories (searchable multi-select checkbox dropdown from enums), IsMelee toggle.
 
@@ -430,6 +430,35 @@ Some fields have a **?** icon to the right of the input. Hover over it to see a 
 ## Options Panel
 
 Click the **Options** button in the top-right corner of the header to open the options panel. It slides in from the right, sharing space with the main content area. Click Options again or the × button to close.
+
+### Import Project
+
+Import an existing mod's assets as a new project. Fill in a **Project Name** and the **Assets Folder Path**. The path must point at the mod's `Assets` folder itself — the root that holds all the asset folders, in the same layout this tool generates:
+
+```
+Assets/Weapons/
+Assets/Ammo/
+Assets/Descriptors/…
+Assets/Images/Weapons/{optional subfolders}
+Assets/Images/Firemodes/
+Assets/Images/Ammo/
+```
+
+Weapon sprites can sit directly in `Images/Weapons/` or inside subfolders under it — subfoldering is optional, and any subfolders that are found get discovered during the import and offered in the weapon editor's folder selector. Firemode and ammo images sit directly in `Images/Firemodes/` and `Images/Ammo/`. Anything under `Images/` that falls outside this layout is still copied so nothing is lost, but it's flagged as a warning since the tool won't use it.
+
+The button stays disabled until both fields are filled and the name isn't already taken by an existing project.
+
+Clicking **Scan & Import** runs a read-only check first — nothing is written until you confirm. The report groups findings into three kinds:
+
+- **Errors** — block the import. Invalid JSON, a RecordType that doesn't belong in its folder, a filename that disagrees with the record's Id (datadisks are `{id}_diskData.json`, crafting recipes are matched on `OutputItem` since they never fill `Id`, and faction reward tables aren't Id-keyed at all), invalid Id characters, duplicate Ids, collisions with base-game Ids (except datadisks, where matching an existing disk id is normal — the importer API appends to it), missing companion files (a weapon without its descriptor or localization, a firemode or explosion without its descriptor), orphaned companions with no parent record, localization keys under `Data.Keys` that don't match `item.{id}.*`, references to firemodes/ammo/traits that don't exist, traits used on the wrong item kind, files that aren't valid PNGs, and sprites that break the size rules (firemode 36×26, ammo floor/shadow 30×30 max). Field values are also type-checked against the same rules the editors enforce — a Radius that's text, a chance above 1, a Large Fire Chance above 100, an unknown damage type or weapon class, a negative weight, a disassembly count of zero, and so on. Also flagged: more than two firemodes or override-ammo entries on one weapon (the editor only has two slots, so extras would be lost), and a status effect that isn't one of the damage-renewal effects the ammo editor offers.
+- **Warnings** — don't block. Unrecognized folders, stray non-JSON files, images outside the recognized layout. Nothing from the source tree is discarded — files the tool doesn't understand are still copied so they survive into a later export; the warning just notes the tool won't use them. `Bundles/` is expected to hold binary asset bundles, so its contents are copied silently without any warning.
+- **Will Be Reformatted** — informational. Lists every file whose bytes will change when rewritten in the tool's canonical format (key order, number styling, spacing). The content is unchanged; this exists so reformatting is never a surprise.
+
+If there are no errors the report shows a **Proceed with Import** button. On confirming, the scan is re-run server-side (so a folder that changed since the report can't slip through), the project is created with the standard folder scaffold, records are written in canonical form, and everything else — images, sounds, asset bundles, and any files the tool doesn't recognize — is copied verbatim, with settings initialized to the standard defaults. Weapon image subfolders are picked up from whatever was in `Images/Weapons/` — they can be named however you like, and they'll appear in the editor's folder selector.
+
+If the import fails partway through, the partially created project folder is removed so you're never left with a half-imported project.
+
+**Export Report** saves the whole report as a text file, useful when there's a long list to work through.
 
 ### Reference Data Update
 

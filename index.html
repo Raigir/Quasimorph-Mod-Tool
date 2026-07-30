@@ -86,7 +86,9 @@
     flex-direction: column;
     min-height: 0;
   }
-  .sb-section.projects { flex: 0 1 auto; max-height: 50%; }
+  /* min-height keeps the header + one full card visible when the asset list
+     grows: 55px head (10+35+10) + 12px list padding (4+8) + 76px card */
+  .sb-section.projects { flex: 0 1 auto; max-height: 50%; min-height: 143px; }
   .sb-section.weapons { flex: 1 1 auto; }
   .sb-divider { height: 1px; background: var(--border); flex-shrink: 0; }
   .sb-head {
@@ -174,8 +176,12 @@
   }
   .card:hover { background: var(--bg-hover); }
   .card.active { background: var(--bg-active); border-color: var(--accent-dim); }
-  #projectList .card { min-height:76px; }
-  #assetList .card { min-height:76px; }
+  /* padding-right reserves the absolutely-positioned icon gutter so text
+     truncates before it rather than running underneath.
+     projects: export (right:38px) + edit/trash (right:6px) reach 64px
+     assets:   copy/trash (right:6px) reach 32px  — each +4px breathing room */
+  #projectList .card { min-height:76px; padding-right:68px; }
+  #assetList .card { min-height:76px; padding-right:36px; }
   .card-top { display:flex; align-items:center; gap:10px; }
   .card-thumb {
     width:100px; height:50px; flex-shrink:0;
@@ -436,6 +442,7 @@
   .options-panel-close:hover { color:var(--text-primary); }
   .options-panel-body {
     flex:1; overflow-y:auto; padding:16px; min-width:320px;
+    display:flex; flex-direction:column; gap:16px;
   }
   .empty-state {
     flex:1; display:flex; flex-direction:column;
@@ -1878,6 +1885,44 @@
       <div class="options-panel-body">
 
         <div class="ed-section">
+          <div class="ed-section-title">Import Project</div>
+          <div class="ed-row">
+            <div class="ed-field" style="max-width:none; flex:1;">
+              <label>Project Name</label>
+              <input type="text" id="importName" placeholder="Name for the imported project" oninput="validateImportFields()">
+            </div>
+          </div>
+          <div class="ed-row" style="margin-top:8px;">
+            <div class="ed-field" style="max-width:none; flex:1;">
+              <label>Assets Folder Path</label>
+              <input type="text" id="importPath" placeholder="Path to the Assets folder" oninput="validateImportFields()">
+            </div>
+          </div>
+          <div class="ed-row" style="margin-top:8px;">
+            <button class="btn primary" id="btnImportScan" style="min-width:auto; font-size:12px; padding:0 14px;" onclick="runImportScan()" disabled>Scan &amp; Import</button>
+          </div>
+
+          <div style="margin-top:14px; padding:12px; background:var(--bg-deep); border:1px solid var(--border); border-radius:var(--radius); font-size:12px; color:var(--text-dim); line-height:1.7;">
+            <div style="color:var(--text-secondary); font-weight:600; margin-bottom:6px;">Instructions</div>
+            Point to the mod's <span style="font-family:'JetBrains Mono',monospace;">Assets</span> folder itself — the root that holds all of the asset folders, matching the layout this tool generates:
+            <div style="margin:8px 0 4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-secondary); line-height:1.8;">
+              Assets/Weapons/<br>
+              Assets/Ammo/<br>
+              Assets/Descriptors/…<br>
+              Assets/Images/Weapons/{optional subfolders}<br>
+              Assets/Images/Firemodes/<br>
+              Assets/Images/Ammo/
+            </div>
+            <div style="margin-top:8px;">
+              Weapon sprites can sit directly in <span style="font-family:'JetBrains Mono',monospace;">Images/Weapons/</span> or in subfolders under it — subfoldering is optional, and any subfolders found are offered in the weapon editor's folder selector.
+            </div>
+            <div style="margin-top:8px;">
+              Everything is checked before anything is written. You'll get a report of any problems, plus a list of files that will be reformatted, and nothing is imported until you confirm.
+            </div>
+          </div>
+        </div>
+
+        <div class="ed-section">
           <div class="ed-section-title">Reference Data Update</div>
           <div class="ed-row">
             <div class="ed-field" style="max-width:none; flex:1;">
@@ -1961,6 +2006,22 @@
     <div class="modal-foot">
       <button class="btn" onclick="closeProjectSettings()">Cancel</button>
       <button class="btn primary" id="btnSaveProjectSettings" onclick="saveProjectSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Report Modal -->
+<div class="overlay" id="importReportOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="importReportTitle">Import Report</h3>
+      <button class="modal-close" onclick="closeImportReport()">&times;</button>
+    </div>
+    <div class="modal-body" id="importReportBody"></div>
+    <div class="modal-foot">
+      <button class="btn" id="importExportBtn" onclick="exportImportReport()" style="display:none;">Export Report</button>
+      <button class="btn" onclick="closeImportReport()">Close</button>
+      <button class="btn primary" id="importProceedBtn" onclick="runImportCommit()" style="display:none;">Proceed with Import</button>
     </div>
   </div>
 </div>
@@ -4847,6 +4908,7 @@ function collectEditor() {
 const validationRules = {
   'ed-TechLevel': v => Number.isInteger(v) && v >= 1 && v <= 10,
   'ed-Price': v => Number.isInteger(v) && v >= 0,
+  'ed-Weight': v => v >= 0,
   'ed-InventorySortOrder': v => Number.isInteger(v) && v >= 0,
   'ed-InventoryWidthSize': v => Number.isInteger(v) && v >= 0,
   'ed-minDmg': v => Number.isInteger(v) && v >= 0,
@@ -4866,6 +4928,7 @@ const validationRules = {
 const FIELD_META = {
   'ed-TechLevel': { tab: 'Weapon Config', section: 'Identity', label: 'Tech Level', hint: 'integer 1–10' },
   'ed-Price': { tab: 'Weapon Config', section: 'Identity', label: 'Price', hint: 'integer ≥ 0' },
+  'ed-Weight': { tab: 'Weapon Config', section: 'Identity', label: 'Weight', hint: 'number ≥ 0' },
   'ed-InventorySortOrder': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Sort Order', hint: 'integer ≥ 0' },
   'ed-InventoryWidthSize': { tab: 'Weapon Config', section: 'Identity', label: 'Inventory Width Size', hint: 'integer ≥ 0' },
   'ed-minDmg': { tab: 'Weapon Config', section: 'Damage', label: 'Min Damage', hint: 'integer ≥ 0' },
@@ -6486,6 +6549,187 @@ function handleRefFolderSelect(input) {
   // Store files for upload
   _refBrowsedFiles = input.files;
   document.getElementById('btnRefUpdate').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PROJECT IMPORT
+// ═══════════════════════════════════════════════════════════════════
+let _lastImportScan = null;
+
+// Enable the button only when both fields are filled and the name is free.
+function validateImportFields() {
+  const name = document.getElementById('importName').value.trim();
+  const p = document.getElementById('importPath').value.trim();
+  const nameEl = document.getElementById('importName');
+  let nameOk = !!name;
+  // Duplicate project name check (client-side pre-flight; server re-checks)
+  if (name && Array.isArray(cachedProjects)) {
+    const taken = cachedProjects.some(pr => (pr.id || '').toLowerCase() === name.toLowerCase()
+      || (pr.name || '').toLowerCase() === name.toLowerCase());
+    if (taken) nameOk = false;
+  }
+  nameEl.classList.toggle('invalid', !!name && !nameOk);
+  document.getElementById('btnImportScan').disabled = !(nameOk && p);
+}
+
+async function runImportScan() {
+  const btn = document.getElementById('btnImportScan');
+  const name = document.getElementById('importName').value.trim();
+  const path = document.getElementById('importPath').value.trim();
+  if (!name || !path) return;
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Scanning…';
+  try {
+    const res = await api('import_scan', { body: { path, name } });
+    _lastImportScan = { ...res, name, path };
+    showImportReport(_lastImportScan);
+  } catch (e) {
+    toast(e.message, 1);
+  } finally {
+    btn.textContent = orig;
+    validateImportFields();
+  }
+}
+
+async function runImportCommit() {
+  if (!_lastImportScan) return;
+  const btn = document.getElementById('importProceedBtn');
+  btn.disabled = true;
+  const orig = btn.textContent;
+  btn.textContent = 'Importing…';
+  try {
+    const res = await api('import_commit', { body: { path: _lastImportScan.path, name: _lastImportScan.name } });
+    if (res.status === 'error') {
+      // Tree changed since the scan — show the fresh findings
+      _lastImportScan = { ...res, name: _lastImportScan.name, path: _lastImportScan.path };
+      showImportReport(_lastImportScan);
+      toast('Folder changed since the scan — review the new report', 1);
+      return;
+    }
+    closeImportReport();
+    const c = res.counts || {};
+    toast(`Imported "${res.id}" — ${c.copiedJson || 0} records, ${c.copiedImages || 0} images`);
+    document.getElementById('importName').value = '';
+    document.getElementById('importPath').value = '';
+    validateImportFields();
+    await loadProjects();
+    selectProject(res.id);
+  } catch (e) {
+    toast(e.message, 1);
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+function showImportReport(scan) {
+  const body = document.getElementById('importReportBody');
+  const errors = scan.errors || [], warnings = scan.warnings || [], notices = scan.notices || [];
+  const clean = errors.length === 0;
+  const c = scan.counts || {};
+
+  document.getElementById('importReportTitle').textContent = clean ? 'Ready to Import' : 'Import Blocked';
+  document.getElementById('importProceedBtn').style.display = clean ? '' : 'none';
+  document.getElementById('importExportBtn').style.display =
+    (errors.length + warnings.length + notices.length) ? '' : 'none';
+
+  // Group issues by file, preserving tier
+  const groupTier = (list, tier) => {
+    const byFile = new Map();
+    for (const it of list) {
+      if (!byFile.has(it.file)) byFile.set(it.file, []);
+      byFile.get(it.file).push(it.msg);
+    }
+    return [...byFile.entries()].map(([file, msgs]) => ({ file, msgs, tier }));
+  };
+
+  const sections = [
+    { key: 'errors', label: 'Errors', tag: 'rem', items: groupTier(errors, 'errors'),
+      note: 'These must be fixed before the project can be imported.' },
+    { key: 'warnings', label: 'Warnings', tag: 'col', items: groupTier(warnings, 'warnings'),
+      note: 'These do not block the import.' },
+    { key: 'notices', label: 'Will Be Reformatted', tag: 'mod', items: groupTier(notices, 'notices'),
+      note: 'Content is unchanged — these files will be rewritten in the tool\'s canonical format.' },
+  ];
+
+  let html = '<div class="modal-body-inner">';
+  html += `<div class="refdiff-summary">${c.files || 0} file${c.files === 1 ? '' : 's'} scanned · ${c.records || 0} record${c.records === 1 ? '' : 's'} · ${c.images || 0} image${c.images === 1 ? '' : 's'}`;
+  html += ` · <span style="color:var(--error)">${errors.length} error${errors.length === 1 ? '' : 's'}</span>`;
+  html += `, <span style="color:var(--text-secondary)">${warnings.length} warning${warnings.length === 1 ? '' : 's'}</span>`;
+  html += `, <span style="color:var(--accent)">${notices.length} to reformat</span>.</div>`;
+
+  if (clean) {
+    html += `<div class="refdiff-summary" style="color:var(--success)">No problems found${scan.imageFolders?.length ? ` · weapon image folders: ${scan.imageFolders.map(esc).join(', ')}` : ''}</div>`;
+  }
+
+  for (const sec of sections) {
+    if (!sec.items.length) continue;
+    html += `<div class="refdiff-group" style="margin-top:10px;">
+      <div class="refdiff-group-label">${sec.label} (${sec.items.reduce((n, i) => n + i.msgs.length, 0)})</div>
+      <div style="font-size:11px; color:var(--text-dim); margin-bottom:6px;">${sec.note}</div>`;
+    for (const item of sec.items) {
+      html += `<div class="refdiff-file" style="margin-bottom:6px;">
+        <div class="refdiff-file-head" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span class="refdiff-caret">▼</span>
+          <span class="refdiff-file-name">${esc(item.file)}</span>
+          <span class="refdiff-tag ${sec.tag}">${item.msgs.length}</span>
+        </div>
+        <div class="refdiff-file-body">${item.msgs.map(m => `<div style="padding:2px 0;">${esc(m)}</div>`).join('')}</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+  body.innerHTML = html;
+  document.getElementById('importReportOverlay').classList.add('open');
+}
+
+function closeImportReport() {
+  document.getElementById('importReportOverlay').classList.remove('open');
+}
+
+function buildImportReportText() {
+  if (!_lastImportScan) return '';
+  const s = _lastImportScan, c = s.counts || {};
+  const lines = [];
+  lines.push('Project Import — Scan Report');
+  lines.push(new Date().toISOString());
+  lines.push('');
+  lines.push(`Source: ${s.path}`);
+  lines.push(`Target project name: ${s.name}`);
+  lines.push(`${c.files || 0} files scanned, ${c.records || 0} records, ${c.images || 0} images`);
+  lines.push(`${(s.errors || []).length} errors, ${(s.warnings || []).length} warnings, ${(s.notices || []).length} to reformat`);
+  if (s.imageFolders?.length) lines.push(`Weapon image folders: ${s.imageFolders.join(', ')}`);
+  lines.push('='.repeat(60));
+
+  const block = (label, list) => {
+    if (!list?.length) return;
+    lines.push('');
+    lines.push(`${label} (${list.length})`);
+    lines.push('-'.repeat(label.length + 6));
+    const byFile = new Map();
+    for (const it of list) {
+      if (!byFile.has(it.file)) byFile.set(it.file, []);
+      byFile.get(it.file).push(it.msg);
+    }
+    for (const [file, msgs] of byFile) {
+      lines.push(`  ${file}`);
+      for (const m of msgs) lines.push(`      ${m}`);
+    }
+  };
+  block('ERRORS', s.errors);
+  block('WARNINGS', s.warnings);
+  block('WILL BE REFORMATTED', s.notices);
+  lines.push('');
+  return lines.join('\n');
+}
+
+function exportImportReport() {
+  const text = buildImportReportText();
+  if (!text) { toast('Nothing to export', 1); return; }
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+  downloadTextFile(`import-report-${stamp}.txt`, text);
 }
 
 function validateRefPath() {

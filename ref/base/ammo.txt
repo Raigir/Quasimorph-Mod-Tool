@@ -26,7 +26,7 @@ rocket_poison_ammo		Tianming	5	75	0.1	1	Ammo	TRUE	5	1	2	Rocket	poison	0.15	0	1	1
 rocket_nuke_ammo		Sunlight Emeraldlight Looted	10	150	0.15	1	Ammo	TRUE	5	1	2	Rocket	beam	0.12	0	1	1	1.00	1		0	0	0	explosive_nuke	rocket	plastic 1 gas_ammo 4 explosives 1						
 battery_basic_ammo		Common Military Medical Science SBN	2	10	0.02	1	Ammo	TRUE	40	3	7	BatteryCells	beam	0.04	0	1	1	1.00	1		0	0	0		laser	glass 2 acid 1						
 dil_battery_ammo		Dilthey	3	12	0.01	1	Ammo	TRUE	60	5	10	BatteryCells	beam	0.12	0	1.2	0.8	0.80	1		0	0	0		laser	glass 2 acid 1						
-battery_crafted_ammo		Common Worker Medical Science CoreWard	1	3	0.02	1	Ammo	TRUE	30	3	8	BatteryCells	beam	0	0	0.9	1.5	1.15	1		0	0	0		laser	glass 1 acid 1						
+battery_crafted_ammo		Common Worker CoreWard CResistance	1	3	0.02	1	Ammo	TRUE	30	3	8	BatteryCells	beam	0	0	0.9	1.5	1.15	1		0	0	0		laser	glass 1 acid 1						
 *quasi_energy_ammo		Shartamakhum	1	4	0.03	1	Ammo	TRUE	30	3	8	BatteryCells	plasma	0.18	0	1	1	1.40	1		0	0	0		continues_mercury							
 *gas_ammo		Common Miner CoreWard ChurchRevelation ChurchGannix	1	2	0.05	1	Ammo	TRUE	60	5	10	Gas	fire	0	0	1	1	1.00	1		0	0	0	heavy_incendiary heavy_fires								
 *mars_gas_ammo		Ur	1	8	0.01	1	Ammo	TRUE	60	8	15	Gas	fire	0.04	1	1	1	1.30	1		0	0	0	heavy_incendiary heavy_fires								
