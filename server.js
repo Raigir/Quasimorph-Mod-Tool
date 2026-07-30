@@ -163,6 +163,14 @@ async function handleApi(req, res, query) {
         if (method === 'POST') return json(res, await updateRefData(await readBody(req)));
         return json(res, { error: 'POST required' });
 
+      case 'import_scan':
+        if (method === 'POST') return json(res, importScan(await readBody(req)));
+        return json(res, { error: 'POST required' });
+
+      case 'import_commit':
+        if (method === 'POST') return json(res, importCommit(await readBody(req)));
+        return json(res, { error: 'POST required' });
+
       case 'export_project':
         return exportProject(res, query.id);
 
@@ -1071,6 +1079,705 @@ async function updateRefData(input) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+//  PROJECT IMPORT
+// ═══════════════════════════════════════════════════════════════════
+// Two-phase: import_scan is read-only and reports errors/warnings/notices;
+// import_commit re-runs the scan and only writes when it comes back clean.
+
+const RESERVED_IMAGE_SUBROOTS = ['Ammo', 'Firemodes', 'Weapons'];
+const IGNORED_FILENAMES = ['.DS_Store', 'Thumbs.db', 'desktop.ini', '.gitkeep'];
+
+// RecordType expected per category folder. Categories absent from this map
+// hold shapes keyed differently (localization) or are membership files.
+const CATEGORY_RECORD_TYPES = {
+  'Weapons': ['MGSC.WeaponRecord'],
+  'Ammo': ['MGSC.AmmoRecord'],
+  'Firemodes': ['MGSC.FireModeRecord'],
+  'Explosions': ['MGSC.ExplosionRecord'],
+  'Traits': ['MGSC.ItemTraitRecord'],
+  'Datadisks': ['MGSC.DatadiskRecord'],
+  'Descriptors/Weapons': ['QM_ImporterAPI.Templates.Descriptors.CustomWeaponDescriptor'],
+  'Descriptors/Ammo': ['QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor'],
+  'Descriptors/Firemodes': ['QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor'],
+  'Descriptors/Explosions': ['QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor'],
+  'FactionRewards': ['QM_ImporterAPI.Templates.FactionTemplate'],
+  'Localization/Weapons': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
+  'Localization/Ammo': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
+  'Crafting Recipes': ['MGSC.ItemProduceReceipt'],
+};
+
+// Categories where the tool writes Data.Id and names the file after it.
+// Others carry identity differently (Crafting Recipes -> OutputItem,
+// Descriptors -> ItemId, Localization -> item.{id}.* keys) or not at all
+// (FactionRewards is a faction-named table).
+// Categories whose contents are not records — copied verbatim, never parsed.
+// Bundles hold binary Unity asset bundles; they do nothing in the editor but
+// must survive an import so they can be carried into a later export.
+const PASSTHROUGH_CATEGORIES = ['Bundles'];
+
+const ID_KEYED_CATEGORIES = ['Weapons', 'Ammo', 'Firemodes', 'Explosions', 'Traits'];
+
+// Records that must be accompanied by companion files (the tool always writes
+// these together, so a missing one means a broken/partial asset).
+const COMPANION_REQUIREMENTS = {
+  'Weapons': [
+    { cat: 'Descriptors/Weapons', suffix: '_descriptor', label: 'descriptor' },
+    { cat: 'Localization/Weapons', suffix: '_localization', label: 'localization' },
+  ],
+  'Ammo': [
+    { cat: 'Descriptors/Ammo', suffix: '_descriptor', label: 'descriptor' },
+    { cat: 'Localization/Ammo', suffix: '_localization', label: 'localization' },
+  ],
+  'Firemodes': [{ cat: 'Descriptors/Firemodes', suffix: '_descriptor', label: 'descriptor' }],
+  'Explosions': [{ cat: 'Descriptors/Explosions', suffix: '_descriptor', label: 'descriptor' }],
+};
+
+// Per-field type/constraint schemas. Mirrors what the editors' collect
+// functions write — see BUILD_PLAN_IMPORT.md. `n` number, `i` integer,
+// `b` boolean, `s` string, `sn` string-or-null, `a` array.
+const IMPORT_SCHEMAS = {
+  'MGSC.ExplosionRecord': {
+    Id: { t: 's', required: true },
+    Parameters: { t: 'o', required: true, fields: {
+      VisualExplosion: { t: 'b' },
+      Radius: { t: 'i', min: 0 },
+      DistanceDamageFalloff: { t: 'i', min: 0 },
+      GainDmgToCreature: { t: 'b' }, SelfDamaging: { t: 'b' },
+      GainDmgToLocation: { t: 'b' }, GainDmgToMonolith: { t: 'b' },
+      Damage: { t: 'i', min: 0 },
+      DamageType: { t: 's', ref: ['base', 'damageTypes', 'Id'] },
+      WoundChance: { t: 'n', min: 0 },
+      Throwback: { t: 'b' }, ThrowbackChance: { t: 'n', min: 0, max: 1 },
+      ThrowbackDependOnRadius: { t: 'b' },
+      Stun: { t: 'b' }, StunChance: { t: 'n', min: 0, max: 1 },
+      StunDuration: { t: 'i', min: 0 }, StunDependOnRadius: { t: 'b' },
+      PropagateFire: { t: 'b' }, PropagateFireChance: { t: 'n', min: 0, max: 1 },
+      LargeFireChance: { t: 'i', min: 0, max: 100 }, FireDependOnRadius: { t: 'b' },
+      PropagateLiquid: { t: 'b' }, LiquidType: { t: 's', ref: ['enums', 'liquidType', 'Name'] },
+      Disintegrate: { t: 'b' },
+      PropagateGas: { t: 'b' }, GasType: { t: 's', ref: ['enums', 'gasType', 'Name'] },
+      GasStrength: { t: 's', ref: ['enums', 'gasStrength', 'Name'] },
+      IsPlayerFire: { t: 'b' }, IgnoreMines: { t: 'b' },
+    } },
+  },
+  'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor': {
+    ExplosionVisualId: { t: 's' },
+    ExplosionSoundIdOrPath: { t: 's' },
+    VisualExplosionDelay: { t: 'n', min: 0 },
+    VisualReachCellDuration: { t: 'n', min: 0 },
+    ClearGibsRadiusInPixels: { t: 'i', min: 0 },
+    ShakeCameraOnExplosion: { t: 'b' },
+    VisualExplosionOffsetX: { t: 'n' },
+    VisualExplosionOffsetY: { t: 'n' },
+    VisualExplosionOffsetZ: { t: 'n' },
+    ItemId: { t: 's', required: true },
+  },
+  'MGSC.ItemTraitRecord': {
+    Id: { t: 's', required: true },
+    ItemTraitType: { t: 's', required: true, ref: ['enums', 'itemTraitTypes', 'Name'] },
+    TraitContext: { t: 's' },
+    IsNegative: { t: 'b' },
+    TooltipIconTag: { t: 's' },
+    Parameters: { t: 'a', required: true, item: {
+      Name: { t: 's', required: true },
+      ValType: { t: 's', required: true, oneOf: ['Boolean', 'Int', 'Float', 'String'] },
+      BoolVal: { t: 'b' }, FloatVal: { t: 'n' }, IntVal: { t: 'i' }, StrVal: { t: 'sn' },
+    } },
+  },
+  // Weapon — mirrors collectEditor() + validationRules{}. Fields marked
+  // "no editor rule" are type-checked only; the editor imposes no bound.
+  'MGSC.WeaponRecord': {
+    Id: { t: 's', required: true },
+    ItemClass: { t: 's', oneOf: ['Weapon'] },
+    TechLevel: { t: 'i', min: 1, max: 10 },
+    Price: { t: 'i', min: 0 },
+    Weight: { t: 'n', min: 0 },
+    InventorySortOrder: { t: 'i', min: 0 },
+    InventoryWidthSize: { t: 'i', min: 0 },
+    WeaponClass: { t: 's', ref: ['enums', 'weaponClass', 'Name'] },
+    WeaponSubClass: { t: 's', ref: ['enums', 'weaponSubClass', 'Name'] },
+    IsMelee: { t: 'b' },
+    Categories: { t: 'a', itemType: 's' },
+    Damage: { t: 'o', fields: {
+      minDmg: { t: 'i', min: 0 },
+      maxDmg: { t: 'i', min: 0 },
+      critDmg: { t: 'n', min: 0 },
+      critChance: { t: 'n' },                    // tool writes 0; imports as-is by decision
+    } },
+    Firemodes: { t: 'a', itemType: 's', maxItems: 2 },
+    RequiredAmmo: { t: 's' },
+    DefaultAmmoId: { t: 's' },
+    OverrideAmmo: { t: 'a', itemType: 's', maxItems: 2 },
+    OverrideProjectileId: { t: 's' },
+    Range: { t: 'i', min: 0 },
+    BonusAccuracy: { t: 'n' },                   // negatives allowed (penalties)
+    BonusScatterAngle: { t: 'n' },               // negatives allowed (penalties)
+    Falloff: { t: 'n', min: 0 },
+    ReloadDuration: { t: 'i', min: 0 },
+    MagazineCapacity: { t: 'i', min: 0 },
+    MinRandomAmmoCount: { t: 'i', min: 0 },
+    MaxDurability: { t: 'i', min: 0 },
+    MinDurabilityAfterRepair: { t: 'i', min: 0 },
+    Unbreakable: { t: 'b' },
+    RepairItemIds: { t: 'a', itemType: 's' },
+    Traits: { t: 'a', itemType: 's' },
+    DefaultGrenadeId: { t: 's' },
+    AllowedGrenadeIds: { t: 'a', itemType: 's' },
+    Disassembly: { t: 'a', item: {
+      ItemId: { t: 's', required: true },
+      Count: { t: 'i', min: 1, required: true },
+    } },
+    DurabilityLossOnThrow: { t: 'i', min: 0 },
+    ThrowRange: { t: 'i', min: 0 },
+    MeleeCanAmputate: { t: 'b' },
+    GetMeleeDamageFromCreature: { t: 'b' },
+    DotWoundsDmgBonus: { t: 'i', min: 0 },
+    FractureWoundDmgBonus: { t: 'i', min: 0 },
+    CanPutInVest: { t: 'b' },
+    IsImplicit: { t: 'b' },
+  },
+  // Ammo — mirrors collectAmmoEditor() + validateAllAmmo() rule list.
+  'MGSC.AmmoRecord': {
+    Id: { t: 's', required: true },
+    ItemClass: { t: 's', oneOf: ['Ammo'] },
+    InventorySortOrder: { t: 'i', min: 0 },
+    InventoryWidthSize: { t: 'i', min: 0 },
+    TechLevel: { t: 'i', min: 1, max: 10 },
+    Price: { t: 'i', min: 0 },
+    Weight: { t: 'n', min: 0 },
+    AmmoType: { t: 's' },                        // free-text combobox
+    DmgType: { t: 's', ref: ['base', 'damageTypes', 'Id'] },
+    DamageMult: { t: 'n', min: 0 },
+    DmgCritChance: { t: 'n', min: 0 },
+    RangeBonus: { t: 'i' },                      // negatives allowed
+    AccuracyMult: { t: 'n', min: 0 },
+    ScatterMult: { t: 'n', min: 0 },
+    BulletCastsPerShot: { t: 'i', min: 1 },
+    MinAmmoAmount: { t: 'i', min: 0 },
+    MaxAmmoAmount: { t: 'i', min: 0 },
+    MaxStack: { t: 'i', min: 1 },
+    StatusEffectId: { t: 's', ref: ['base', 'statusEffects', 'Id'], refFilter: { col: 'RenewalType', value: 'Damage' } },
+    ChanceToApply: { t: 'n', min: 0 },
+    StatusDamageModifier: { t: 'n' },            // negatives allowed
+    StatusResistModifier: { t: 'n' },            // negatives allowed
+    Traits: { t: 'a', itemType: 's' },
+    Categories: { t: 'a', itemType: 's' },
+    ProjectileId: { t: 's', ref: ['base', 'projectiles', 'Id'] },
+    CanPutInVest: { t: 'b' },
+    IsImplictedAmmo: { t: 'b' },
+    IsChargeOnly: { t: 'b' },
+    BallisticType: { t: 's', ref: ['enums', 'ballisticTypes', 'Name'] },
+  },
+  'MGSC.FireModeRecord': {
+    Id: { t: 's', required: true },
+    AmmoPerShot: { t: 'i', min: 0 },
+    WeaponCastsCount: { t: 'i', min: 1 },
+    DamageMult: { t: 'n', min: 0 },
+    DelayBetweenShots: { t: 'n', min: 0 },
+    RequireAllAmmoToShoot: { t: 'b' },
+  },
+};
+
+function importIssue(list, file, msg) { list.push({ file, msg }); }
+
+// Validate a value against one schema field entry. Returns an error string or null.
+function checkField(val, spec, refData) {
+  if (val === undefined || val === null) {
+    if (spec.required) return 'is required but missing';
+    if (spec.t === 'sn') return null;
+    return null; // optional & absent — editors default it on load
+  }
+  switch (spec.t) {
+    case 's':
+      if (typeof val !== 'string') return `must be a string (got ${typeof val})`;
+      break;
+    case 'sn':
+      if (typeof val !== 'string') return `must be a string or null (got ${typeof val})`;
+      break;
+    case 'b':
+      if (typeof val !== 'boolean') return `must be true/false (got ${JSON.stringify(val)})`;
+      break;
+    case 'n':
+      if (typeof val !== 'number' || !isFinite(val)) return `must be a number (got ${JSON.stringify(val)})`;
+      break;
+    case 'i':
+      if (typeof val !== 'number' || !Number.isInteger(val)) return `must be a whole number (got ${JSON.stringify(val)})`;
+      break;
+    case 'a':
+      if (!Array.isArray(val)) return `must be a list (got ${typeof val})`;
+      break;
+    case 'o':
+      if (typeof val !== 'object' || Array.isArray(val)) return `must be an object`;
+      break;
+  }
+  if (spec.t === 'n' || spec.t === 'i') {
+    if (spec.min !== undefined && val < spec.min) return `must be >= ${spec.min} (got ${val})`;
+    if (spec.max !== undefined && val > spec.max) return `must be <= ${spec.max} (got ${val})`;
+  }
+  if (spec.oneOf && !spec.oneOf.includes(val)) return `must be one of ${spec.oneOf.join(', ')} (got "${val}")`;
+  if (spec.ref && typeof val === 'string' && val !== '') {
+    const [folder, file, col] = spec.ref;
+    let rows = refData?.[folder]?.[file]?.rows || [];
+    // Some editor selects show a filtered subset — validate against the same
+    // subset, since a value outside it can't be represented in the dropdown.
+    if (spec.refFilter) rows = rows.filter(r => r[spec.refFilter.col] === spec.refFilter.value);
+    const known = rows.map(r => (r[col] || '').trim().replace(/^\*/, '')).filter(Boolean);
+    if (known.length && !known.includes(val)) {
+      return spec.refFilter
+        ? `"${val}" is not a known ${file} value with ${spec.refFilter.col}=${spec.refFilter.value}`
+        : `"${val}" is not a known ${file} value`;
+    }
+  }
+  return null;
+}
+
+// Walk a schema over a Data object, collecting errors.
+function validateAgainstSchema(data, schema, refData, file, errors) {
+  for (const [key, spec] of Object.entries(schema)) {
+    const val = data[key];
+    if (spec.t === 'o' && val && typeof val === 'object') {
+      const e = checkField(val, spec, refData);
+      if (e) { importIssue(errors, file, `${key} ${e}`); continue; }
+      for (const [k2, s2] of Object.entries(spec.fields || {})) {
+        const e2 = checkField(val[k2], s2, refData);
+        if (e2) importIssue(errors, file, `${key}.${k2} ${e2}`);
+      }
+      continue;
+    }
+    if (spec.t === 'a' && Array.isArray(val)) {
+      if (spec.maxItems !== undefined && val.length > spec.maxItems) {
+        importIssue(errors, file, `${key} has ${val.length} entries but the editor supports at most ${spec.maxItems} — the extras would be lost`);
+      }
+      if (spec.item) {
+        val.forEach((entry, i) => {
+          if (typeof entry !== 'object' || entry === null) {
+            importIssue(errors, file, `${key}[${i}] must be an object`);
+            return;
+          }
+          for (const [k2, s2] of Object.entries(spec.item)) {
+            const e2 = checkField(entry[k2], s2, refData);
+            if (e2) importIssue(errors, file, `${key}[${i}].${k2} ${e2}`);
+          }
+        });
+      } else if (spec.itemType) {
+        val.forEach((entry, i) => {
+          const e2 = checkField(entry, { t: spec.itemType }, refData);
+          if (e2) importIssue(errors, file, `${key}[${i}] ${e2}`);
+        });
+      }
+      continue;
+    }
+    const e = checkField(val, spec, refData);
+    if (e) importIssue(errors, file, `${key} ${e}`);
+  }
+}
+
+// Read a PNG's dimensions from its IHDR chunk. Returns null if not a PNG.
+function pngSize(buf) {
+  const MAGIC = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+  if (buf.length < 24 || !buf.subarray(0, 8).equals(MAGIC)) return null;
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
+// Recursively list files as posix-style relative paths.
+function walkTree(root, base = '') {
+  const out = [];
+  for (const ent of fs.readdirSync(path.join(root, base), { withFileTypes: true })) {
+    const rel = base ? `${base}/${ent.name}` : ent.name;
+    if (ent.isDirectory()) out.push(...walkTree(root, rel));
+    else out.push(rel);
+  }
+  return out;
+}
+
+function importScan(input) {
+  const srcPath = (input.path || '').trim();
+  const rawName = (input.name || '').trim();
+  const errors = [], warnings = [], notices = [];
+  const result = { status: 'ok', errors, warnings, notices, imageFolders: [], counts: {} };
+
+  // ── Name ──
+  if (!rawName) { importIssue(errors, '(project name)', 'Project name is required'); }
+  const id = sanitizeProjectId(rawName);
+  if (rawName && !id) importIssue(errors, '(project name)', `"${rawName}" is not a usable project name`);
+  if (id && fs.existsSync(path.join(DATA_ROOT, id))) {
+    importIssue(errors, '(project name)', `A project named "${id}" already exists`);
+  }
+  result.projectId = id;
+
+  // ── Root ──
+  if (!srcPath) { importIssue(errors, '(folder)', 'Assets folder path is required'); return result; }
+  if (!fs.existsSync(srcPath) || !fs.statSync(srcPath).isDirectory()) {
+    importIssue(errors, '(folder)', `Not a folder: ${srcPath}`);
+    return result;
+  }
+
+  const allFiles = walkTree(srcPath);
+  if (!allFiles.length) { importIssue(errors, '(folder)', 'Folder is empty'); return result; }
+
+  const refData = getAllRefData();
+  const known = new Set([...ASSET_CATEGORIES, 'Images', 'Sounds']);
+
+  // ── Structure pass ──
+  const topEntries = fs.readdirSync(srcPath, { withFileTypes: true });
+  for (const ent of topEntries) {
+    if (ent.isDirectory()) {
+      if (!known.has(ent.name) && !ASSET_CATEGORIES.some(c => c.startsWith(ent.name + '/'))) {
+        importIssue(warnings, ent.name + '/', 'Unrecognized folder — will be copied but is not used by the tool');
+      }
+    } else if (!IGNORED_FILENAMES.includes(ent.name)) {
+      importIssue(warnings, ent.name, 'Unexpected file at the Assets root — copied, but the tool will not use it');
+    }
+  }
+
+  // ── Image pass ──
+  const imageFiles = allFiles.filter(f => f.startsWith('Images/'));
+  const weaponFolders = new Set();
+  for (const rel of imageFiles) {
+    const parts = rel.split('/');
+    const base = parts[parts.length - 1];
+    if (IGNORED_FILENAMES.includes(base)) continue;
+    const subroot = parts[1];
+    // Expected layout: Images/Weapons/file.png or Images/Weapons/{subfolder}/file.png
+    // (subfoldering is optional), plus Images/Firemodes/file.png and Images/Ammo/file.png.
+    if (parts.length < 3) {
+      importIssue(warnings, rel, 'Image sits directly in Images/ instead of Images/Weapons, Images/Firemodes or Images/Ammo — copied, but the tool will not use it');
+      continue;
+    }
+    if (!RESERVED_IMAGE_SUBROOTS.includes(subroot)) {
+      importIssue(warnings, rel, `Images/${subroot}/ is not one of the recognized image folders (${RESERVED_IMAGE_SUBROOTS.join(', ')}) — copied, but the tool will not use it`);
+      continue;
+    }
+    if (subroot === 'Weapons' && parts.length >= 4) weaponFolders.add(parts[2]);
+
+    const buf = fs.readFileSync(path.join(srcPath, rel));
+    const size = pngSize(buf);
+    if (!size) { importIssue(errors, rel, 'Not a valid PNG file'); continue; }
+    if (subroot === 'Firemodes' && (size.width !== 36 || size.height !== 26)) {
+      importIssue(errors, rel, `Firemode sprite must be 36x26 (found ${size.width}x${size.height})`);
+    }
+    if (subroot === 'Ammo' && /_(floor|shadow)/i.test(base) && (size.width > 30 || size.height > 30)) {
+      importIssue(errors, rel, `Ammo floor/shadow sprite must be 30x30 or smaller (found ${size.width}x${size.height})`);
+    }
+  }
+  result.imageFolders = [...weaponFolders].sort();
+
+  // ── Per-file JSON pass ──
+  const byCat = {};          // category -> [{file, rel, data}]
+  const idsByCat = {};        // category -> Map(id -> rel)
+  for (const cat of ASSET_CATEGORIES) { byCat[cat] = []; idsByCat[cat] = new Map(); }
+
+  for (const rel of allFiles) {
+    if (rel.startsWith('Images/') || rel.startsWith('Sounds/')) continue;
+    const base = rel.split('/').pop();
+    if (IGNORED_FILENAMES.includes(base)) continue;
+
+    // Which category does this live in?
+    const cat = ASSET_CATEGORIES
+      .filter(c => rel.startsWith(c + '/'))
+      .sort((a, b) => b.length - a.length)[0];
+    if (!cat) continue; // already warned at structure pass
+
+    // Bundles are expected to be binary — no record validation, no warning.
+    if (PASSTHROUGH_CATEGORIES.includes(cat)) continue;
+
+    if (!base.endsWith('.json')) {
+      importIssue(warnings, rel, 'Not a .json file — copied, but the tool will not use it');
+      continue;
+    }
+    // Nested deeper than category/file.json
+    if (rel.slice(cat.length + 1).includes('/')) {
+      importIssue(warnings, rel, 'Nested deeper than expected inside its category — copied, but the tool will not use it');
+      continue;
+    }
+
+    let data;
+    try { data = JSON.parse(fs.readFileSync(path.join(srcPath, rel), 'utf8')); }
+    catch (e) { importIssue(errors, rel, `Invalid JSON: ${e.message}`); continue; }
+
+    const fileId = base.replace(/\.json$/, '');
+    byCat[cat].push({ rel, fileId, data });
+
+    // RecordType vs category
+    const expected = CATEGORY_RECORD_TYPES[cat];
+    const rt = data.RecordType;
+    if (expected) {
+      if (!rt) importIssue(errors, rel, 'Missing RecordType');
+      else if (!expected.includes(rt)) {
+        importIssue(errors, rel, `RecordType "${rt}" does not belong in ${cat}/ (expected ${expected.join(' or ')})`);
+      }
+    }
+
+    const d = data.Data || {};
+
+    // Identity: filename <-> id
+    if (cat.startsWith('Localization/')) {
+      const m = fileId.match(/^(.+)_localization$/);
+      if (!m) importIssue(errors, rel, 'Localization files must be named {id}_localization.json');
+      else {
+        // Localization entries live under Data.Keys as "item.{id}.name" /
+        // ".desc" / ".shortdesc", each mapping to a per-language object.
+        if (!d.Keys || typeof d.Keys !== 'object' || Array.isArray(d.Keys)) {
+          importIssue(errors, rel, 'Missing Data.Keys — localization entries live under a Keys object');
+        } else {
+          const bad = Object.keys(d.Keys).filter(k => !k.startsWith(`item.${m[1]}.`));
+          if (bad.length) {
+            importIssue(errors, rel, `Localization keys must start with "item.${m[1]}." — found ${bad.slice(0, 3).map(k => `"${k}"`).join(', ')}${bad.length > 3 ? ` and ${bad.length - 3} more` : ''}`);
+          }
+        }
+        idsByCat[cat].set(m[1], rel);
+      }
+    } else if (cat.startsWith('Descriptors/')) {
+      const m = fileId.match(/^(.+)_descriptor$/);
+      if (!m) importIssue(errors, rel, 'Descriptor files must be named {id}_descriptor.json');
+      else {
+        if (d.ItemId !== undefined && d.ItemId !== m[1]) {
+          importIssue(errors, rel, `ItemId "${d.ItemId}" does not match filename id "${m[1]}"`);
+        }
+        idsByCat[cat].set(m[1], rel);
+      }
+    } else if (cat === 'Datadisks') {
+      // Datadisk files are {diskId}_diskData.json and reference base game disks
+      const m = fileId.match(/^(.+)_diskData$/);
+      if (!m) importIssue(errors, rel, 'Datadisk files must be named {id}_diskData.json');
+      else {
+        if (d.Id !== undefined && d.Id !== m[1]) {
+          importIssue(errors, rel, `Data.Id "${d.Id}" does not match filename id "${m[1]}"`);
+        }
+        if (idsByCat[cat].has(m[1])) {
+          importIssue(errors, rel, `Duplicate datadisk "${m[1]}" — also in ${idsByCat[cat].get(m[1])}`);
+        } else idsByCat[cat].set(m[1], rel);
+      }
+    } else if (cat === 'Crafting Recipes') {
+      // Recipes never fill Data.Id — identity is OutputItem, file is {id}_receipt.json
+      const m = fileId.match(/^(.+)_receipt$/);
+      if (!m) importIssue(errors, rel, 'Crafting recipe files must be named {id}_receipt.json');
+      else {
+        if (d.OutputItem !== undefined && d.OutputItem !== m[1]) {
+          importIssue(errors, rel, `OutputItem "${d.OutputItem}" does not match filename id "${m[1]}"`);
+        }
+        if (idsByCat[cat].has(m[1])) {
+          importIssue(errors, rel, `Duplicate recipe for "${m[1]}" — also in ${idsByCat[cat].get(m[1])}`);
+        } else idsByCat[cat].set(m[1], rel);
+      }
+    } else if (ID_KEYED_CATEGORIES.includes(cat)) {
+      const recId = d.Id ?? d.ItemId;
+      if (recId === undefined) importIssue(errors, rel, 'Missing Data.Id');
+      else if (recId !== fileId) importIssue(errors, rel, `Data.Id "${recId}" does not match filename "${fileId}.json"`);
+      else if (!/^[a-zA-Z0-9_-]+$/.test(recId)) {
+        importIssue(errors, rel, `Id "${recId}" has characters outside letters, numbers, underscore and hyphen`);
+      }
+      if (recId !== undefined) {
+        if (idsByCat[cat].has(recId)) {
+          importIssue(errors, rel, `Duplicate Id "${recId}" — also in ${idsByCat[cat].get(recId)}`);
+        } else idsByCat[cat].set(recId, rel);
+      }
+    }
+    // Other categories (FactionRewards, Armors, Bundles, Consumables) are not
+    // keyed by Data.Id — FactionRewards files are faction-named tables holding
+    // FactionRewardList, so no filename/Id relationship is enforced.
+
+    // Schema
+    const schema = IMPORT_SCHEMAS[rt];
+    if (schema) validateAgainstSchema(d, schema, refData, rel, errors);
+
+    // Normalization notice — skipped when the file already has errors, since
+    // it won't be imported anyway and the notice would just be noise.
+    try {
+      const alreadyBroken = errors.some(e => e.file === rel);
+      const srcText = fs.readFileSync(path.join(srcPath, rel), 'utf8');
+      if (!alreadyBroken && normalizeJsonText(data) !== srcText) {
+        importIssue(notices, rel, 'Will be rewritten in canonical form (key order / number styling / spacing)');
+      }
+    } catch {}
+  }
+
+  // ── Base-game id collisions ──
+  // Datadisks are deliberately absent: a project datadisk file referencing a
+  // base game disk id is the normal case — the importer API appends to the
+  // existing disk rather than conflicting with it.
+  const BASE_ID_SOURCES = {
+    'Weapons': null, 'Ammo': 'ammo', 'Firemodes': 'firemodes',
+    'Explosions': 'explosions', 'Traits': 'itemTraits',
+  };
+  for (const [cat, refFile] of Object.entries(BASE_ID_SOURCES)) {
+    if (!refFile) continue;
+    const rows = refData?.base?.[refFile]?.rows || [];
+    const baseIds = new Set(rows.map(r => (r.Id || '').trim().replace(/^\*/, '')).filter(Boolean));
+    for (const [recId, rel] of idsByCat[cat]) {
+      if (baseIds.has(recId)) importIssue(errors, rel, `Id "${recId}" collides with a base game ${cat} entry`);
+    }
+  }
+
+  // ── Companion files ──
+  for (const [cat, companions] of Object.entries(COMPANION_REQUIREMENTS)) {
+    for (const [recId, rel] of idsByCat[cat]) {
+      for (const comp of companions) {
+        if (!idsByCat[comp.cat].has(recId)) {
+          importIssue(errors, rel, `Missing ${comp.label}: expected ${comp.cat}/${recId}${comp.suffix}.json`);
+        }
+      }
+    }
+    // Orphaned companions
+    for (const comp of companions) {
+      for (const [compId, compRel] of idsByCat[comp.cat]) {
+        if (!idsByCat[cat].has(compId)) {
+          importIssue(errors, compRel, `Orphaned ${comp.label} — no matching ${cat}/${compId}.json`);
+        }
+      }
+    }
+  }
+
+  // ── Cross-references ──
+  const baseSet = (refFile, col = 'Id') => new Set(
+    (refData?.base?.[refFile]?.rows || []).map(r => (r[col] || '').trim().replace(/^\*/, '')).filter(Boolean)
+  );
+  const baseFiremodes = baseSet('firemodes'), baseAmmo = baseSet('ammo'), baseTraits = baseSet('itemTraits');
+  const incomingFiremodes = new Set(idsByCat['Firemodes'].keys());
+  const incomingAmmo = new Set(idsByCat['Ammo'].keys());
+  const incomingTraits = new Set(idsByCat['Traits'].keys());
+
+  // Trait type lookup: base rows + incoming records
+  const traitTypeOf = (tid) => {
+    const inc = byCat['Traits'].find(f => f.fileId === tid);
+    if (inc) return inc.data?.Data?.ItemTraitType || '';
+    const row = (refData?.base?.itemTraits?.rows || []).find(r => (r.Id || '').trim().replace(/^\*/, '') === tid);
+    return row ? (row.ItemTraitType || '') : null;
+  };
+
+  const checkRef = (rel, label, value, pool, poolName) => {
+    if (!value) return;
+    if (!pool.has(value)) importIssue(errors, rel, `${label} "${value}" not found in base game or imported ${poolName}`);
+  };
+
+  for (const f of byCat['Weapons']) {
+    const d = f.data?.Data || {};
+    const fmPool = new Set([...baseFiremodes, ...incomingFiremodes]);
+    const ammoPool = new Set([...baseAmmo, ...incomingAmmo]);
+    checkRef(f.rel, 'Firemode1', d.Firemode1, fmPool, 'firemodes');
+    checkRef(f.rel, 'Firemode2', d.Firemode2, fmPool, 'firemodes');
+    checkRef(f.rel, 'DefaultAmmoId', d.DefaultAmmoId, ammoPool, 'ammo');
+    checkRef(f.rel, 'OverrideAmmo1', d.OverrideAmmo1, ammoPool, 'ammo');
+    checkRef(f.rel, 'OverrideAmmo2', d.OverrideAmmo2, ammoPool, 'ammo');
+    for (const t of (Array.isArray(d.Traits) ? d.Traits : [])) {
+      const pool = new Set([...baseTraits, ...incomingTraits]);
+      if (!pool.has(t)) { importIssue(errors, f.rel, `Trait "${t}" not found in base game or imported traits`); continue; }
+      const tt = traitTypeOf(t);
+      if (tt && tt !== 'WeaponTrait') importIssue(errors, f.rel, `Trait "${t}" is a ${tt}, not a WeaponTrait`);
+    }
+  }
+  for (const f of byCat['Ammo']) {
+    const d = f.data?.Data || {};
+    for (const t of (Array.isArray(d.Traits) ? d.Traits : [])) {
+      const pool = new Set([...baseTraits, ...incomingTraits]);
+      if (!pool.has(t)) { importIssue(errors, f.rel, `Trait "${t}" not found in base game or imported traits`); continue; }
+      const tt = traitTypeOf(t);
+      if (tt && tt !== 'AmmoTrait') importIssue(errors, f.rel, `Trait "${t}" is a ${tt}, not an AmmoTrait`);
+    }
+  }
+
+  const PRIMARY_CATS = ['Weapons', 'Ammo', 'Firemodes', 'Explosions', 'Traits', 'Datadisks'];
+  result.counts = {
+    files: allFiles.length,
+    records: PRIMARY_CATS.reduce((n, c) => n + (idsByCat[c]?.size || 0), 0),
+    images: imageFiles.length,
+    errors: errors.length, warnings: warnings.length, notices: notices.length,
+  };
+  return result;
+}
+
+// Canonical serialization used both for normalization detection and writing.
+function normalizeJsonText(data) {
+  let json = JSON.stringify(data, null, 2);
+  const floatFields = FLOAT_FIELDS_BY_RECORD_TYPE[data?.RecordType] || [];
+  for (const field of floatFields) {
+    json = json.replace(new RegExp(`("${field}":\\s*)(-?\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) =>
+      num.includes('.') ? m : `${pre}${num}.0${post}`);
+  }
+  return json;
+}
+
+function importCommit(input) {
+  const scan = importScan(input);
+  // NOTE: spread first — scan carries status:'ok' and would clobber the override.
+  if (scan.errors.length) return { ...scan, status: 'error' };
+
+  const srcPath = (input.path || '').trim();
+  const id = scan.projectId;
+  const dir = path.join(DATA_ROOT, id);
+
+  try {
+    createProject({ name: input.name });
+
+    const allFiles = walkTree(srcPath);
+    let copiedJson = 0, copiedImages = 0, copiedSounds = 0, copiedOther = 0;
+
+    for (const rel of allFiles) {
+      const base = rel.split('/').pop();
+      if (IGNORED_FILENAMES.includes(base)) continue;
+      const dest = path.join(dir, 'Assets', ...rel.split('/'));
+
+      if (rel.startsWith('Images/')) {
+        // Everything under Images/ is preserved. Files outside the recognized
+        // layout were warned about during the scan but are still copied so
+        // nothing is silently lost.
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(path.join(srcPath, rel), dest);
+        copiedImages++;
+        continue;
+      }
+      if (rel.startsWith('Sounds/')) {
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(path.join(srcPath, rel), dest);
+        copiedSounds++;
+        continue;
+      }
+
+      const cat = ASSET_CATEGORIES.filter(c => rel.startsWith(c + '/')).sort((a, b) => b.length - a.length)[0];
+      // A normalizable record: inside a known category, a .json file directly
+      // in that folder, and not a passthrough category like Bundles.
+      const isRecord = cat
+        && !PASSTHROUGH_CATEGORIES.includes(cat)
+        && base.endsWith('.json')
+        && !rel.slice(cat.length + 1).includes('/');
+
+      if (!isRecord) {
+        // Bundles, stray files and unrecognized folders are preserved verbatim
+        // so an import never loses anything from the source tree.
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.copyFileSync(path.join(srcPath, rel), dest);
+        copiedOther++;
+        continue;
+      }
+
+      // Re-write through the canonical writer (normalization)
+      const data = JSON.parse(fs.readFileSync(path.join(srcPath, rel), 'utf8'));
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      writeJson(dest, data);
+      copiedJson++;
+    }
+
+    // Settings: standard init. Weapon image folders are discovered from the
+    // filesystem by listImageFolders, so copying them above is sufficient.
+    writeJson(path.join(dir, 'settings.json'), {
+      bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false,
+    });
+
+    console.log(`[IMPORT] Created project "${id}" — ${copiedJson} records, ${copiedImages} images, ${copiedSounds} sounds, ${copiedOther} other files`);
+    return {
+      status: 'ok', id,
+      counts: { ...scan.counts, copiedJson, copiedImages, copiedSounds, copiedOther },
+      warnings: scan.warnings, notices: scan.notices,
+      imageFolders: scan.imageFolders,
+    };
+  } catch (e) {
+    // Never leave a half-imported project behind
+    try { if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true }); } catch {}
+    throw httpErr(500, `Import failed and was rolled back: ${e.message}`);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
 //  PROJECT EXPORT (ZIP)
 // ═══════════════════════════════════════════════════════════════════
 const CRC32_TABLE = (() => {
@@ -1230,15 +1937,9 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
 };
 
 function writeJson(filePath, data) {
-  let json = JSON.stringify(data, null, 2);
-  // Force .0 on known float fields (per record type) that serialize as integers
-  const floatFields = FLOAT_FIELDS_BY_RECORD_TYPE[data?.RecordType] || [];
-  for (const field of floatFields) {
-    json = json.replace(new RegExp(`("${field}":\\s*)(-?\\d+)(\\s*[,\\n}])`, 'g'), (m, pre, num, post) => {
-      return num.includes('.') ? m : `${pre}${num}.0${post}`;
-    });
-  }
-  fs.writeFileSync(filePath, json, 'utf8');
+  // normalizeJsonText is the single canonical serializer — import's
+  // "will be rewritten" detection compares against the same output.
+  fs.writeFileSync(filePath, normalizeJsonText(data), 'utf8');
 }
 
 function glob(dir, ext) {
