@@ -132,9 +132,9 @@ When the English name is filled in, it appears under the weapon ID in the sideba
 
 ### Crafting Recipe
 
-**Production Settings** — ProduceTimeInHours (integer > 0), plus a Required Items entry list (max 5). Each entry has an Item Id combo box (repairs + trash + pactcomponents TSVs, `quest_` items filtered out, free text allowed) and Count (integer > 0).
+**Production Settings** — ProduceTimeInHours (integer > 0), plus a Required Items entry list (max 7, with an info icon beside the Add button). Each entry has an Item Id combo box (repairs + trash + pactcomponents TSVs, `quest_` items filtered out, free text allowed) and Count (integer > 0).
 
-**Workshop Settings** — ModifyStartCost (integer > 0, info icon: "Starts cost formula as though at a later step when not 1."), ModifyStep (positive number, info icon: "Scales cost per step."), ModifyLevelLimit (integer > 0, info icon: "Max upgradable level in workshop (before magnum upgrade)."). Plus a Modify Items entry list (max 4) with Item Id combo box (repairs + trash + pactcomponents + datadisks TSVs, `quest_` items filtered out) and Value (integer > 0).
+**Workshop Settings** — ModifyStartCost (integer > 0, info icon: "Starts cost formula step"), ModifyStep (positive number, default 1, info icon: "Scales cost per step. Generally keep at 1 for weapons"), ModifyLevelLimit (integer > 0, info icon: "Max upgradable level in workshop (before magnum upgrade)."). Plus a Modify Items entry list (max 5) with Item Id combo box (repairs + trash + pactcomponents + datadisks TSVs, `quest_` items filtered out) and Value (integer > 0).
 
 ### Datadisk Assignment
 
@@ -386,8 +386,8 @@ When saving, if any fields are invalid, a **validation error popup** appears lis
 | Faction Points | Positive integer |
 
 ### Entry List Limits
-- Required Items: max 5
-- Modify Items: max 4
+- Required Items: max 7
+- Modify Items: max 5
 
 ---
 
@@ -418,12 +418,13 @@ Used for Disassembly ItemId, Recipe Required Items, Modify Items, and Ammo Type 
 Some fields have a **?** icon to the right of the input. Hover over it to see a tooltip with guidance on suggested or expected values. Currently used on:
 - Ammo Id — "Add implicted_ to the front of this id to make this ammo an implicit ammo"
 - Prefab Scale — "Suggested values between 0.04 and 0.065"
-- Modify Start Cost — "Starts cost formula as though at a later step when not 1."
-- Modify Step — "Scales cost per step."
+- Modify Start Cost — "Starts cost formula step"
+- Modify Step — "Scales cost per step. Generally keep at 1 for weapons"
 - Modify Level Limit — "Max upgradable level in workshop (before magnum upgrade)."
 - Ammo Per Shot (firemode) — "Amount of ammo consumed in 1 shot in a turn. Usually matched with weapon casts count."
 - Weapon Casts Count (firemode) — "Determines number of times the weapon fires (rate of fire)"
 - Large Fire Chance (explosion) — "Uses values between 0-100"
+- Required Items (crafting recipe) — "Weapons usually match their crafting recipe with their disassembly list."
 
 ---
 
@@ -450,9 +451,9 @@ The button stays disabled until both fields are filled and the name isn't alread
 
 Clicking **Scan & Import** runs a read-only check first — nothing is written until you confirm. The report groups findings into three kinds:
 
-- **Errors** — block the import. Invalid JSON, a RecordType that doesn't belong in its folder, a filename that disagrees with the record's Id (datadisks are `{id}_diskData.json`, crafting recipes are matched on `OutputItem` since they never fill `Id`, and faction reward tables aren't Id-keyed at all), invalid Id characters, duplicate Ids, collisions with base-game Ids (except datadisks, where matching an existing disk id is normal — the importer API appends to it), missing companion files (a weapon without its descriptor or localization, a firemode or explosion without its descriptor), orphaned companions with no parent record, localization keys under `Data.Keys` that don't match `item.{id}.*`, references to firemodes/ammo/traits that don't exist, traits used on the wrong item kind, files that aren't valid PNGs, and sprites that break the size rules (firemode 36×26, ammo floor/shadow 30×30 max). Field values are also type-checked against the same rules the editors enforce — a Radius that's text, a chance above 1, a Large Fire Chance above 100, an unknown damage type or weapon class, a negative weight, a disassembly count of zero, and so on. Also flagged: more than two firemodes or override-ammo entries on one weapon (the editor only has two slots, so extras would be lost), and a status effect that isn't one of the damage-renewal effects the ammo editor offers.
-- **Warnings** — don't block. Unrecognized folders, stray non-JSON files, images outside the recognized layout. Nothing from the source tree is discarded — files the tool doesn't understand are still copied so they survive into a later export; the warning just notes the tool won't use them. `Bundles/` is expected to hold binary asset bundles, so its contents are copied silently without any warning.
-- **Will Be Reformatted** — informational. Lists every file whose bytes will change when rewritten in the tool's canonical format (key order, number styling, spacing). The content is unchanged; this exists so reformatting is never a surprise.
+- **Errors** — block the import. Invalid JSON, a RecordType that doesn't belong in its folder, a filename that disagrees with the record's Id (datadisks are `{id}_diskData.json`, crafting recipes are matched on `OutputItem` since they never fill `Id`, and faction reward tables aren't Id-keyed at all), invalid Id characters, duplicate Ids, collisions with base-game Ids (except datadisks, where matching an existing disk id is normal — the importer API appends to it), missing companion files (a weapon without its descriptor or localization, a firemode or explosion without its descriptor), orphaned companions with no parent record, localization keys under `Data.Keys` that don't match `item.{id}.*`, references to firemodes/ammo/traits that don't exist, traits used on the wrong item kind, files that aren't valid PNGs, and sprites that break the size rules (firemode 36×26, ammo floor/shadow 30×30 max). Every field the tool expects must be present — a record missing fields is an error, since an incomplete record can misbehave in game. All of a file's missing fields are reported on a single line rather than one error each. Field values are also type-checked against the same rules the editors enforce — a Radius that's text, a chance above 1, a Large Fire Chance above 100, an unknown damage type or weapon class, a negative weight, a disassembly count of zero, and so on. Also flagged: more than two firemodes or override-ammo entries on one weapon (the editor only has two slots, so extras would be lost), and a status effect that isn't one of the damage-renewal effects the ammo editor offers.
+- **Warnings** — don't block. Unrecognized folders, stray non-JSON files, images outside the recognized layout, and fields the tool doesn't recognize (a typo'd or foreign field name — it's kept in the file as-is, the tool just won't use it). Nothing from the source tree is discarded — files the tool doesn't understand are still copied so they survive into a later export; the warning just notes the tool won't use them. `Bundles/` is expected to hold binary asset bundles, so its contents are copied silently without any warning.
+- **Will Be Reformatted** — informational. Lists every file whose bytes will change when rewritten in the tool's canonical format (key order, number styling, spacing). This tier also covers the one case where a value changes: the optional dropdown-backed fields (`DefaultGrenadeId`, and ammo's `AmmoType`, `DmgType`, `ProjectileId`, `StatusEffectId`) are written as an empty string by the editor, so a `null` in any of them is coerced to `""` on import and listed here. Nothing else about a file's content changes.
 
 If there are no errors the report shows a **Proceed with Import** button. On confirming, the scan is re-run server-side (so a folder that changed since the report can't slip through), the project is created with the standard folder scaffold, records are written in canonical form, and everything else — images, sounds, asset bundles, and any files the tool doesn't recognize — is copied verbatim, with settings initialized to the standard defaults. Weapon image subfolders are picked up from whatever was in `Images/Weapons/` — they can be named however you like, and they'll appear in the editor's folder selector.
 

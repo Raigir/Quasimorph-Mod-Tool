@@ -590,7 +590,11 @@
   .info-icon:hover svg rect[fill] { fill:var(--accent); }
   .info-icon .info-tip {
     display:none; position:absolute; bottom:calc(100% + 6px); left:50%;
-    transform:translateX(-50%); white-space:nowrap;
+    transform:translateX(-50%);
+    /* Size to content for short tips, wrap once they get long, so a lengthy
+       tooltip can't stretch out past the panel edges. */
+    width:max-content; max-width:340px; white-space:normal;
+    text-align:left; line-height:1.45;
     background:var(--bg-panel); border:1px solid var(--border);
     border-radius:var(--radius); padding:5px 10px;
     font-family:'DM Sans',sans-serif; font-size:13px; font-weight:400;
@@ -1364,8 +1368,9 @@
         <div class="ed-field narrow"><label>Produce Time (hrs)</label><input type="number" id="recipe-ProduceTimeInHours" step="1" oninput="validateRecipeField(this, true)"></div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
-        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 5)</span>
+        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 7)</span>
         <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addRecipeItemEntry()">+ Add</button>
+        <span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Weapons usually match their crafting recipe with their disassembly list.</span></span>
       </div>
       <div class="entry-list" id="recipeItemList"></div>
     </div>
@@ -1374,16 +1379,16 @@
     <div class="ed-section">
       <div class="ed-section-title">Workshop Settings</div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula as though at a later step when not 1.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Start Cost</label><input type="number" id="recipe-ModifyStartCost" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Starts cost formula step</span></span></div></div>
       </div>
       <div class="ed-row">
-        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step.</span></span></div></div>
+        <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Step</label><input type="number" id="recipe-ModifyStep" step="0.01" oninput="validateRecipeField(this, false)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Scales cost per step. Generally keep at 1 for weapons</span></span></div></div>
       </div>
       <div class="ed-row">
         <div class="ed-field narrow" style="flex-direction:row; align-items:flex-end; gap:6px;"><div style="display:flex;flex-direction:column;gap:3px;"><label>Modify Level Limit</label><input type="number" id="recipe-ModifyLevelLimit" step="1" oninput="validateRecipeField(this, true)"></div><div style="height:35px;display:flex;align-items:center;"><span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Max upgradable level in workshop (before magnum upgrade).</span></span></div></div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
-        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 4)</span>
+        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Modify Items (max 5)</span>
         <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addGradeEntry()">+ Add</button>
       </div>
       <div class="entry-list" id="gradeList"></div>
@@ -5827,7 +5832,7 @@ async function renameItemInAllDisks(oldId, newId) {
 // ═══════════════════════════════════════════════════════════════════
 function addRecipeItemEntry(itemId, count) {
   const list = document.getElementById('recipeItemList');
-  if (!itemId && list.querySelectorAll('.entry-item').length >= 5) { toast('Max 5 required items', 1); return; }
+  if (!itemId && list.querySelectorAll('.entry-item').length >= 7) { toast('Max 7 required items', 1); return; }
   const entry = document.createElement('div');
   entry.className = 'entry-item';
   entry.innerHTML = `
@@ -5850,7 +5855,7 @@ function addRecipeItemEntry(itemId, count) {
 
 function addGradeEntry(key, value) {
   const list = document.getElementById('gradeList');
-  if (!key && list.querySelectorAll('.entry-item').length >= 4) { toast('Max 4 modify items', 1); return; }
+  if (!key && list.querySelectorAll('.entry-item').length >= 5) { toast('Max 5 modify items', 1); return; }
   const entry = document.createElement('div');
   entry.className = 'entry-item';
   entry.innerHTML = `
@@ -5879,7 +5884,7 @@ function newRecipeRecord(id) {
       RequiredItems: [],
       ProduceTimeInHours: 10.0,
       ModifyStartCost: 1,
-      ModifyStep: 1.05,
+      ModifyStep: 1,
       ModifyItemsGrades: {},
       ModifyLevelLimit: 10,
       Id: ''
@@ -5895,7 +5900,7 @@ function populateRecipe(data, weaponId) {
 
   val('recipe-ProduceTimeInHours', data?.ProduceTimeInHours ?? 10);
   val('recipe-ModifyStartCost', data?.ModifyStartCost ?? 1);
-  val('recipe-ModifyStep', data?.ModifyStep ?? 1.05);
+  val('recipe-ModifyStep', data?.ModifyStep ?? 1);
   val('recipe-ModifyLevelLimit', data?.ModifyLevelLimit ?? 10);
 
   // Modify Item Grades
