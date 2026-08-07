@@ -1670,6 +1670,39 @@ function importScan(input) {
           importIssue(errors, rel, `Duplicate datadisk "${m[1]}" — also in ${idsByCat[cat].get(m[1])}`);
         } else idsByCat[cat].set(m[1], rel);
       }
+    } else if (cat === 'FactionRewards') {
+      // One faction per file, named {FactionName}_factionData.json. Every
+      // entry in the list must belong to that faction, and a faction must
+      // appear only once — the tool writes a single contentRecords array per
+      // faction, so split entries silently lose items on edit.
+      const m = fileId.match(/^(.+)_factionData$/);
+      if (!m) {
+        importIssue(errors, rel, 'Faction reward files must be named {FactionName}_factionData.json');
+      } else {
+        const expected = m[1];
+        const list = Array.isArray(d.FactionRewardList) ? d.FactionRewardList : [];
+        if (!list.length) {
+          importIssue(errors, rel, 'FactionRewardList is empty or missing');
+        }
+        const seenFactions = new Map();
+        list.forEach((entry, i) => {
+          const fname = entry && entry.FactionName;
+          if (fname === undefined) {
+            importIssue(errors, rel, `FactionRewardList[${i}] is missing FactionName`);
+            return;
+          }
+          if (fname !== expected) {
+            importIssue(errors, rel, `FactionRewardList[${i}].FactionName is "${fname}" but the filename declares "${expected}" — each file holds one faction and must be named {FactionName}_factionData.json`);
+            return;
+          }
+          if (seenFactions.has(fname)) {
+            importIssue(errors, rel, `"${fname}" appears more than once in FactionRewardList (entries ${seenFactions.get(fname)} and ${i}) — a faction must be a single entry with one contentRecords array holding all of its items`);
+          } else seenFactions.set(fname, i);
+        });
+        if (idsByCat[cat].has(expected)) {
+          importIssue(errors, rel, `Faction "${expected}" also has a file at ${idsByCat[cat].get(expected)}`);
+        } else idsByCat[cat].set(expected, rel);
+      }
     } else if (cat === 'Crafting Recipes') {
       // Recipes never fill Data.Id — identity is OutputItem, file is {id}_receipt.json
       const m = fileId.match(/^(.+)_receipt$/);
@@ -1695,9 +1728,8 @@ function importScan(input) {
         } else idsByCat[cat].set(recId, rel);
       }
     }
-    // Other categories (FactionRewards, Armors, Bundles, Consumables) are not
-    // keyed by Data.Id — FactionRewards files are faction-named tables holding
-    // FactionRewardList, so no filename/Id relationship is enforced.
+    // Remaining categories (Armors, Bundles, Consumables) have no editor and
+    // no known identity convention, so nothing is enforced for them.
 
     // Schema
     const schema = IMPORT_SCHEMAS[rt];

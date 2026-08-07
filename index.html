@@ -493,7 +493,7 @@
 
   /* ── WEAPON EDITOR ─────────────────────────────────────────── */
   .editor-wrap {
-    flex:1; overflow-y:auto; padding:18px 24px 40px;
+    flex:1; overflow-y:auto; padding:18px 24px 0;
     display:none; flex-direction:column; gap:16px;
   }
   .editor-wrap.visible { display:flex; }
@@ -701,6 +701,17 @@
     text-transform:none; letter-spacing:0; font-weight:400;
     transition:background 0.08s;
   }
+  /* Lists that show a trait-type column need room for it and must not be
+     clamped to the field width. Display only — values are unaffected. */
+  .multi-select-dropdown.ms-typed { right:auto; min-width:400px; }
+  .ms-typed .ms-name {
+    flex:1 1 auto; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .ms-typed .ms-type {
+    flex:0 0 104px; color:var(--text-dim); font-size:11px;
+    white-space:nowrap;
+  }
   .multi-select-dropdown label::before {
     content:''; width:14px; height:14px; flex-shrink:0;
     border-radius:3px; border:1.5px solid var(--border);
@@ -716,7 +727,12 @@
   .multi-select-dropdown label.trait-missing::before { border-color:var(--error); }
   .ed-actions {
     display:flex; gap:8px; justify-content:flex-end;
-    padding-top:8px;
+    padding:12px 0 18px;
+    /* margin-top:auto keeps the row at the bottom when a pane is shorter than
+       the viewport; sticky pins it there once the pane scrolls. */
+    margin-top:auto;
+    position:sticky; bottom:0; z-index:5;
+    background:var(--bg-deep);
   }
 
   /* ── LOCALIZATION ──────────────────────────────────────── */
@@ -2558,9 +2574,7 @@ function populateAmmoEditor(d) {
   // Traits
   applyTraitSelection('ammo-Traits', d.Traits || []);
   // Categories
-  document.querySelectorAll('#ammo-Categories input[type="checkbox"]').forEach(cb => {
-    cb.checked = (d.Categories || []).includes(cb.value);
-  });
+  msApplySelection('ammo-Categories', d.Categories || []);
   updateMultiSelectDisplay(document.querySelector('#ammo-Categories input[type="checkbox"]'));
 }
 
@@ -2592,8 +2606,8 @@ function collectAmmoEditor() {
     ChanceToApply: num('ammo-ChanceToApply'),
     StatusDamageModifier: num('ammo-StatusDamageModifier'),
     StatusResistModifier: num('ammo-StatusResistModifier'),
-    Traits: Array.from(document.querySelectorAll('#ammo-Traits input[type="checkbox"]:checked')).map(cb => cb.value),
-    Categories: Array.from(document.querySelectorAll('#ammo-Categories input[type="checkbox"]:checked')).map(cb => cb.value),
+    Traits: msValues('ammo-Traits'),
+    Categories: msValues('ammo-Categories'),
     ProjectileId: str('ammo-ProjectileId').trim(),
     CanPutInVest: bool('ammo-CanPutInVest'),
     IsImplictedAmmo: false,
@@ -4797,7 +4811,7 @@ function populateEditor(d) {
   // Categories multi-select
   const cats = d.Categories || [];
   const catContainer = document.getElementById('ed-Categories');
-  catContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = cats.includes(cb.value); });
+  msApplySelection(catContainer, cats);
   const catDisplay = catContainer.querySelector('.multi-select-display');
   if (cats.length) { catDisplay.textContent = cats.join(', '); }
   else { catDisplay.innerHTML = '<span class="placeholder">Select categories…</span>'; }
@@ -4829,7 +4843,7 @@ function populateEditor(d) {
   // RepairItemIds multi-select
   const repIds = d.RepairItemIds || [];
   const repContainer = document.getElementById('ed-RepairItemIds');
-  repContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = repIds.includes(cb.value); });
+  msApplySelection(repContainer, repIds);
   const repDisplay = repContainer.querySelector('.multi-select-display');
   if (repIds.length) { repDisplay.textContent = repIds.join(', '); }
   else { repDisplay.innerHTML = '<span class="placeholder">Select repair items…</span>'; }
@@ -4844,7 +4858,7 @@ function populateEditor(d) {
   // AllowedGrenadeIds multi-select
   const agIds = d.AllowedGrenadeIds || [];
   const agContainer = document.getElementById('ed-AllowedGrenadeIds');
-  agContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = agIds.includes(cb.value); });
+  msApplySelection(agContainer, agIds);
   const agDisplay = agContainer.querySelector('.multi-select-display');
   if (agIds.length) { agDisplay.textContent = agIds.join(', '); }
   else { agDisplay.innerHTML = '<span class="placeholder">Select grenades…</span>'; }
@@ -4874,7 +4888,7 @@ function collectEditor() {
     WeaponClass: str('ed-WeaponClass').trim(),
     WeaponSubClass: str('ed-WeaponSubClass').trim(),
     IsMelee: bool('ed-IsMelee'),
-    Categories: Array.from(document.querySelectorAll('#ed-Categories input[type="checkbox"]:checked')).map(cb => cb.value),
+    Categories: msValues('ed-Categories'),
     Damage: { damage: null, minDmg: int('ed-minDmg'), maxDmg: int('ed-maxDmg'), critChance: 0, critDmg: num('ed-critDmg') },
     Firemodes: [str('ed-Firemode1'), str('ed-Firemode2')].filter(v => v.trim()),
     RequiredAmmo: str('ed-RequiredAmmo').trim(),
@@ -4891,10 +4905,10 @@ function collectEditor() {
     MaxDurability: int('ed-MaxDurability'),
     MinDurabilityAfterRepair: int('ed-MinDurabilityAfterRepair'),
     Unbreakable: bool('ed-Unbreakable'),
-    RepairItemIds: Array.from(document.querySelectorAll('#ed-RepairItemIds input[type="checkbox"]:checked')).map(cb => cb.value),
-    Traits: Array.from(document.querySelectorAll('#ed-Traits input[type="checkbox"]:checked')).map(cb => cb.value),
+    RepairItemIds: msValues('ed-RepairItemIds'),
+    Traits: msValues('ed-Traits'),
     DefaultGrenadeId: str('ed-DefaultGrenadeId').trim(),
-    AllowedGrenadeIds: Array.from(document.querySelectorAll('#ed-AllowedGrenadeIds input[type="checkbox"]:checked')).map(cb => cb.value),
+    AllowedGrenadeIds: msValues('ed-AllowedGrenadeIds'),
     Disassembly: collectDisassembly(),
     DurabilityLossOnThrow: int('ed-DurabilityLossOnThrow'),
     ThrowRange: int('ed-ThrowRange'),
@@ -5699,9 +5713,7 @@ async function loadDatadisks(itemId) {
   } catch {}
 
   const container = document.getElementById('ed-Datadisks');
-  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.checked = _prevDatadiskAssignments.includes(cb.value);
-  });
+  msApplySelection(container, _prevDatadiskAssignments);
   const display = container.querySelector('.multi-select-display');
   if (_prevDatadiskAssignments.length) {
     display.textContent = _prevDatadiskAssignments.join(', ');
@@ -5744,7 +5756,7 @@ function canonicalizeDiskData(data, diskId) {
 }
 
 async function saveDatadisks(itemId) {
-  const checked = Array.from(document.querySelectorAll('#ed-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
+  const checked = msValues('ed-Datadisks');
   const added = checked.filter(d => !_prevDatadiskAssignments.includes(d));
   const removed = _prevDatadiskAssignments.filter(d => !checked.includes(d));
 
@@ -6229,9 +6241,7 @@ async function loadAmmoDatadisks(ammoId) {
   } catch {}
 
   const container = document.getElementById('ammo-Datadisks');
-  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.checked = _prevAmmoDatadiskAssignments.includes(cb.value);
-  });
+  msApplySelection(container, _prevAmmoDatadiskAssignments);
   const display = container.querySelector('.multi-select-display');
   if (_prevAmmoDatadiskAssignments.length) {
     display.textContent = _prevAmmoDatadiskAssignments.join(', ');
@@ -6241,7 +6251,7 @@ async function loadAmmoDatadisks(ammoId) {
 }
 
 async function saveAmmoDatadisks(ammoId) {
-  const checked = Array.from(document.querySelectorAll('#ammo-Datadisks input[type="checkbox"]:checked')).map(cb => cb.value);
+  const checked = msValues('ammo-Datadisks');
   const added = checked.filter(d => !_prevAmmoDatadiskAssignments.includes(d));
   const removed = _prevAmmoDatadiskAssignments.filter(d => !checked.includes(d));
 
@@ -7025,6 +7035,36 @@ function toggleMultiSelect(display) {
   }
 }
 
+// ── Multi-select selection order ────────────────────────────────────
+// Checkboxes carry a data-ord stamp recording when they were picked, so the
+// collapsed display and the saved JSON both follow selection order rather
+// than the order options happen to appear in the list.
+function msContainer(ref) {
+  return typeof ref === 'string' ? document.getElementById(ref) : ref;
+}
+
+// Checked values, in selection order.
+function msValues(ref) {
+  const c = msContainer(ref);
+  if (!c) return [];
+  return Array.from(c.querySelectorAll('input[type="checkbox"]:checked'))
+    .sort((a, b) => (parseInt(a.dataset.ord) || 0) - (parseInt(b.dataset.ord) || 0))
+    .map(cb => cb.value);
+}
+
+// Apply a stored array: sets checked state AND preserves the array's order.
+function msApplySelection(ref, values) {
+  const c = msContainer(ref);
+  if (!c) return;
+  const arr = Array.isArray(values) ? values : [];
+  c.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    const i = arr.indexOf(cb.value);
+    cb.checked = i >= 0;
+    if (i >= 0) cb.dataset.ord = String(i + 1);
+    else delete cb.dataset.ord;
+  });
+}
+
 function updateMultiSelectDisplay(checkbox) {
   const container = checkbox.closest('.multi-select');
   const max = parseInt(container.dataset.max) || 0;
@@ -7036,8 +7076,19 @@ function updateMultiSelectDisplay(checkbox) {
     return;
   }
 
+  // Stamp the moment of selection (or clear it) before reading the order back.
+  if (checkbox.checked) {
+    if (!checkbox.dataset.ord) {
+      const highest = Array.from(container.querySelectorAll('input[type="checkbox"][data-ord]'))
+        .reduce((n, cb) => Math.max(n, parseInt(cb.dataset.ord) || 0), 0);
+      checkbox.dataset.ord = String(highest + 1);
+    }
+  } else {
+    delete checkbox.dataset.ord;
+  }
+
   const display = container.querySelector('.multi-select-display');
-  const values = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value);
+  const values = msValues(container);
   if (values.length) {
     display.textContent = values.join(', ');
   } else {
@@ -7061,7 +7112,10 @@ function filterMultiSelect(input) {
 
 function clearMultiSelect(btn) {
   const container = btn.closest('.multi-select');
-  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => { cb.checked = false; });
+  container.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+    cb.checked = false;
+    delete cb.dataset.ord;
+  });
   const display = container.querySelector('.multi-select-display');
   display.innerHTML = '<span class="placeholder">Select…</span>';
 }
@@ -7317,38 +7371,56 @@ async function refreshTraitSelects() {
     _projTraitData = {};
   }
 
-  const build = (containerId, wantType) => {
+  // primaryType is listed first. showAll includes the other trait types too,
+  // with a type column so the distinction is visible. The checkbox value stays
+  // the plain trait id either way, so nothing about saving changes.
+  const build = (containerId, primaryType, showAll) => {
     const container = document.getElementById(containerId);
     if (!container) return;
-    // preserve current selection
-    const checked = new Set(
-      Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value)
-    );
-    const base = (REF.base?.itemTraits?.rows || [])
-      .filter(r => r.ItemTraitType === wantType)
-      .map(r => (r.Id || '').trim().replace(/^\*/, ''))
-      .filter(Boolean);
-    const baseSet = new Set(base);
-    const custom = Object.entries(_projTraitData)
-      .filter(([, d]) => (d.ItemTraitType || '') === wantType)
-      .map(([id]) => id)
-      .filter(id => id && !baseSet.has(id));
+    // preserve current selection AND its order across the rebuild
+    const checkedOrder = msValues(container);
+    const checked = new Set(checkedOrder);
 
-    const opts = [
-      ...base.sort().map(id => ({ id, custom: false })),
-      ...custom.sort().map(id => ({ id, custom: true })),
-    ];
-    const items = opts.map(o =>
-      `<label><input type="checkbox" value="${esc(o.id)}"${checked.has(o.id) ? ' checked' : ''} onchange="updateMultiSelectDisplay(this)">${esc(o.custom ? o.id + ' - *Custom*' : o.id)}</label>`
-    ).join('');
+    const baseRows = (REF.base?.itemTraits?.rows || [])
+      .map(r => ({ id: (r.Id || '').trim().replace(/^\*/, ''), type: (r.ItemTraitType || '').trim() }))
+      .filter(r => r.id);
+    const baseSet = new Set(baseRows.map(r => r.id));
+    const customRows = Object.entries(_projTraitData)
+      .map(([id, d]) => ({ id, type: (d.ItemTraitType || '').trim() }))
+      .filter(r => r.id && !baseSet.has(r.id));
+
+    const wanted = (t) => showAll ? true : t === primaryType;
+    // Type groups: the primary type first, then everything else alphabetically.
+    const types = [...new Set([...baseRows, ...customRows].map(r => r.type))]
+      .filter(t => wanted(t))
+      .sort((a, b) => (a === primaryType ? -1 : b === primaryType ? 1 : a.localeCompare(b)));
+
+    const opts = [];
+    for (const type of types) {
+      const base = baseRows.filter(r => r.type === type).map(r => r.id).sort();
+      const custom = customRows.filter(r => r.type === type).map(r => r.id).sort();
+      for (const id of base) opts.push({ id, type, custom: false });
+      for (const id of custom) opts.push({ id, type, custom: true });
+    }
+
+    const items = opts.map(o => {
+      const name = esc(o.custom ? o.id + ' - *Custom*' : o.id);
+      const box = `<input type="checkbox" value="${esc(o.id)}"${checked.has(o.id) ? ' checked' : ''} onchange="updateMultiSelectDisplay(this)">`;
+      return showAll
+        ? `<label>${box}<span class="ms-name">${name}</span><span class="ms-type">${esc(o.type || '—')}</span></label>`
+        : `<label>${box}${name}</label>`;
+    }).join('');
+
     const dropdown = container.querySelector('.multi-select-dropdown');
+    dropdown.classList.toggle('ms-typed', !!showAll);
     dropdown.innerHTML = `<div class="multi-select-search"><input type="text" placeholder="Search…" oninput="filterMultiSelect(this)"><button class="multi-select-clear" onclick="clearMultiSelect(this)">Clear</button></div><div class="multi-select-list">${items}</div>`;
+    msApplySelection(container, checkedOrder);
     const anyCb = container.querySelector('input[type="checkbox"]');
     if (anyCb) updateMultiSelectDisplay(anyCb);
   };
 
-  build('ed-Traits', 'WeaponTrait');
-  build('ammo-Traits', 'AmmoTrait');
+  build('ed-Traits', 'WeaponTrait', true);
+  build('ammo-Traits', 'AmmoTrait', false);
 }
 
 // Check the boxes for selectedIds; for any stored id with no matching option
@@ -7360,13 +7432,13 @@ function applyTraitSelection(containerId, selectedIds) {
   const ids = selectedIds || [];
   const listEl = container.querySelector('.multi-select-list');
 
-  // Clear any previously injected missing rows, then check known ones.
+  // Clear any previously injected missing rows, then check known ones,
+  // stamping each with its position in the stored array so selection order
+  // survives the round trip.
   container.querySelectorAll('label.trait-missing').forEach(l => l.remove());
   const present = new Set();
-  container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-    cb.checked = ids.includes(cb.value);
-    present.add(cb.value);
-  });
+  container.querySelectorAll('input[type="checkbox"]').forEach(cb => present.add(cb.value));
+  msApplySelection(container, ids);
 
   // Inject a flagged row for each stored id we couldn't find.
   let missingCount = 0;
@@ -7375,7 +7447,7 @@ function applyTraitSelection(containerId, selectedIds) {
     missingCount++;
     const label = document.createElement('label');
     label.className = 'trait-missing';
-    label.innerHTML = `<input type="checkbox" value="${esc(id)}" checked onchange="updateMultiSelectDisplay(this)">${esc(id)} (missing)`;
+    label.innerHTML = `<input type="checkbox" value="${esc(id)}" data-ord="${ids.indexOf(id) + 1}" checked onchange="updateMultiSelectDisplay(this)">${esc(id)} (missing)`;
     if (listEl) listEl.insertBefore(label, listEl.firstChild);
   }
   const display = container.querySelector('.multi-select-display');
