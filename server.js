@@ -1199,6 +1199,7 @@ const IMPORT_SCHEMAS = {
     IsMelee: { t: 'b' },
     Categories: { t: 'a', itemType: 's' },
     Damage: { t: 'o', fields: {
+      damage: { t: 'any' },                    // tool always writes null
       minDmg: { t: 'i', min: 0 },
       maxDmg: { t: 'i', min: 0 },
       critDmg: { t: 'n', min: 0 },
@@ -1221,7 +1222,7 @@ const IMPORT_SCHEMAS = {
     Unbreakable: { t: 'b' },
     RepairItemIds: { t: 'a', itemType: 's' },
     Traits: { t: 'a', itemType: 's' },
-    DefaultGrenadeId: { t: 's' },
+    DefaultGrenadeId: { t: 's', nullToEmpty: true },
     AllowedGrenadeIds: { t: 'a', itemType: 's' },
     Disassembly: { t: 'a', item: {
       ItemId: { t: 's', required: true },
@@ -1245,8 +1246,8 @@ const IMPORT_SCHEMAS = {
     TechLevel: { t: 'i', min: 1, max: 10 },
     Price: { t: 'i', min: 0 },
     Weight: { t: 'n', min: 0 },
-    AmmoType: { t: 's' },                        // free-text combobox
-    DmgType: { t: 's', ref: ['base', 'damageTypes', 'Id'] },
+    AmmoType: { t: 's', nullToEmpty: true },      // free-text combobox
+    DmgType: { t: 's', nullToEmpty: true, ref: ['base', 'damageTypes', 'Id'] },
     DamageMult: { t: 'n', min: 0 },
     DmgCritChance: { t: 'n', min: 0 },
     RangeBonus: { t: 'i' },                      // negatives allowed
@@ -1256,13 +1257,13 @@ const IMPORT_SCHEMAS = {
     MinAmmoAmount: { t: 'i', min: 0 },
     MaxAmmoAmount: { t: 'i', min: 0 },
     MaxStack: { t: 'i', min: 1 },
-    StatusEffectId: { t: 's', ref: ['base', 'statusEffects', 'Id'], refFilter: { col: 'RenewalType', value: 'Damage' } },
+    StatusEffectId: { t: 's', nullToEmpty: true, ref: ['base', 'statusEffects', 'Id'], refFilter: { col: 'RenewalType', value: 'Damage' } },
     ChanceToApply: { t: 'n', min: 0 },
     StatusDamageModifier: { t: 'n' },            // negatives allowed
     StatusResistModifier: { t: 'n' },            // negatives allowed
     Traits: { t: 'a', itemType: 's' },
     Categories: { t: 'a', itemType: 's' },
-    ProjectileId: { t: 's', ref: ['base', 'projectiles', 'Id'] },
+    ProjectileId: { t: 's', nullToEmpty: true, ref: ['base', 'projectiles', 'Id'] },
     CanPutInVest: { t: 'b' },
     IsImplictedAmmo: { t: 'b' },
     IsChargeOnly: { t: 'b' },
@@ -1272,20 +1273,98 @@ const IMPORT_SCHEMAS = {
     Id: { t: 's', required: true },
     AmmoPerShot: { t: 'i', min: 0 },
     WeaponCastsCount: { t: 'i', min: 1 },
+    RequiredAllAmmoToShot: { t: 'b' },
+    Accuracy: { t: 'n' },
     DamageMult: { t: 'n', min: 0 },
-    DelayBetweenShots: { t: 'n', min: 0 },
-    RequireAllAmmoToShoot: { t: 'b' },
+    ScatterAngle: { t: 'n' },
+    DelayInSecsBetweenShots: { t: 'n', min: 0 },
+  },
+  'QM_ImporterAPI.Templates.Descriptors.CustomWeaponDescriptor': {
+    ItemId: { t: 's', required: true },
+    Grip: { t: 's' },
+    HasHFGOverlay: { t: 'b' },
+    ImageProperties: { t: 'o', fields: {
+      IconSpriteIdOrPath: { t: 's' },
+      SmallIconSpriteIdOrPath: { t: 's' },
+      ShadowOnFloorSpriteIdOrPath: { t: 's' },
+    } },
+    AudioProperties: { t: 'o', fields: {
+      ShootSoundIdOrPath: { t: 's' },
+      ReloadSoundIdOrPath: { t: 's' },
+      DryShotSoundIdOrPath: { t: 's' },
+      FailedAttackSoundIdOrPath: { t: 's' },
+    } },
+    ModelProperties: { t: 'o', fields: {
+      AssetBundlePath: { t: 's' },
+      TextureIdOrPath: { t: 's' },
+      MuzzleId: { t: 's' },
+      PrefabId: { t: 's' },
+      PrefabScale: { t: 'n', min: 0 },
+    } },
+  },
+  'QM_ImporterAPI.Templates.Descriptors.CustomAmmoDescriptor': {
+    ItemId: { t: 's', required: true },
+    MeleeMakeBlood: { t: 'b' },
+    ImageProperties: { t: 'o', fields: {
+      IconSpriteIdOrPath: { t: 's' },
+      SmallIconSpriteIdOrPath: { t: 's' },
+      ShadowOnFloorSpriteIdOrPath: { t: 's' },
+    } },
+    Gibs: { t: 'o', fields: {
+      FlightDurationMsMin: { t: 'n', min: 0 },
+      FlightDurationMsMax: { t: 'n', min: 0 },
+      BulletSpritesId: { t: 's' },
+      BulletShadowsId: { t: 's' },
+      AnimationFramerate: { t: 'n', min: 0 },
+    } },
+  },
+  'QM_ImporterAPI.Templates.Descriptors.CustomFireModeDescriptor': {
+    SpriteIdOrPath: { t: 's' },
+    ItemId: { t: 's', required: true },
+  },
+  'MGSC.DatadiskRecord': {
+    Id: { t: 's', required: true },
+    ItemClass: { t: 's' },
+    UnlockType: { t: 's' },
+    TechLevel: { t: 'i', min: 0 },
+    Price: { t: 'n', min: 0 },
+    Weight: { t: 'n', min: 0 },
+    InventorySortOrder: { t: 'i', min: 0 },
+    InventoryWidthSize: { t: 'i', min: 0 },
+    Categories: { t: 'a', itemType: 's' },
+    UnlockIds: { t: 'a', itemType: 's' },
+  },
+  'MGSC.ItemProduceReceipt': {
+    OutputItem: { t: 's', required: true },
+    RequiredItems: { t: 'a' },
+    ProduceTimeInHours: { t: 'i', min: 1 },
+    ModifyStartCost: { t: 'i', min: 1 },
+    ModifyStep: { t: 'n', min: 0 },
+    ModifyItemsGrades: { t: 'o', fields: {} },
+    ModifyLevelLimit: { t: 'i', min: 1 },
+    Id: { t: 's' },
+  },
+  'QM_ImporterAPI.Templates.FactionTemplate': {
+    FactionRewardList: { t: 'a' },
   },
 };
 
 function importIssue(list, file, msg) { list.push({ file, msg }); }
 
+// Sentinel from checkField: value is null on a field that will be coerced to ''.
+const NULL_COERCED = '\u0000coerce';
+
 // Validate a value against one schema field entry. Returns an error string or null.
 function checkField(val, spec, refData) {
-  if (val === undefined || val === null) {
-    if (spec.required) return 'is required but missing';
+  if (val === undefined) return 'is missing';
+  if (spec.t === 'any') return null;   // must be present; contents unconstrained
+  if (val === null) {
+    // null is only meaningful for nullable strings (e.g. trait StrVal)
     if (spec.t === 'sn') return null;
-    return null; // optional & absent — editors default it on load
+    // Optional dropdown-backed strings: the editor writes "" and tolerates
+    // null on load, so the import coerces rather than rejecting.
+    if (spec.nullToEmpty) return NULL_COERCED;
+    return 'is null';
   }
   switch (spec.t) {
     case 's':
@@ -1331,16 +1410,28 @@ function checkField(val, spec, refData) {
   return null;
 }
 
-// Walk a schema over a Data object, collecting errors.
-function validateAgainstSchema(data, schema, refData, file, errors) {
+// Walk a schema over a Data object. Missing/invalid fields are errors;
+// fields present in the data but absent from the schema are warnings (they
+// are preserved verbatim through the import, the tool just won't use them).
+function validateAgainstSchema(data, schema, refData, file, errors, warnings, pathPrefix = '', missing = null, notices = null, coerced = null) {
+  // Missing fields and null-coercions accumulate across the whole record
+  // (including nested objects) and are each reported as one line per file.
+  const topLevel = missing === null;
+  if (topLevel) { missing = []; coerced = []; }
+  for (const key of Object.keys(data || {})) {
+    if (!(key in schema)) {
+      importIssue(warnings, file, `${pathPrefix}${key} is not a recognized field — kept as-is, but the tool will not use it`);
+    }
+  }
   for (const [key, spec] of Object.entries(schema)) {
     const val = data[key];
     if (spec.t === 'o' && val && typeof val === 'object') {
       const e = checkField(val, spec, refData);
-      if (e) { importIssue(errors, file, `${key} ${e}`); continue; }
-      for (const [k2, s2] of Object.entries(spec.fields || {})) {
-        const e2 = checkField(val[k2], s2, refData);
-        if (e2) importIssue(errors, file, `${key}.${k2} ${e2}`);
+      if (e === 'is missing') { missing.push(`${pathPrefix}${key}`); continue; }
+      if (e) { importIssue(errors, file, `${pathPrefix}${key} ${e}`); continue; }
+      // An empty fields map means "shape not modelled" — skip both checks.
+      if (Object.keys(spec.fields || {}).length) {
+        validateAgainstSchema(val, spec.fields, refData, file, errors, warnings, `${pathPrefix}${key}.`, missing, notices, coerced);
       }
       continue;
     }
@@ -1351,25 +1442,56 @@ function validateAgainstSchema(data, schema, refData, file, errors) {
       if (spec.item) {
         val.forEach((entry, i) => {
           if (typeof entry !== 'object' || entry === null) {
-            importIssue(errors, file, `${key}[${i}] must be an object`);
+            importIssue(errors, file, `${pathPrefix}${key}[${i}] must be an object`);
             return;
           }
           for (const [k2, s2] of Object.entries(spec.item)) {
             const e2 = checkField(entry[k2], s2, refData);
-            if (e2) importIssue(errors, file, `${key}[${i}].${k2} ${e2}`);
+            if (e2 === 'is missing') missing.push(`${pathPrefix}${key}[${i}].${k2}`);
+            else if (e2) importIssue(errors, file, `${pathPrefix}${key}[${i}].${k2} ${e2}`);
           }
         });
       } else if (spec.itemType) {
         val.forEach((entry, i) => {
           const e2 = checkField(entry, { t: spec.itemType }, refData);
-          if (e2) importIssue(errors, file, `${key}[${i}] ${e2}`);
+          if (e2) importIssue(errors, file, `${pathPrefix}${key}[${i}] ${e2}`);
         });
       }
       continue;
     }
     const e = checkField(val, spec, refData);
-    if (e) importIssue(errors, file, `${key} ${e}`);
+    if (e === 'is missing') missing.push(`${pathPrefix}${key}`);
+    else if (e === NULL_COERCED) coerced.push(`${pathPrefix}${key}`);
+    else if (e) importIssue(errors, file, `${pathPrefix}${key} ${e}`);
   }
+
+  if (topLevel && missing.length) {
+    importIssue(errors, file, `Missing ${missing.length} field${missing.length === 1 ? '' : 's'}: ${missing.join(', ')}`);
+  }
+  if (topLevel && coerced.length && notices) {
+    importIssue(notices, file, `${coerced.length === 1 ? 'Field' : 'Fields'} set to null will be written as an empty string: ${coerced.join(', ')}`);
+  }
+}
+
+// JSON.parse messages are accurate but cryptic for common hand-editing
+// mistakes. Detect a trailing comma before a closing brace/bracket and say so
+// plainly, since that is the usual cause of "expected property name" errors.
+function explainJsonError(err, filePath) {
+  let text = '';
+  try { text = fs.readFileSync(filePath, 'utf8'); } catch { return err.message; }
+  const m = /position (\d+)/.exec(err.message);
+  if (m) {
+    const pos = Number(m[1]);
+    // Walk back over whitespace from the failure point; a comma there means
+    // the previous element was followed by a comma with nothing after it.
+    let i = pos - 1;
+    while (i >= 0 && /\s/.test(text[i])) i--;
+    if (text[i] === ',') {
+      const line = text.slice(0, i).split('\n').length;
+      return `trailing comma on line ${line} — JSON does not allow a comma after the last entry in an object or array (${err.message})`;
+    }
+  }
+  return err.message;
 }
 
 // Read a PNG's dimensions from its IHDR chunk. Returns null if not a PNG.
@@ -1493,7 +1615,7 @@ function importScan(input) {
 
     let data;
     try { data = JSON.parse(fs.readFileSync(path.join(srcPath, rel), 'utf8')); }
-    catch (e) { importIssue(errors, rel, `Invalid JSON: ${e.message}`); continue; }
+    catch (e) { importIssue(errors, rel, `Invalid JSON: ${explainJsonError(e, path.join(srcPath, rel))}`); continue; }
 
     const fileId = base.replace(/\.json$/, '');
     byCat[cat].push({ rel, fileId, data });
@@ -1579,7 +1701,7 @@ function importScan(input) {
 
     // Schema
     const schema = IMPORT_SCHEMAS[rt];
-    if (schema) validateAgainstSchema(d, schema, refData, rel, errors);
+    if (schema) validateAgainstSchema(d, schema, refData, rel, errors, warnings, '', null, notices);
 
     // Normalization notice — skipped when the file already has errors, since
     // it won't be imported anyway and the notice would just be noise.
@@ -1686,6 +1808,20 @@ function importScan(input) {
   return result;
 }
 
+// Apply the null -> "" coercions the scan promised, walking the same schema.
+function applyNullCoercions(data, schema) {
+  if (!data || !schema) return;
+  for (const [key, spec] of Object.entries(schema)) {
+    const val = data[key];
+    if (spec.nullToEmpty && val === null) { data[key] = ''; continue; }
+    if (spec.t === 'o' && val && typeof val === 'object' && Object.keys(spec.fields || {}).length) {
+      applyNullCoercions(val, spec.fields);
+    } else if (spec.t === 'a' && Array.isArray(val) && spec.item) {
+      for (const entry of val) if (entry && typeof entry === 'object') applyNullCoercions(entry, spec.item);
+    }
+  }
+}
+
 // Canonical serialization used both for normalization detection and writing.
 function normalizeJsonText(data) {
   let json = JSON.stringify(data, null, 2);
@@ -1752,6 +1888,7 @@ function importCommit(input) {
 
       // Re-write through the canonical writer (normalization)
       const data = JSON.parse(fs.readFileSync(path.join(srcPath, rel), 'utf8'));
+      applyNullCoercions(data.Data, IMPORT_SCHEMAS[data.RecordType]);
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       writeJson(dest, data);
       copiedJson++;
@@ -1934,6 +2071,8 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
   'QM_ImporterAPI.Templates.Descriptors.CustomExplosionDescriptor': ['VisualExplosionDelay', 'VisualReachCellDuration', 'VisualExplosionOffsetX', 'VisualExplosionOffsetY', 'VisualExplosionOffsetZ'],
   // Trait Parameters entries each carry a FloatVal; matched by name across the array.
   'MGSC.ItemTraitRecord': ['FloatVal'],
+  // ModifyStep is a float multiplier; its default of 1 must still write as 1.0
+  'MGSC.ItemProduceReceipt': ['ModifyStep'],
 };
 
 function writeJson(filePath, data) {
