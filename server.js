@@ -15,7 +15,8 @@ const ASSET_CATEGORIES = [
   'Armors',
   'Bundles',
   'Consumables',
-  'Crafting Recipes',
+  'Crafting Recipes/Ammo',
+  'Crafting Recipes/Weapons',
   'Datadisks',
   'Descriptors/Ammo',
   'Descriptors/Explosions',
@@ -1103,7 +1104,8 @@ const CATEGORY_RECORD_TYPES = {
   'FactionRewards': ['QM_ImporterAPI.Templates.FactionTemplate'],
   'Localization/Weapons': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
   'Localization/Ammo': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
-  'Crafting Recipes': ['MGSC.ItemProduceReceipt'],
+  'Crafting Recipes/Weapons': ['MGSC.ItemProduceReceipt'],
+  'Crafting Recipes/Ammo': ['MGSC.ItemProduceReceipt'],
 };
 
 // Categories where the tool writes Data.Id and names the file after it.
@@ -1263,6 +1265,10 @@ const IMPORT_SCHEMAS = {
     StatusResistModifier: { t: 'n' },            // negatives allowed
     Traits: { t: 'a', itemType: 's' },
     Categories: { t: 'a', itemType: 's' },
+    Disassembly: { t: 'a', item: {
+      ItemId: { t: 's', required: true },
+      Count: { t: 'i', min: 1, required: true },
+    } },
     ProjectileId: { t: 's', nullToEmpty: true, ref: ['base', 'projectiles', 'Id'] },
     CanPutInVest: { t: 'b' },
     IsImplictedAmmo: { t: 'b' },
@@ -1337,11 +1343,12 @@ const IMPORT_SCHEMAS = {
   'MGSC.ItemProduceReceipt': {
     OutputItem: { t: 's', required: true },
     RequiredItems: { t: 'a' },
-    ProduceTimeInHours: { t: 'i', min: 1 },
+    ProduceTimeInHours: { t: 'n', gt: 0 },
     ModifyStartCost: { t: 'i', min: 1 },
     ModifyStep: { t: 'n', min: 0 },
-    ModifyItemsGrades: { t: 'o', fields: {} },
-    ModifyLevelLimit: { t: 'i', min: 1 },
+    // Ammo recipes carry null in both — weapons use real values
+    ModifyItemsGrades: { t: 'o', fields: {}, nullable: true },
+    ModifyLevelLimit: { t: 'i', min: 1, nullable: true },
     Id: { t: 's' },
   },
   'QM_ImporterAPI.Templates.FactionTemplate': {
@@ -1361,6 +1368,8 @@ function checkField(val, spec, refData) {
   if (val === null) {
     // null is only meaningful for nullable strings (e.g. trait StrVal)
     if (spec.t === 'sn') return null;
+    // Fields that legitimately hold null (ammo recipes' unused workshop fields)
+    if (spec.nullable) return null;
     // Optional dropdown-backed strings: the editor writes "" and tolerates
     // null on load, so the import coerces rather than rejecting.
     if (spec.nullToEmpty) return NULL_COERCED;
@@ -1392,6 +1401,7 @@ function checkField(val, spec, refData) {
   if (spec.t === 'n' || spec.t === 'i') {
     if (spec.min !== undefined && val < spec.min) return `must be >= ${spec.min} (got ${val})`;
     if (spec.max !== undefined && val > spec.max) return `must be <= ${spec.max} (got ${val})`;
+    if (spec.gt !== undefined && val <= spec.gt) return `must be > ${spec.gt} (got ${val})`;
   }
   if (spec.oneOf && !spec.oneOf.includes(val)) return `must be one of ${spec.oneOf.join(', ')} (got "${val}")`;
   if (spec.ref && typeof val === 'string' && val !== '') {
@@ -1598,7 +1608,15 @@ function importScan(input) {
     const cat = ASSET_CATEGORIES
       .filter(c => rel.startsWith(c + '/'))
       .sort((a, b) => b.length - a.length)[0];
-    if (!cat) continue; // already warned at structure pass
+    if (!cat) {
+      // The Crafting Recipes root itself is a known parent, so a file sitting
+      // directly in it gets no category — call out the split explicitly
+      // instead of skipping it silently.
+      if (/^Crafting Recipes\/[^/]+$/.test(rel)) {
+        importIssue(errors, rel, 'Crafting recipes are split by type — this file must live in "Crafting Recipes/Weapons/" or "Crafting Recipes/Ammo/"');
+      }
+      continue; // otherwise already warned at structure pass
+    }
 
     // Bundles are expected to be binary — no record validation, no warning.
     if (PASSTHROUGH_CATEGORIES.includes(cat)) continue;
@@ -1703,7 +1721,7 @@ function importScan(input) {
           importIssue(errors, rel, `Faction "${expected}" also has a file at ${idsByCat[cat].get(expected)}`);
         } else idsByCat[cat].set(expected, rel);
       }
-    } else if (cat === 'Crafting Recipes') {
+    } else if (cat.startsWith('Crafting Recipes')) {
       // Recipes never fill Data.Id — identity is OutputItem, file is {id}_receipt.json
       const m = fileId.match(/^(.+)_receipt$/);
       if (!m) importIssue(errors, rel, 'Crafting recipe files must be named {id}_receipt.json');
@@ -2104,7 +2122,7 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
   // Trait Parameters entries each carry a FloatVal; matched by name across the array.
   'MGSC.ItemTraitRecord': ['FloatVal'],
   // ModifyStep is a float multiplier; its default of 1 must still write as 1.0
-  'MGSC.ItemProduceReceipt': ['ModifyStep'],
+  'MGSC.ItemProduceReceipt': ['ModifyStep', 'ProduceTimeInHours'],
 };
 
 function writeJson(filePath, data) {

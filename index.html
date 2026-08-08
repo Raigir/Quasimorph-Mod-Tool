@@ -634,6 +634,31 @@
   .tog.on { background:var(--accent-glow); border-color:var(--accent-dim); }
   .tog.on::after { left:18px; background:var(--accent); }
 
+  /* Section-level switch: gates whether a paired file is written at all, so
+     it replaces the section title rather than sitting among the fields. */
+  .tog-lg {
+    width:52px; height:28px; border-radius:14px; flex-shrink:0;
+    background:var(--bg-deep); border:1px solid var(--border);
+    position:relative; cursor:pointer; transition:all 0.15s;
+  }
+  .tog-lg::after {
+    content:''; position:absolute; width:20px; height:20px;
+    border-radius:50%; background:var(--text-dim); top:3px; left:3px;
+    transition:all 0.15s;
+  }
+  .tog-lg.on { background:var(--accent-glow); border-color:var(--accent-dim); }
+  .tog-lg.on::after { left:27px; background:var(--accent); }
+  .craft-toggle-row {
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:10px; padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .craft-toggle-label {
+    font-size:10px; font-weight:600; text-transform:uppercase;
+    letter-spacing:0.07em; color:var(--text-dim); transition:color 0.15s;
+  }
+  .craft-toggle-row.on .craft-toggle-label { color:var(--accent); }
+
   .ed-field textarea {
     font-family:'JetBrains Mono',monospace; font-size:12px;
     padding:6px 9px; line-height:1.5;
@@ -1259,8 +1284,10 @@
     <!-- Disassembly -->
     <div class="ed-section">
       <div class="ed-section-title">Disassembly</div>
-      <div class="ed-row">
-        <button class="btn" style="margin-top:17px;" onclick="addDisassemblyEntry()">+ Add Entry</button>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:17px; margin-bottom:8px;">
+        <button class="btn" onclick="addDisassemblyEntry()">+ Add Entry</button>
+        <button class="btn" onclick="copyCraftToDisassembly()">Copy Craft</button>
+        <span class="info-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="var(--text-dim)" stroke-width="1.5"/><path d="M7 6.5C7 5.4 7.9 4.5 9 4.5C10.1 4.5 11 5.4 11 6.5C11 7.6 10.1 8 9 8.5V9.5" stroke="var(--text-dim)" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="12" r="1" fill="var(--text-dim)"/></svg><span class="info-tip">Weapons usually match their crafting recipe with their disassembly list.</span></span>
       </div>
       <div class="entry-list" id="disassemblyList"></div>
     </div>
@@ -1379,9 +1406,13 @@
 
     <!-- Production Settings -->
     <div class="ed-section">
-      <div class="ed-section-title">Production Settings</div>
+      <div class="craft-toggle-row">
+        <input type="checkbox" id="recipe-Enabled" style="display:none;">
+        <div class="tog-lg" onclick="togCraftClick(this)"></div>
+        <span class="craft-toggle-label">Crafting recipe disabled</span>
+      </div>
       <div class="ed-row">
-        <div class="ed-field narrow"><label>Produce Time (hrs)</label><input type="number" id="recipe-ProduceTimeInHours" step="1" oninput="validateRecipeField(this, true)"></div>
+        <div class="ed-field narrow"><label>Produce Time (hrs)</label><input type="number" id="recipe-ProduceTimeInHours" step="any" oninput="validateRecipeField(this, false)"></div>
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
         <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 7)</span>
@@ -1679,6 +1710,7 @@
     <button class="tab-btn active" onclick="switchAmmoTab('ammoConfig')">Ammo Config</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoDescriptor')">Descriptor</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoLocalization')">Localization</button>
+    <button class="tab-btn" onclick="switchAmmoTab('ammoCraftingRecipe')">Crafting Recipe</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoDatadisk')">Datadisk</button>
     <button class="tab-btn" onclick="switchAmmoTab('ammoFactionRewards')">Faction Rewards</button>
   </div>
@@ -1817,6 +1849,15 @@
       </div>
     </div>
 
+    <!-- Disassembly -->
+    <div class="ed-section">
+      <div class="ed-section-title">Disassembly</div>
+      <div class="ed-row">
+        <button class="btn" style="margin-top:17px;" onclick="addAmmoDisassemblyEntry()">+ Add Entry</button>
+      </div>
+      <div class="entry-list" id="ammoDisassemblyList"></div>
+    </div>
+
     <div class="ed-actions">
       <button class="btn primary" onclick="saveAmmo()">Save</button>
     </div>
@@ -1859,6 +1900,29 @@
       </div>
       <div id="ammoLocRows"></div>
     </div>
+    <div class="ed-actions">
+      <button class="btn primary" onclick="saveAmmo()">Save</button>
+    </div>
+  </div>
+
+  <!-- Ammo Crafting Recipe Tab -->
+  <div class="editor-wrap" id="ammoCraftingRecipeWrap">
+    <div class="ed-section">
+      <div class="craft-toggle-row">
+        <input type="checkbox" id="ammo-recipe-Enabled" style="display:none;">
+        <div class="tog-lg" onclick="togCraftClick(this)"></div>
+        <span class="craft-toggle-label">Crafting recipe disabled</span>
+      </div>
+      <div class="ed-row">
+        <div class="ed-field narrow"><label>Produce Time (hrs)</label><input type="number" id="ammo-recipe-ProduceTimeInHours" step="any" oninput="validateRecipeField(this, false)"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:8px;">
+        <span style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim);">Required Items (max 7)</span>
+        <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAmmoRecipeItemEntry()">+ Add</button>
+      </div>
+      <div class="entry-list" id="ammoRecipeItemList"></div>
+    </div>
+
     <div class="ed-actions">
       <button class="btn primary" onclick="saveAmmo()">Save</button>
     </div>
@@ -1930,6 +1994,8 @@
               Assets/Weapons/<br>
               Assets/Ammo/<br>
               Assets/Descriptors/…<br>
+              Assets/Crafting Recipes/Weapons/<br>
+              Assets/Crafting Recipes/Ammo/<br>
               Assets/Images/Weapons/{optional subfolders}<br>
               Assets/Images/Firemodes/<br>
               Assets/Images/Ammo/
@@ -2537,6 +2603,7 @@ function newAmmoRecord(id) {
       StatusResistModifier: 0.0,
       Traits: [],
       Categories: [],
+      Disassembly: [],
       ProjectileId: '',
       CanPutInVest: true,
       IsImplictedAmmo: false,
@@ -2576,6 +2643,9 @@ function populateAmmoEditor(d) {
   // Categories
   msApplySelection('ammo-Categories', d.Categories || []);
   updateMultiSelectDisplay(document.querySelector('#ammo-Categories input[type="checkbox"]'));
+
+  // Disassembly
+  populateAmmoDisassembly(d.Disassembly);
 }
 
 function collectAmmoEditor() {
@@ -2608,6 +2678,7 @@ function collectAmmoEditor() {
     StatusResistModifier: num('ammo-StatusResistModifier'),
     Traits: msValues('ammo-Traits'),
     Categories: msValues('ammo-Categories'),
+    Disassembly: collectAmmoDisassembly(),
     ProjectileId: str('ammo-ProjectileId').trim(),
     CanPutInVest: bool('ammo-CanPutInVest'),
     IsImplictedAmmo: false,
@@ -2618,7 +2689,7 @@ function collectAmmoEditor() {
 
 function captureAmmoSnapshot() {
   const parts = [];
-  document.querySelectorAll('#ammoConfigWrap input, #ammoConfigWrap select, #ammoDescriptorWrap input, #ammoDescriptorWrap select, #ammoLocalizationWrap input, #ammoDatadiskWrap input, #ammoFactionRewardsWrap input, #ammoFactionRewardsWrap select').forEach(el => {
+  document.querySelectorAll('#ammoConfigWrap input, #ammoConfigWrap select, #ammoDescriptorWrap input, #ammoDescriptorWrap select, #ammoLocalizationWrap input, #ammoCraftingRecipeWrap input, #ammoDatadiskWrap input, #ammoFactionRewardsWrap input, #ammoFactionRewardsWrap select').forEach(el => {
     if (el.type === 'file') return;
     if (el.closest('.multi-select-search')) return;
     if (el.type === 'checkbox') parts.push(el.id + ':' + el.checked);
@@ -2655,6 +2726,8 @@ async function createNewAmmo() {
     await api('asset', {
       body: { project: selProject.id, category: 'Localization/Ammo', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
     });
+    // No recipe by default — ammo often doesn't need one. The Crafting Recipe
+    // tab's switch creates it on the next save when turned on.
     toast(`Created ammo "${newId}"`);
     await selectProject(selProject.id, true);
     selectAmmo(newId);
@@ -2812,6 +2885,7 @@ async function selectAmmo(id) {
     populateAmmoEditor(record.Data);
     await loadAmmoDescriptor(id);
     await loadAmmoLocalization(id);
+    await loadAmmoRecipe(id);
     await loadAmmoDatadisks(id);
     await loadAmmoFactionRewards(id);
     loadAmmoSprite(id);
@@ -2895,6 +2969,19 @@ function validateAllAmmo() {
     const ptsOk = !isNaN(pv) && Number.isInteger(pv) && pv > 0;
     pts.classList.toggle('invalid', !ptsOk); if (!ptsOk) allValid = false;
   });
+  document.querySelectorAll('#ammoDisassemblyList .dis-count').forEach(input => {
+    const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+  });
+  // Crafting recipe: only gates the save while the switch is on
+  const aRecipeOn = craftEnabled('ammo-recipe-Enabled');
+  const aptEl = document.getElementById('ammo-recipe-ProduceTimeInHours');
+  const aptVal = parseFloat(aptEl.value); const aptValid = !isNaN(aptVal) && aptVal > 0;
+  aptEl.classList.toggle('invalid', aRecipeOn && !aptValid); if (aRecipeOn && !aptValid) allValid = false;
+  document.querySelectorAll('#ammoRecipeItemList .recipe-count').forEach(input => {
+    const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
+    input.classList.toggle('invalid', aRecipeOn && !valid); if (aRecipeOn && !valid) allValid = false;
+  });
   // Orphaned trait references block save
   if (document.querySelector('#ammo-Traits label.trait-missing input:checked')) allValid = false;
   return allValid;
@@ -2942,6 +3029,26 @@ function collectAmmoValidationErrors() {
     const pv = parseFloat(el.querySelector('.fr-points').value);
     if (isNaN(pv) || !Number.isInteger(pv) || pv <= 0) add('Faction Rewards', faction + ' — Points — positive integer');
   });
+  // Crafting recipe — only reported while the switch is on
+  if (craftEnabled('ammo-recipe-Enabled')) {
+    const aptv = parseFloat(document.getElementById('ammo-recipe-ProduceTimeInHours')?.value);
+    if (isNaN(aptv) || aptv <= 0) errors.push({ tab: 'Crafting Recipe', section: 'Production Settings', msg: 'Produce Time — number > 0' });
+    let arecErr = 0;
+    document.querySelectorAll('#ammoRecipeItemList .recipe-count').forEach(input => {
+      const v = parseFloat(input.value);
+      if (isNaN(v) || !Number.isInteger(v) || v <= 0) arecErr++;
+    });
+    if (arecErr) errors.push({ tab: 'Crafting Recipe', section: 'Production Settings', msg: `${arecErr} required item${arecErr > 1 ? 's have' : ' has'} invalid count (integer > 0)` });
+  }
+
+  // Disassembly counts
+  let adisErr = 0;
+  document.querySelectorAll('#ammoDisassemblyList .dis-count').forEach(input => {
+    const v = parseFloat(input.value);
+    if (isNaN(v) || !Number.isInteger(v) || v <= 0) adisErr++;
+  });
+  if (adisErr) add('Disassembly', `${adisErr} entr${adisErr > 1 ? 'ies have' : 'y has'} invalid count (integer > 0)`);
+
   return errors;
 }
 
@@ -2999,6 +3106,7 @@ async function saveAmmo() {
     });
     await saveAmmoDescriptor(newId);
     await saveAmmoLocalization(newId);
+    await saveAmmoRecipe(newId);
     await saveAmmoDatadisks(newId);
     await saveAmmoFactionRewards(newId);
     // Delete old files only after the new ones are safely written
@@ -3006,6 +3114,7 @@ async function saveAmmo() {
       await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id: oldId } });
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: oldId + '_descriptor' } }); } catch {}
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: oldId + '_localization' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: oldId + '_receipt' } }); } catch {}
     }
     selAmmo.id = newId;
     toast('Saved');
@@ -3023,6 +3132,7 @@ async function deleteAmmo(id) {
     await api('asset_delete', { params: { project: selProject.id, category: 'Ammo', id } });
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Ammo', id: id + '_descriptor' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Ammo', id: id + '_localization' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: id + '_receipt' } }); } catch {}
     await removeItemFromAllDisks(id);
     await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
@@ -3095,6 +3205,18 @@ async function copyAmmo(sourceId) {
       await api('asset', {
         body: { project: selProject.id, category: 'Localization/Ammo', id: newId + '_localization', recordType: loc.RecordType, data: loc.Data }
       });
+    }
+
+    // Copy recipe
+    try {
+      const recipe = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: sourceId + '_receipt' } });
+      const recipeData = JSON.parse(JSON.stringify(recipe.Data));
+      recipeData.OutputItem = newId;
+      await api('asset', {
+        body: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: newId + '_receipt', recordType: recipe.RecordType, data: recipeData }
+      });
+    } catch {
+      // Source had no receipt — the copy mirrors that and gets none.
     }
 
     // Copy datadisk assignments
@@ -4532,17 +4654,14 @@ async function copyWeapon(sourceId) {
 
     // Copy recipe
     try {
-      const recipe = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes', id: sourceId + '_receipt' } });
+      const recipe = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: sourceId + '_receipt' } });
       const recipeData = JSON.parse(JSON.stringify(recipe.Data));
       recipeData.OutputItem = newId;
       await api('asset', {
-        body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipeData }
+        body: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: newId + '_receipt', recordType: recipe.RecordType, data: recipeData }
       });
     } catch {
-      const recipe = newRecipeRecord(newId);
-      await api('asset', {
-        body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
-      });
+      // Source had no receipt — the copy mirrors that and gets none.
     }
 
     // Copy datadisk assignments
@@ -4639,7 +4758,7 @@ async function deleteWeapon(id) {
     await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id } });
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: id + '_localization' } }); } catch {}
     try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: id + '_descriptor' } }); } catch {}
-    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: id + '_receipt' } }); } catch {}
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: id + '_receipt' } }); } catch {}
     await removeItemFromAllDisks(id);
     await removeItemFromAllFactions(id);
     toast(`Deleted "${id}"`);
@@ -4785,7 +4904,7 @@ async function createNewWeapon() {
     // Create blank recipe
     const recipe = newRecipeRecord(newId);
     await api('asset', {
-      body: { project: selProject.id, category: 'Crafting Recipes', id: newId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+      body: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: newId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
     });
     toast(`Created weapon "${newId}"`);
     await selectProject(selProject.id, true);
@@ -5004,7 +5123,7 @@ function validateAll() {
   });
   document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
     const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
-    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+    input.classList.toggle('invalid', recipeOn && !valid); if (recipeOn && !valid) allValid = false;
   });
   document.querySelectorAll('#gradeList .grade-value').forEach(input => {
     const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
@@ -5013,15 +5132,22 @@ function validateAll() {
   const psInput = document.getElementById('desc-PrefabScale');
   const psVal = parseFloat(psInput.value); const psValid = !isNaN(psVal) && psVal > 0;
   psInput.classList.toggle('invalid', !psValid); if (!psValid) allValid = false;
-  const recipeIntFields = ['recipe-ProduceTimeInHours', 'recipe-ModifyStartCost', 'recipe-ModifyLevelLimit'];
+  // Recipe fields only gate the save while the recipe switch is on — the
+  // values stay editable when off, they just aren't written anywhere.
+  const recipeOn = craftEnabled('recipe-Enabled');
+  const recipeIntFields = ['recipe-ModifyStartCost', 'recipe-ModifyLevelLimit'];
   recipeIntFields.forEach(id => {
     const el = document.getElementById(id); const v = parseFloat(el.value);
     const valid = !isNaN(v) && v > 0 && Number.isInteger(v);
-    el.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+    el.classList.toggle('invalid', recipeOn && !valid); if (recipeOn && !valid) allValid = false;
   });
+  // Produce time accepts floats — just has to be positive
+  const ptEl = document.getElementById('recipe-ProduceTimeInHours');
+  const ptVal = parseFloat(ptEl.value); const ptValid = !isNaN(ptVal) && ptVal > 0;
+  ptEl.classList.toggle('invalid', recipeOn && !ptValid); if (recipeOn && !ptValid) allValid = false;
   const msEl = document.getElementById('recipe-ModifyStep');
   const msVal = parseFloat(msEl.value); const msValid = !isNaN(msVal) && msVal > 0;
-  msEl.classList.toggle('invalid', !msValid); if (!msValid) allValid = false;
+  msEl.classList.toggle('invalid', recipeOn && !msValid); if (recipeOn && !msValid) allValid = false;
   document.querySelectorAll('#factionRewardList .entry-item').forEach(el => {
     const tech = el.querySelector('.fr-tech'); const tv = parseFloat(tech.value);
     const techOk = !isNaN(tv) && Number.isInteger(tv) && tv >= 1 && tv <= 10;
@@ -5084,26 +5210,28 @@ function collectValidationErrors() {
   const ps = pf('desc-PrefabScale');
   if (isNaN(ps) || ps <= 0) add('Descriptor', 'Model Properties', 'Prefab Scale — must be positive');
 
-  // Crafting Recipe — production fields
-  const rMap = {
-    'recipe-ProduceTimeInHours': { section: 'Production Settings', label: 'Produce Time', hint: 'integer > 0' },
-    'recipe-ModifyStartCost': { section: 'Workshop Settings', label: 'Modify Start Cost', hint: 'integer > 0' },
-    'recipe-ModifyLevelLimit': { section: 'Workshop Settings', label: 'Modify Level Limit', hint: 'integer > 0' },
-  };
-  for (const [id, m] of Object.entries(rMap)) {
-    const v = pf(id);
-    if (isNaN(v) || v <= 0 || !Number.isInteger(v)) add('Crafting Recipe', m.section, `${m.label} — ${m.hint}`);
-  }
-  const ms = pf('recipe-ModifyStep');
-  if (isNaN(ms) || ms <= 0) add('Crafting Recipe', 'Workshop Settings', 'Modify Step — must be positive');
+  // Crafting Recipe — only reported while the recipe switch is on
+  if (craftEnabled('recipe-Enabled')) {
+    const pt = pf('recipe-ProduceTimeInHours');
+    if (isNaN(pt) || pt <= 0) add('Crafting Recipe', 'Production Settings', 'Produce Time — number > 0');
+    const rMap = {
+      'recipe-ModifyStartCost': { section: 'Workshop Settings', label: 'Modify Start Cost', hint: 'integer > 0' },
+      'recipe-ModifyLevelLimit': { section: 'Workshop Settings', label: 'Modify Level Limit', hint: 'integer > 0' },
+    };
+    for (const [id, m] of Object.entries(rMap)) {
+      const v = pf(id);
+      if (isNaN(v) || v <= 0 || !Number.isInteger(v)) add('Crafting Recipe', m.section, `${m.label} — ${m.hint}`);
+    }
+    const ms = pf('recipe-ModifyStep');
+    if (isNaN(ms) || ms <= 0) add('Crafting Recipe', 'Workshop Settings', 'Modify Step — must be positive');
 
-  // Recipe required item counts
-  let recErr = 0;
-  document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
-    const v = parseFloat(input.value);
-    if (isNaN(v) || !Number.isInteger(v) || v <= 0) recErr++;
-  });
-  if (recErr) add('Crafting Recipe', 'Production Settings', `${recErr} required item${recErr > 1 ? 's have' : ' has'} invalid count (integer > 0)`);
+    let recErr = 0;
+    document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
+      const v = parseFloat(input.value);
+      if (isNaN(v) || !Number.isInteger(v) || v <= 0) recErr++;
+    });
+    if (recErr) add('Crafting Recipe', 'Production Settings', `${recErr} required item${recErr > 1 ? 's have' : ' has'} invalid count (integer > 0)`);
+  }
 
   // Grade values
   let grErr = 0;
@@ -5343,7 +5471,7 @@ async function saveWeapon() {
       await api('asset_delete', { params: { project: selProject.id, category: 'Weapons', id: oldId } });
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Localization/Weapons', id: oldId + '_localization' } }); } catch {}
       try { await api('asset_delete', { params: { project: selProject.id, category: 'Descriptors/Weapons', id: oldId + '_descriptor' } }); } catch {}
-      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes', id: oldId + '_receipt' } }); } catch {}
+      try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: oldId + '_receipt' } }); } catch {}
     }
     selWeapon.id = newId;
     toast('Saved');
@@ -5946,7 +6074,7 @@ function collectRecipe(weaponId) {
     Data: {
       OutputItem: weaponId,
       RequiredItems: requiredItems,
-      ProduceTimeInHours: int('recipe-ProduceTimeInHours'),
+      ProduceTimeInHours: num('recipe-ProduceTimeInHours'),
       ModifyStartCost: int('recipe-ModifyStartCost'),
       ModifyStep: num('recipe-ModifyStep'),
       ModifyItemsGrades: grades,
@@ -5958,17 +6086,133 @@ function collectRecipe(weaponId) {
 
 async function loadRecipe(weaponId) {
   try {
-    const data = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes', id: weaponId + '_receipt' } });
+    const data = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: weaponId + '_receipt' } });
     populateRecipe(data.Data, weaponId);
+    setCraftEnabled('recipe-Enabled', true);
   } catch {
+    // No receipt: switch off, but leave the defaults on screen so the fields
+    // can be filled in before flipping it on.
     populateRecipe(null, weaponId);
+    setCraftEnabled('recipe-Enabled', false);
   }
 }
 
 async function saveRecipe(weaponId) {
+  if (!craftEnabled('recipe-Enabled')) {
+    // Switched off: the receipt must not exist. Field values stay on screen
+    // until the editor is left.
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: weaponId + '_receipt' } }); } catch {}
+    return;
+  }
   const recipe = collectRecipe(weaponId);
   await api('asset', {
-    body: { project: selProject.id, category: 'Crafting Recipes', id: weaponId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+    body: { project: selProject.id, category: 'Crafting Recipes/Weapons', id: weaponId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  AMMO CRAFTING RECIPE
+// ═══════════════════════════════════════════════════════════════════
+// Structure and file convention are identical to weapon recipes; only the
+// workshop fields differ — ammo never uses them, so they carry fixed inits
+// (ModifyStartCost 1, ModifyStep 1, ModifyItemsGrades null, ModifyLevelLimit
+// null) and pass through unchanged if a loaded file has other values.
+let _ammoRecipePassthrough = null;
+const AMMO_RECIPE_DEFAULTS = { ModifyStartCost: 1, ModifyStep: 1, ModifyItemsGrades: null, ModifyLevelLimit: null };
+
+function newAmmoRecipeRecord(id) {
+  return {
+    RecordType: 'MGSC.ItemProduceReceipt',
+    Data: {
+      OutputItem: id,
+      RequiredItems: [],
+      ProduceTimeInHours: 10.0,
+      ModifyStartCost: 1,
+      ModifyStep: 1,
+      ModifyItemsGrades: null,
+      ModifyLevelLimit: null,
+      Id: ''
+    }
+  };
+}
+
+function addAmmoRecipeItemEntry(itemId, count) {
+  const list = document.getElementById('ammoRecipeItemList');
+  if (!itemId && list.querySelectorAll('.entry-item').length >= 7) { toast('Max 7 required items', 1); return; }
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field">
+      <label>Item Id</label>
+      <div class="combobox">
+        <input type="text" class="recipe-itemid" value="${esc(itemId || '')}" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow"><label>Count</label><input type="number" class="recipe-count" value="${count || 1}" min="1" step="1" oninput="validateDisCount(this)"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+  const cbList = entry.querySelector('.combobox-list');
+  cbList.innerHTML = (window._recipeItemOptions || []).map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
+}
+
+function populateAmmoRecipe(data) {
+  const list = document.getElementById('ammoRecipeItemList');
+  list.innerHTML = '';
+  (data?.RequiredItems || []).forEach(r => addAmmoRecipeItemEntry(r.ItemId, r.Count));
+  val('ammo-recipe-ProduceTimeInHours', data?.ProduceTimeInHours ?? 10);
+  // Preserve whatever the file held for the unused workshop fields.
+  _ammoRecipePassthrough = {};
+  for (const [k, dflt] of Object.entries(AMMO_RECIPE_DEFAULTS)) {
+    _ammoRecipePassthrough[k] = (data && k in data) ? data[k] : dflt;
+  }
+}
+
+function collectAmmoRecipe(ammoId) {
+  const requiredItems = [];
+  document.querySelectorAll('#ammoRecipeItemList .entry-item').forEach(el => {
+    const itemId = el.querySelector('.recipe-itemid').value.trim();
+    const count = parseInt(el.querySelector('.recipe-count').value) || 0;
+    if (itemId && count > 0) requiredItems.push({ ItemId: itemId, Count: count });
+  });
+  const pt = _ammoRecipePassthrough || AMMO_RECIPE_DEFAULTS;
+  return {
+    RecordType: 'MGSC.ItemProduceReceipt',
+    Data: {
+      OutputItem: ammoId,
+      RequiredItems: requiredItems,
+      ProduceTimeInHours: parseFloat(document.getElementById('ammo-recipe-ProduceTimeInHours').value) || 0,
+      ModifyStartCost: pt.ModifyStartCost,
+      ModifyStep: pt.ModifyStep,
+      ModifyItemsGrades: pt.ModifyItemsGrades,
+      ModifyLevelLimit: pt.ModifyLevelLimit,
+      Id: ''
+    }
+  };
+}
+
+async function loadAmmoRecipe(ammoId) {
+  try {
+    const data = await api('asset', { params: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: ammoId + '_receipt' } });
+    populateAmmoRecipe(data.Data);
+    setCraftEnabled('ammo-recipe-Enabled', true);
+  } catch {
+    populateAmmoRecipe(null);
+    setCraftEnabled('ammo-recipe-Enabled', false);
+  }
+}
+
+async function saveAmmoRecipe(ammoId) {
+  if (!craftEnabled('ammo-recipe-Enabled')) {
+    try { await api('asset_delete', { params: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: ammoId + '_receipt' } }); } catch {}
+    return;
+  }
+  const recipe = collectAmmoRecipe(ammoId);
+  await api('asset', {
+    body: { project: selProject.id, category: 'Crafting Recipes/Ammo', id: ammoId + '_receipt', recordType: recipe.RecordType, data: recipe.Data }
   });
 }
 
@@ -6450,6 +6694,27 @@ async function saveAmmoFactionRewards(ammoId) {
 // ═══════════════════════════════════════════════════════════════════
 //  DISASSEMBLY ENTRIES
 // ═══════════════════════════════════════════════════════════════════
+// Mirror the crafting recipe's Required Items into the disassembly list.
+// Overwrites whatever is there — weapons normally disassemble into what they
+// were built from, so this is the common case done in one click.
+function copyCraftToDisassembly() {
+  const recipeRows = Array.from(document.querySelectorAll('#recipeItemList .entry-item'));
+  const items = recipeRows.map(row => ({
+    itemId: (row.querySelector('.recipe-itemid')?.value || '').trim(),
+    count: parseInt(row.querySelector('.recipe-count')?.value) || 1,
+  })).filter(i => i.itemId);
+
+  if (!items.length) {
+    toast('Crafting recipe has no items to copy', 1);
+    return;
+  }
+
+  const list = document.getElementById('disassemblyList');
+  list.innerHTML = '';
+  for (const i of items) addDisassemblyEntry(i.itemId, i.count);
+  toast(`Copied ${items.length} item${items.length === 1 ? '' : 's'} from the crafting recipe`);
+}
+
 function addDisassemblyEntry(itemId, count) {
   const list = document.getElementById('disassemblyList');
   const entry = document.createElement('div');
@@ -6471,6 +6736,47 @@ function addDisassemblyEntry(itemId, count) {
   cbList.innerHTML = (window._disItemOptions || []).map(v =>
     `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
   ).join('');
+}
+
+// Ammo disassembly — identical structure and controls to the weapon block,
+// scoped to its own list. Shares dis-itemid/dis-count classes, validateDisCount
+// and the _disItemOptions pool.
+function addAmmoDisassemblyEntry(itemId, count) {
+  const list = document.getElementById('ammoDisassemblyList');
+  const entry = document.createElement('div');
+  entry.className = 'entry-item';
+  entry.innerHTML = `
+    <div class="entry-field">
+      <label>Item Id</label>
+      <div class="combobox">
+        <input type="text" class="dis-itemid" value="${esc(itemId || '')}" onfocus="openCombobox(this)" oninput="filterCombobox(this)">
+        <div class="combobox-list"></div>
+      </div>
+    </div>
+    <div class="entry-field narrow"><label>Count</label><input type="number" class="dis-count" value="${count || 1}" min="1" step="1" oninput="validateDisCount(this)"></div>
+    <button class="entry-rm" onclick="this.parentElement.remove()">&times;</button>
+  `;
+  list.appendChild(entry);
+  const cbList = entry.querySelector('.combobox-list');
+  cbList.innerHTML = (window._disItemOptions || []).map(v =>
+    `<div class="cb-option" onmousedown="pickCombobox(this)">${esc(v)}</div>`
+  ).join('');
+}
+
+function populateAmmoDisassembly(arr) {
+  const list = document.getElementById('ammoDisassemblyList');
+  list.innerHTML = '';
+  (arr || []).forEach(d => addAmmoDisassemblyEntry(d.ItemId, d.Count));
+}
+
+function collectAmmoDisassembly() {
+  const entries = [];
+  document.querySelectorAll('#ammoDisassemblyList .entry-item').forEach(el => {
+    const itemId = el.querySelector('.dis-itemid').value.trim();
+    const count = parseInt(el.querySelector('.dis-count').value) || 0;
+    if (itemId && count > 0) entries.push({ ItemId: itemId, Count: count });
+  });
+  return entries;
 }
 
 function populateDisassembly(arr) {
@@ -7147,6 +7453,7 @@ const AMMO_TAB_PANES = {
   ammoConfig: 'ammoConfigWrap',
   ammoDescriptor: 'ammoDescriptorWrap',
   ammoLocalization: 'ammoLocalizationWrap',
+  ammoCraftingRecipe: 'ammoCraftingRecipeWrap',
   ammoDatadisk: 'ammoDatadiskWrap',
   ammoFactionRewards: 'ammoFactionRewardsWrap',
 };
@@ -7255,6 +7562,28 @@ function togClick(el) {
   const cb = el.parentElement.querySelector('input[type="checkbox"]');
   cb.checked = !cb.checked;
   el.classList.toggle('on', cb.checked);
+}
+
+// Craft-recipe switch. State is not stored in the record — it simply reflects
+// whether the receipt file exists, and is acted on at save time.
+function setCraftEnabled(cbId, on) {
+  const cb = document.getElementById(cbId);
+  if (!cb) return;
+  cb.checked = !!on;
+  const row = cb.parentElement;
+  row.classList.toggle('on', !!on);
+  row.querySelector('.tog-lg')?.classList.toggle('on', !!on);
+  const label = row.querySelector('.craft-toggle-label');
+  if (label) label.textContent = on ? 'Crafting recipe enabled' : 'Crafting recipe disabled';
+}
+
+function craftEnabled(cbId) {
+  return !!document.getElementById(cbId)?.checked;
+}
+
+function togCraftClick(el) {
+  const cb = el.parentElement.querySelector('input[type="checkbox"]');
+  setCraftEnabled(cb.id, !cb.checked);
 }
 
 // ═══════════════════════════════════════════════════════════════════
