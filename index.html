@@ -5121,20 +5121,20 @@ function validateAll() {
     const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
     input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
   });
+  // Recipe fields only gate the save while the recipe switch is on — the
+  // values stay editable when off, they just aren't written anywhere.
+  const recipeOn = craftEnabled('recipe-Enabled');
   document.querySelectorAll('#recipeItemList .recipe-count').forEach(input => {
     const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
     input.classList.toggle('invalid', recipeOn && !valid); if (recipeOn && !valid) allValid = false;
   });
   document.querySelectorAll('#gradeList .grade-value').forEach(input => {
     const v = parseFloat(input.value); const valid = !isNaN(v) && Number.isInteger(v) && v > 0;
-    input.classList.toggle('invalid', !valid); if (!valid) allValid = false;
+    input.classList.toggle('invalid', recipeOn && !valid); if (recipeOn && !valid) allValid = false;
   });
   const psInput = document.getElementById('desc-PrefabScale');
   const psVal = parseFloat(psInput.value); const psValid = !isNaN(psVal) && psVal > 0;
   psInput.classList.toggle('invalid', !psValid); if (!psValid) allValid = false;
-  // Recipe fields only gate the save while the recipe switch is on — the
-  // values stay editable when off, they just aren't written anywhere.
-  const recipeOn = craftEnabled('recipe-Enabled');
   const recipeIntFields = ['recipe-ModifyStartCost', 'recipe-ModifyLevelLimit'];
   recipeIntFields.forEach(id => {
     const el = document.getElementById(id); const v = parseFloat(el.value);
@@ -5370,7 +5370,6 @@ function isFormDirty() {
   if (!_formSnapshot || !selWeapon) return false;
   return captureFormSnapshot() !== _formSnapshot;
 }
-
 function guardNavigation(callback) {
   if (isFormDirty()) {
     showConfirm('You have unsaved changes. Continue without saving?', callback, 'Yes', '');
