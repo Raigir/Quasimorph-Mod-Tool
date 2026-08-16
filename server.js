@@ -8,6 +8,8 @@ const path = require('path');
 const PORT = 8080;
 const DATA_ROOT = path.join(__dirname, 'data');
 const REF_ROOT = path.join(__dirname, 'ref');
+const RES_ROOT = path.join(__dirname, 'res');
+const GENERIC_DLL = 'QM_GenericItemLoader.dll';
 
 // Asset categories — each project gets these subfolders under Assets/
 const ASSET_CATEGORIES = [
@@ -15,7 +17,8 @@ const ASSET_CATEGORIES = [
   'Armors',
   'Bundles',
   'Consumables',
-  'Crafting Recipes',
+  'Crafting Recipes/Ammo',
+  'Crafting Recipes/Weapons',
   'Datadisks',
   'Descriptors/Ammo',
   'Descriptors/Explosions',
@@ -163,6 +166,15 @@ async function handleApi(req, res, query) {
         if (method === 'POST') return json(res, await updateRefData(await readBody(req)));
         return json(res, { error: 'POST required' });
 
+      case 'export_precheck': {
+        const settings = getProjectSettings(query.id);
+        const warnings = [];
+        if (settings.useGenericAssembly && !fs.existsSync(path.join(RES_ROOT, GENERIC_DLL))) {
+          warnings.push(`Use Generic Assembly is on, but ${GENERIC_DLL} was not found in the res/ folder. The export will proceed without the dll (and without its manifest entry).`);
+        }
+        return json(res, { warnings });
+      }
+
       case 'import_scan':
         if (method === 'POST') return json(res, importScan(await readBody(req)));
         return json(res, { error: 'POST required' });
@@ -279,8 +291,17 @@ function deleteProject(id) {
 function getProjectSettings(id) {
   id = sanitizeProjectId(id);
   const filePath = path.join(DATA_ROOT, id, 'settings.json');
-  if (fs.existsSync(filePath)) return readJson(filePath);
-  return { bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false };
+  const raw = fs.existsSync(filePath) ? readJson(filePath) : {};
+  return {
+    bundlePath: raw.bundlePath || 'Bundles/',
+    assemblies: Array.isArray(raw.assemblies) ? raw.assemblies : [],
+    steamTags: Array.isArray(raw.steamTags) ? raw.steamTags : [],
+    // The switch used to be stored inverted (skipManifestExport); older
+    // settings files are read through that fallback and rewritten in the
+    // new shape on their next save.
+    exportManifest: raw.exportManifest !== undefined ? !!raw.exportManifest : !raw.skipManifestExport,
+    useGenericAssembly: !!raw.useGenericAssembly,
+  };
 }
 
 function saveProjectSettings(input) {
@@ -292,7 +313,8 @@ function saveProjectSettings(input) {
     bundlePath: input.bundlePath || 'Bundles/',
     assemblies: Array.isArray(input.assemblies) ? input.assemblies : [],
     steamTags: Array.isArray(input.steamTags) ? input.steamTags : [],
-    skipManifestExport: !!input.skipManifestExport,
+    exportManifest: input.exportManifest !== undefined ? !!input.exportManifest : true,
+    useGenericAssembly: !!input.useGenericAssembly,
   };
   writeJson(path.join(dir, 'settings.json'), settings);
   console.log(`[PROJECT] Settings saved: ${id}`);
@@ -1103,7 +1125,8 @@ const CATEGORY_RECORD_TYPES = {
   'FactionRewards': ['QM_ImporterAPI.Templates.FactionTemplate'],
   'Localization/Weapons': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
   'Localization/Ammo': ['QM_ImporterAPI.Templates.LocalizationTemplate'],
-  'Crafting Recipes': ['MGSC.ItemProduceReceipt'],
+  'Crafting Recipes/Weapons': ['MGSC.ItemProduceReceipt'],
+  'Crafting Recipes/Ammo': ['MGSC.ItemProduceReceipt'],
 };
 
 // Categories where the tool writes Data.Id and names the file after it.
@@ -1263,6 +1286,10 @@ const IMPORT_SCHEMAS = {
     StatusResistModifier: { t: 'n' },            // negatives allowed
     Traits: { t: 'a', itemType: 's' },
     Categories: { t: 'a', itemType: 's' },
+    Disassembly: { t: 'a', item: {
+      ItemId: { t: 's', required: true },
+      Count: { t: 'i', min: 1, required: true },
+    } },
     ProjectileId: { t: 's', nullToEmpty: true, ref: ['base', 'projectiles', 'Id'] },
     CanPutInVest: { t: 'b' },
     IsImplictedAmmo: { t: 'b' },
@@ -1337,11 +1364,12 @@ const IMPORT_SCHEMAS = {
   'MGSC.ItemProduceReceipt': {
     OutputItem: { t: 's', required: true },
     RequiredItems: { t: 'a' },
-    ProduceTimeInHours: { t: 'i', min: 1 },
+    ProduceTimeInHours: { t: 'n', gt: 0 },
     ModifyStartCost: { t: 'i', min: 1 },
     ModifyStep: { t: 'n', min: 0 },
-    ModifyItemsGrades: { t: 'o', fields: {} },
-    ModifyLevelLimit: { t: 'i', min: 1 },
+    // Ammo recipes carry null in both — weapons use real values
+    ModifyItemsGrades: { t: 'o', fields: {}, nullable: true },
+    ModifyLevelLimit: { t: 'i', min: 1, nullable: true },
     Id: { t: 's' },
   },
   'QM_ImporterAPI.Templates.FactionTemplate': {
@@ -1361,6 +1389,8 @@ function checkField(val, spec, refData) {
   if (val === null) {
     // null is only meaningful for nullable strings (e.g. trait StrVal)
     if (spec.t === 'sn') return null;
+    // Fields that legitimately hold null (ammo recipes' unused workshop fields)
+    if (spec.nullable) return null;
     // Optional dropdown-backed strings: the editor writes "" and tolerates
     // null on load, so the import coerces rather than rejecting.
     if (spec.nullToEmpty) return NULL_COERCED;
@@ -1392,6 +1422,7 @@ function checkField(val, spec, refData) {
   if (spec.t === 'n' || spec.t === 'i') {
     if (spec.min !== undefined && val < spec.min) return `must be >= ${spec.min} (got ${val})`;
     if (spec.max !== undefined && val > spec.max) return `must be <= ${spec.max} (got ${val})`;
+    if (spec.gt !== undefined && val <= spec.gt) return `must be > ${spec.gt} (got ${val})`;
   }
   if (spec.oneOf && !spec.oneOf.includes(val)) return `must be one of ${spec.oneOf.join(', ')} (got "${val}")`;
   if (spec.ref && typeof val === 'string' && val !== '') {
@@ -1598,7 +1629,15 @@ function importScan(input) {
     const cat = ASSET_CATEGORIES
       .filter(c => rel.startsWith(c + '/'))
       .sort((a, b) => b.length - a.length)[0];
-    if (!cat) continue; // already warned at structure pass
+    if (!cat) {
+      // The Crafting Recipes root itself is a known parent, so a file sitting
+      // directly in it gets no category — call out the split explicitly
+      // instead of skipping it silently.
+      if (/^Crafting Recipes\/[^/]+$/.test(rel)) {
+        importIssue(errors, rel, 'Crafting recipes are split by type — this file must live in "Crafting Recipes/Weapons/" or "Crafting Recipes/Ammo/"');
+      }
+      continue; // otherwise already warned at structure pass
+    }
 
     // Bundles are expected to be binary — no record validation, no warning.
     if (PASSTHROUGH_CATEGORIES.includes(cat)) continue;
@@ -1670,7 +1709,40 @@ function importScan(input) {
           importIssue(errors, rel, `Duplicate datadisk "${m[1]}" — also in ${idsByCat[cat].get(m[1])}`);
         } else idsByCat[cat].set(m[1], rel);
       }
-    } else if (cat === 'Crafting Recipes') {
+    } else if (cat === 'FactionRewards') {
+      // One faction per file, named {FactionName}_factionData.json. Every
+      // entry in the list must belong to that faction, and a faction must
+      // appear only once — the tool writes a single contentRecords array per
+      // faction, so split entries silently lose items on edit.
+      const m = fileId.match(/^(.+)_factionData$/);
+      if (!m) {
+        importIssue(errors, rel, 'Faction reward files must be named {FactionName}_factionData.json');
+      } else {
+        const expected = m[1];
+        const list = Array.isArray(d.FactionRewardList) ? d.FactionRewardList : [];
+        if (!list.length) {
+          importIssue(errors, rel, 'FactionRewardList is empty or missing');
+        }
+        const seenFactions = new Map();
+        list.forEach((entry, i) => {
+          const fname = entry && entry.FactionName;
+          if (fname === undefined) {
+            importIssue(errors, rel, `FactionRewardList[${i}] is missing FactionName`);
+            return;
+          }
+          if (fname !== expected) {
+            importIssue(errors, rel, `FactionRewardList[${i}].FactionName is "${fname}" but the filename declares "${expected}" — each file holds one faction and must be named {FactionName}_factionData.json`);
+            return;
+          }
+          if (seenFactions.has(fname)) {
+            importIssue(errors, rel, `"${fname}" appears more than once in FactionRewardList (entries ${seenFactions.get(fname)} and ${i}) — a faction must be a single entry with one contentRecords array holding all of its items`);
+          } else seenFactions.set(fname, i);
+        });
+        if (idsByCat[cat].has(expected)) {
+          importIssue(errors, rel, `Faction "${expected}" also has a file at ${idsByCat[cat].get(expected)}`);
+        } else idsByCat[cat].set(expected, rel);
+      }
+    } else if (cat.startsWith('Crafting Recipes')) {
       // Recipes never fill Data.Id — identity is OutputItem, file is {id}_receipt.json
       const m = fileId.match(/^(.+)_receipt$/);
       if (!m) importIssue(errors, rel, 'Crafting recipe files must be named {id}_receipt.json');
@@ -1695,9 +1767,8 @@ function importScan(input) {
         } else idsByCat[cat].set(recId, rel);
       }
     }
-    // Other categories (FactionRewards, Armors, Bundles, Consumables) are not
-    // keyed by Data.Id — FactionRewards files are faction-named tables holding
-    // FactionRewardList, so no filename/Id relationship is enforced.
+    // Remaining categories (Armors, Bundles, Consumables) have no editor and
+    // no known identity convention, so nothing is enforced for them.
 
     // Schema
     const schema = IMPORT_SCHEMAS[rt];
@@ -1897,7 +1968,7 @@ function importCommit(input) {
     // Settings: standard init. Weapon image folders are discovered from the
     // filesystem by listImageFolders, so copying them above is sufficient.
     writeJson(path.join(dir, 'settings.json'), {
-      bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false,
+      bundlePath: 'Bundles/', assemblies: [], steamTags: [], exportManifest: true, useGenericAssembly: false,
     });
 
     console.log(`[IMPORT] Created project "${id}" — ${copiedJson} records, ${copiedImages} images, ${copiedSounds} sounds, ${copiedOther} other files`);
@@ -2019,10 +2090,30 @@ function exportProject(res, id) {
   const settings = getProjectSettings(id);
   const entries = [];
 
-  if (!settings.skipManifestExport) {
+  // Generic assembly: ship res/QM_GenericItemLoader.dll renamed to the
+  // project, at the top level of the zip. Read fresh each export so the
+  // file in res/ can be swapped without restarting.
+  const dllName = id + '.dll';
+  let genericDllIncluded = false;
+  if (settings.useGenericAssembly) {
+    const dllPath = path.join(RES_ROOT, GENERIC_DLL);
+    if (fs.existsSync(dllPath)) {
+      entries.push({ name: dllName, data: fs.readFileSync(dllPath) });
+      genericDllIncluded = true;
+    } else {
+      // Missing dll degrades gracefully: the export proceeds without it and
+      // without a manifest entry pointing at a file that isn't there. The
+      // client precheck surfaces this as a warning before the download.
+      console.warn(`[EXPORT] ${id}: useGenericAssembly is on but ${GENERIC_DLL} is missing from res/`);
+    }
+  }
+
+  if (settings.exportManifest) {
+    const assemblies = [...(settings.assemblies || [])];
+    if (genericDllIncluded && !assemblies.includes(dllName)) assemblies.push(dllName);
     const manifest = {
       UniqueModName: id,
-      Assemblies: settings.assemblies || [],
+      Assemblies: assemblies,
       Dependencies: [],
       SteamTags: settings.steamTags || [],
     };
@@ -2072,7 +2163,7 @@ const FLOAT_FIELDS_BY_RECORD_TYPE = {
   // Trait Parameters entries each carry a FloatVal; matched by name across the array.
   'MGSC.ItemTraitRecord': ['FloatVal'],
   // ModifyStep is a float multiplier; its default of 1 must still write as 1.0
-  'MGSC.ItemProduceReceipt': ['ModifyStep'],
+  'MGSC.ItemProduceReceipt': ['ModifyStep', 'ProduceTimeInHours'],
 };
 
 function writeJson(filePath, data) {
