@@ -2754,8 +2754,8 @@ function newAmmoDescriptorRecord(id) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: 'pistol',
-        BulletShadowsId: 'pistol',
+        BulletSpritesId: 'small_basic_ammo',
+        BulletShadowsId: 'small_basic_ammo',
         AnimationFramerate: 10,
       }
     }
@@ -2773,7 +2773,7 @@ function populateAmmoDescriptor(data) {
   // silently snapping to the first entry on save.
   const bsSel = document.getElementById('ad-BulletSpritesId');
   bsSel.querySelectorAll('option.orphan-opt').forEach(o => o.remove());
-  const bsVal = g.BulletSpritesId || 'pistol';
+  const bsVal = g.BulletSpritesId || 'small_basic_ammo';
   if (![...bsSel.options].some(o => o.value === bsVal)) {
     bsSel.insertAdjacentHTML('afterbegin', `<option class="orphan-opt" value="${esc(bsVal)}">${esc(bsVal)} (unknown)</option>`);
   }
@@ -2797,8 +2797,8 @@ function collectAmmoDescriptor(ammoId) {
       Gibs: {
         FlightDurationMsMin: 0.25,
         FlightDurationMsMax: 0.35,
-        BulletSpritesId: str('ad-BulletSpritesId') || 'pistol',
-        BulletShadowsId: str('ad-BulletSpritesId') || 'pistol',
+        BulletSpritesId: str('ad-BulletSpritesId') || 'small_basic_ammo',
+        BulletShadowsId: str('ad-BulletSpritesId') || 'small_basic_ammo',
         AnimationFramerate: 10,
       }
     }
