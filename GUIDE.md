@@ -221,7 +221,7 @@ Changing the ID and saving will rename the ammo JSON, descriptor, localization, 
 
 **Image Properties** — Icon Sprite Path/ID, Small Icon Sprite Path/ID, Shadow Sprite Path/ID. Auto-filled on sprite upload with paths like `Images/Ammo/{id}_sprite_icon.png`. Updated on ID rename.
 
-**Gibs** — Bullet Sprites ID (dropdown from projectiles reference, default "pistol" — also sets BulletShadowsId to the same value in JSON). Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
+**Gibs** — Bullet Sprites ID (dropdown of base-game ammo ids — vanilla only, project-local custom ammo deliberately excluded; also sets BulletShadowsId to the same value in JSON). A stored value outside the base ammo list — such as the projectile ids this field used before it was corrected — is shown as a flagged "(unknown)" option and preserved rather than silently reassigned; imports flag such values as errors. Hidden defaults: FlightDurationMsMin (0.25), FlightDurationMsMax (0.35), AnimationFramerate (10), MeleeMakeBlood (false).
 
 #### Localization
 

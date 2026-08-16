@@ -1340,8 +1340,8 @@ const IMPORT_SCHEMAS = {
     Gibs: { t: 'o', fields: {
       FlightDurationMsMin: { t: 'n', min: 0 },
       FlightDurationMsMax: { t: 'n', min: 0 },
-      BulletSpritesId: { t: 's' },
-      BulletShadowsId: { t: 's' },
+      BulletSpritesId: { t: 's', ref: ['base', 'ammo', 'Id'] },
+      BulletShadowsId: { t: 's', ref: ['base', 'ammo', 'Id'] },
       AnimationFramerate: { t: 'n', min: 0 },
     } },
   },
