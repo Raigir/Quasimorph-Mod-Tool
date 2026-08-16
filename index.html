@@ -57,9 +57,9 @@
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
-  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
   ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
 
   body {
     background: var(--bg-deep);
@@ -2768,7 +2768,16 @@ function populateAmmoDescriptor(data) {
   val('ad-SmallIconSpriteIdOrPath', ip.SmallIconSpriteIdOrPath || '');
   val('ad-ShadowOnFloorSpriteIdOrPath', ip.ShadowOnFloorSpriteIdOrPath || '');
   const g = data?.Gibs || {};
-  val('ad-BulletSpritesId', g.BulletSpritesId || 'pistol');
+  // A stored id outside the base ammo list (e.g. a projectile id from before
+  // this field was corrected) is kept as a flagged option rather than
+  // silently snapping to the first entry on save.
+  const bsSel = document.getElementById('ad-BulletSpritesId');
+  bsSel.querySelectorAll('option.orphan-opt').forEach(o => o.remove());
+  const bsVal = g.BulletSpritesId || 'pistol';
+  if (![...bsSel.options].some(o => o.value === bsVal)) {
+    bsSel.insertAdjacentHTML('afterbegin', `<option class="orphan-opt" value="${esc(bsVal)}">${esc(bsVal)} (unknown)</option>`);
+  }
+  val('ad-BulletSpritesId', bsVal);
 }
 
 function collectAmmoDescriptor(ammoId) {
@@ -8225,7 +8234,15 @@ function populateRefSelects() {
   fillSelectWithEmpty('ammo-DmgType', REF.base?.damageTypes, 'Id');
   fillSelectWithEmpty('ammo-ProjectileId', REF.base?.projectiles, 'Id');
   fillSelect('ammo-BallisticType', REF.enums?.ballisticTypes, 'Name');
-  fillSelect('ad-BulletSpritesId', REF.base?.projectiles, 'Id');
+  // Gibs reuse another ammo's bullet sprites — vanilla ammo ids only
+  // (deliberately not merged with project customs), star prefixes stripped.
+  {
+    const baseAmmoIds = (REF.base?.ammo?.rows || [])
+      .map(r => (r.Id || '').trim().replace(/^\*/, ''))
+      .filter(Boolean);
+    document.getElementById('ad-BulletSpritesId').innerHTML =
+      baseAmmoIds.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  }
   const ammoTraits = {
     rows: (REF.base?.itemTraits?.rows || []).filter(r => r.ItemTraitType === 'AmmoTrait')
   };
