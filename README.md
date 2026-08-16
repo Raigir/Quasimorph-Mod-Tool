@@ -74,37 +74,39 @@ mod-workflow/
 │           ├── Bundles/               # Asset bundles
 │           ├── Armors/
 │           └── Consumables/
-└── ref/
-    ├── base/                          # Reference TSVs (game data)
-    │   ├── ammo.txt
-    │   ├── firemodes.txt
-    │   ├── grenades.txt
-    │   ├── itemTraits.txt
-    │   ├── repairs.txt
-    │   ├── trash.txt
-    │   ├── datadisks.txt
-    │   ├── explosions.txt
-    │   ├── factions.txt
-    │   ├── pactcomponents.txt
-    │   ├── projectiles.txt
-    │   ├── statusEffects.txt
-    │   └── damageTypes.txt
-    └── enums/                         # Enum value lists
-        ├── ammoTypes.txt              # derived from configs on ref update
-        ├── categories.txt             # derived from configs on ref update
-        ├── tooltipIconTags.txt        # derived from configs on ref update
-        ├── traitEffects.txt           # derived from configs on ref update
-        ├── ballisticTypes.txt
-        ├── factionIdCodes.txt
-        ├── gasStrength.txt
-        ├── gasType.txt
-        ├── handGrips.txt
-        ├── itemClass.txt
-        ├── itemTraitTypes.txt
-        ├── languageCodes.txt
-        ├── liquidType.txt
-        ├── weaponClass.txt
-        └── weaponSubClass.txt
+├── ref/
+│   ├── base/                          # Reference TSVs (game data)
+│   │   ├── ammo.txt
+│   │   ├── firemodes.txt
+│   │   ├── grenades.txt
+│   │   ├── itemTraits.txt
+│   │   ├── repairs.txt
+│   │   ├── trash.txt
+│   │   ├── datadisks.txt
+│   │   ├── explosions.txt
+│   │   ├── factions.txt
+│   │   ├── pactcomponents.txt
+│   │   ├── projectiles.txt
+│   │   ├── statusEffects.txt
+│   │   └── damageTypes.txt
+│   └── enums/                         # Enum value lists
+│       ├── ammoTypes.txt              # derived from configs on ref update
+│       ├── categories.txt             # derived from configs on ref update
+│       ├── tooltipIconTags.txt        # derived from configs on ref update
+│       ├── traitEffects.txt           # derived from configs on ref update
+│       ├── ballisticTypes.txt
+│       ├── factionIdCodes.txt
+│       ├── gasStrength.txt
+│       ├── gasType.txt
+│       ├── handGrips.txt
+│       ├── itemClass.txt
+│       ├── itemTraitTypes.txt
+│       ├── languageCodes.txt
+│       ├── liquidType.txt
+│       ├── weaponClass.txt
+│       └── weaponSubClass.txt
+└── res/
+    └── QM_GenericItemLoader.dll       # Generic assembly shipped into exports on request
 ```
 
 ## Reference Data

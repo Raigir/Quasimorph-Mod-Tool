@@ -2064,10 +2064,11 @@
         <div class="ed-section-title">General</div>
         <div class="ed-row" style="margin-bottom:14px;">
           <div class="ed-field"><label>Project Name</label><input type="text" id="projName" maxlength="60" oninput="validateProjectSettings()"></div>
-          <div class="ed-field" style="flex:0 0 auto;"><label>Skip Manifest on Export</label><input type="checkbox" id="projSkipManifest"><div class="tog" onclick="togClick(this)"></div></div>
+          <div class="ed-field" style="margin-left:auto; width:170px; margin-right:8px;"><label style="white-space:nowrap;">Export with Manifest</label><input type="checkbox" id="projExportManifest"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
-        <div class="ed-row" style="margin-bottom:8px;">
+        <div class="ed-row" style="margin-bottom:8px; align-items:center;">
           <button class="btn" style="min-width:auto; font-size:12px; padding:0 10px;" onclick="addAssemblyEntry()">+ Add Assembly</button>
+          <div class="ed-field" style="padding-top:0; margin-left:auto; width:170px; margin-right:8px;"><label style="white-space:nowrap;">Use Generic Assembly</label><input type="checkbox" id="projUseGenericAsm"><div class="tog" onclick="togClick(this)"></div></div>
         </div>
         <div class="entry-list" id="assemblyList" style="max-width:100%; margin-bottom:6px;"></div>
         <div class="ed-row" style="margin-top:6px; margin-bottom:8px;">
@@ -2241,12 +2242,13 @@ async function openProjectSettings(id) {
   editingProjectId = id;
   document.getElementById('projName').value = id;
   // Load project settings
-  let settings = { bundlePath: 'Bundles/', assemblies: [], steamTags: [] };
+  let settings = { bundlePath: 'Bundles/', assemblies: [], steamTags: [], exportManifest: true, useGenericAssembly: false };
   try {
     settings = await api('project_settings', { params: { id } });
   } catch {}
   document.getElementById('projBundlePath').value = settings.bundlePath || 'Bundles/';
-  chk('projSkipManifest', !!settings.skipManifestExport);
+  chk('projExportManifest', settings.exportManifest !== false);
+  chk('projUseGenericAsm', !!settings.useGenericAssembly);
   populateAssemblyEntries(settings.assemblies || []);
   populateSteamTagEntries(settings.steamTags || []);
   // Load image folders
@@ -2395,7 +2397,7 @@ async function saveProjectSettings() {
       .map(el => el.value.trim()).filter(Boolean);
     const steamTags = Array.from(document.querySelectorAll('#steamTagList .steam-tag'))
       .map(el => el.value.trim()).filter(Boolean);
-    await api('project_settings', { body: { project: editingProjectId, bundlePath, assemblies, steamTags, skipManifestExport: document.getElementById('projSkipManifest').checked } });
+    await api('project_settings', { body: { project: editingProjectId, bundlePath, assemblies, steamTags, exportManifest: document.getElementById('projExportManifest').checked, useGenericAssembly: document.getElementById('projUseGenericAsm').checked } });
 
     // Save image folders
     const folders = Array.from(document.querySelectorAll('#imgFolderList .imgfolder-name'))
@@ -6845,9 +6847,32 @@ function confirmDeleteWeapon(btn, id) {
 }
 
 function exportProject(id) {
-  showConfirm('Would you like to export this project?', () => {
+  showConfirm('Would you like to export this project?', async () => {
+    // Non-blocking precheck: surfaces problems like a missing generic dll.
+    // The export proceeds either way — the window only informs.
+    try {
+      const pre = await api('export_precheck', { params: { id } });
+      if (pre.warnings?.length) showNotice(pre.warnings.join('\n\n'));
+    } catch {}
     window.location.href = `/api?action=export_project&id=${encodeURIComponent(id)}`;
   }, 'Export', 'primary');
+}
+
+// One-button informational modal, styled like showConfirm but with no choice
+// to make — used for non-blocking export warnings.
+function showNotice(message) {
+  dismissConfirm();
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <p>${esc(message)}</p>
+    <div class="confirm-btns">
+      <button class="btn primary" id="noticeOk">OK</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  activeConfirm = overlay;
+  overlay.querySelector('#noticeOk').addEventListener('click', dismissConfirm);
 }
 
 function openOptionsPanel() {

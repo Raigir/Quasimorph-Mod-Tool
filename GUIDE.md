@@ -16,7 +16,8 @@ Click the **✎** pencil icon on any project card to open Project Settings:
 
 - **Project Name** — rename the project (renames the folder on disk). Cannot be empty. Cannot duplicate an existing project name (case-insensitive). Invalid names highlight red with a tooltip.
 - **Bundle Path** — the default asset bundle path used when creating new weapon descriptors (e.g., `Bundles/efa_assets`). Defaults to `Bundles/`. Changing this does **not** update existing descriptors — only new weapons pick up the value.
-- **Skip Manifest on Export** — toggle. When enabled, the export ZIP will not include a `modmanifest.json` and only contains the Assets folder.
+- **Export with Manifest** — toggle, on by default. When on, the export ZIP includes a generated `modmanifest.json`; when off, only the Assets folder (and generic assembly, if enabled) is included. Settings files written before this switch was inverted (stored as `skipManifestExport`) are read correctly and rewritten in the new shape on their next save.
+- **Use Generic Assembly** — toggle, off by default, saved to the project's settings. When on, exporting copies `res/QM_GenericItemLoader.dll` into the top level of the ZIP renamed to `{ProjectName}.dll`, and — if a manifest is being generated — appends `"{ProjectName}.dll"` to the manifest's `Assemblies` array (skipped if an identical entry is already listed, so no duplicates). If the dll is missing from `res/`, a warning window appears before the download and the export proceeds without the dll and without its manifest entry. The dll is read fresh on every export, so the file in `res/` can be swapped without restarting the server.
 - **Assemblies** — dynamic entry list. Each entry is a DLL filename (e.g., `QM_ImporterAPI.dll`). Used when generating `modmanifest.json` during export.
 - **Steam Tags** — dynamic entry list. Each entry is a tag string (e.g., `0.9.9`, `New Content`). Used when generating `modmanifest.json` during export.
 - **Weapon Image Folders** — manage subfolders under `Images/Weapons/` for organizing weapon sprites by faction or category (e.g., `chu`, `cor`, `civ`). Folders with images inside cannot be removed. Duplicate folder names are highlighted red with a tooltip and block saving.
@@ -33,7 +34,7 @@ Click the **folder-arrow** icon on a project card. A confirmation dialog appears
   - `Dependencies` — always an empty array
   - `SteamTags` — from the steam tags entry list
 
-If **Skip Manifest on Export** is enabled in project settings, the `modmanifest.json` is omitted and only the Assets folder is included. The `settings.json` file is never included in exports.
+If **Export with Manifest** is turned off in project settings, the `modmanifest.json` is omitted. With **Use Generic Assembly** on, the renamed generic dll sits at the top level of the ZIP alongside the manifest. The `settings.json` file is never included in exports.
 
 ### Deleting a Project
 Click the **🗑** trash icon. A confirmation dialog warns that all assets within will be deleted.

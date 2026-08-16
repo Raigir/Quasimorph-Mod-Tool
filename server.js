@@ -8,6 +8,8 @@ const path = require('path');
 const PORT = 8080;
 const DATA_ROOT = path.join(__dirname, 'data');
 const REF_ROOT = path.join(__dirname, 'ref');
+const RES_ROOT = path.join(__dirname, 'res');
+const GENERIC_DLL = 'QM_GenericItemLoader.dll';
 
 // Asset categories — each project gets these subfolders under Assets/
 const ASSET_CATEGORIES = [
@@ -164,6 +166,15 @@ async function handleApi(req, res, query) {
         if (method === 'POST') return json(res, await updateRefData(await readBody(req)));
         return json(res, { error: 'POST required' });
 
+      case 'export_precheck': {
+        const settings = getProjectSettings(query.id);
+        const warnings = [];
+        if (settings.useGenericAssembly && !fs.existsSync(path.join(RES_ROOT, GENERIC_DLL))) {
+          warnings.push(`Use Generic Assembly is on, but ${GENERIC_DLL} was not found in the res/ folder. The export will proceed without the dll (and without its manifest entry).`);
+        }
+        return json(res, { warnings });
+      }
+
       case 'import_scan':
         if (method === 'POST') return json(res, importScan(await readBody(req)));
         return json(res, { error: 'POST required' });
@@ -280,8 +291,17 @@ function deleteProject(id) {
 function getProjectSettings(id) {
   id = sanitizeProjectId(id);
   const filePath = path.join(DATA_ROOT, id, 'settings.json');
-  if (fs.existsSync(filePath)) return readJson(filePath);
-  return { bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false };
+  const raw = fs.existsSync(filePath) ? readJson(filePath) : {};
+  return {
+    bundlePath: raw.bundlePath || 'Bundles/',
+    assemblies: Array.isArray(raw.assemblies) ? raw.assemblies : [],
+    steamTags: Array.isArray(raw.steamTags) ? raw.steamTags : [],
+    // The switch used to be stored inverted (skipManifestExport); older
+    // settings files are read through that fallback and rewritten in the
+    // new shape on their next save.
+    exportManifest: raw.exportManifest !== undefined ? !!raw.exportManifest : !raw.skipManifestExport,
+    useGenericAssembly: !!raw.useGenericAssembly,
+  };
 }
 
 function saveProjectSettings(input) {
@@ -293,7 +313,8 @@ function saveProjectSettings(input) {
     bundlePath: input.bundlePath || 'Bundles/',
     assemblies: Array.isArray(input.assemblies) ? input.assemblies : [],
     steamTags: Array.isArray(input.steamTags) ? input.steamTags : [],
-    skipManifestExport: !!input.skipManifestExport,
+    exportManifest: input.exportManifest !== undefined ? !!input.exportManifest : true,
+    useGenericAssembly: !!input.useGenericAssembly,
   };
   writeJson(path.join(dir, 'settings.json'), settings);
   console.log(`[PROJECT] Settings saved: ${id}`);
@@ -1947,7 +1968,7 @@ function importCommit(input) {
     // Settings: standard init. Weapon image folders are discovered from the
     // filesystem by listImageFolders, so copying them above is sufficient.
     writeJson(path.join(dir, 'settings.json'), {
-      bundlePath: 'Bundles/', assemblies: [], steamTags: [], skipManifestExport: false,
+      bundlePath: 'Bundles/', assemblies: [], steamTags: [], exportManifest: true, useGenericAssembly: false,
     });
 
     console.log(`[IMPORT] Created project "${id}" — ${copiedJson} records, ${copiedImages} images, ${copiedSounds} sounds, ${copiedOther} other files`);
@@ -2069,10 +2090,30 @@ function exportProject(res, id) {
   const settings = getProjectSettings(id);
   const entries = [];
 
-  if (!settings.skipManifestExport) {
+  // Generic assembly: ship res/QM_GenericItemLoader.dll renamed to the
+  // project, at the top level of the zip. Read fresh each export so the
+  // file in res/ can be swapped without restarting.
+  const dllName = id + '.dll';
+  let genericDllIncluded = false;
+  if (settings.useGenericAssembly) {
+    const dllPath = path.join(RES_ROOT, GENERIC_DLL);
+    if (fs.existsSync(dllPath)) {
+      entries.push({ name: dllName, data: fs.readFileSync(dllPath) });
+      genericDllIncluded = true;
+    } else {
+      // Missing dll degrades gracefully: the export proceeds without it and
+      // without a manifest entry pointing at a file that isn't there. The
+      // client precheck surfaces this as a warning before the download.
+      console.warn(`[EXPORT] ${id}: useGenericAssembly is on but ${GENERIC_DLL} is missing from res/`);
+    }
+  }
+
+  if (settings.exportManifest) {
+    const assemblies = [...(settings.assemblies || [])];
+    if (genericDllIncluded && !assemblies.includes(dllName)) assemblies.push(dllName);
     const manifest = {
       UniqueModName: id,
-      Assemblies: settings.assemblies || [],
+      Assemblies: assemblies,
       Dependencies: [],
       SteamTags: settings.steamTags || [],
     };
